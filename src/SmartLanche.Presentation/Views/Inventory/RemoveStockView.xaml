@@ -1,0 +1,136 @@
+<UserControl x:Class="SmartLanche.Presentation.Views.Inventory.RemoveStockView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:vm="clr-namespace:SmartLanche.Presentation.ViewModels.Inventory"
+             xmlns:converters="clr-namespace:SmartLanche.Presentation.Converters"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=vm:RemoveStockViewModel, IsDesignTimeCreatable=False}"
+             d:DesignHeight="300" d:DesignWidth="450">
+
+    <UserControl.Resources>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+    </UserControl.Resources>
+
+    <Border Background="White" CornerRadius="12" Padding="32" Width="450">
+        <StackPanel>
+            <!-- Header -->
+            <StackPanel Margin="0,0,0,24">
+                <TextBlock Text="➖ Saída de Estoque" FontSize="20" FontWeight="Bold" Foreground="#1F2937"/>
+                <TextBlock Text="{Binding ProductName}" FontSize="14" Foreground="#64748B" Margin="0,4,0,0"/>
+            </StackPanel>
+
+            <!-- Current Stock Info -->
+            <Border Background="#F8FAFC" BorderBrush="#E5E7EB" BorderThickness="1"  Padding="16" Margin="0,0,0,24">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Qtd. Atual" FontSize="12" Foreground="#64748B"/>
+                        <TextBlock Text="{Binding CurrentQuantity}" FontSize="20" FontWeight="Bold" Foreground="#1F2937"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" HorizontalAlignment="Right">
+                        <TextBlock Text="Qtd. Mínima" FontSize="12" Foreground="#64748B"/>
+                        <TextBlock Text="{Binding MinQuantity}" FontSize="20" FontWeight="Bold" Foreground="#1F2937"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Warning if quantity is low -->
+            <Border Background="#FEF2F2" BorderBrush="#FECACA" BorderThickness="1"  Padding="12" Margin="0,0,0,16"
+                    Visibility="{Binding IsLowStock, Converter={StaticResource BoolToVisibilityConverter}}">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="⚠️" FontSize="16" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="Estoque atual está baixo ou zerado. Confira a quantidade antes de prosseguir."
+                               FontSize="13" Foreground="#DC2626" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Quantity Input -->
+            <StackPanel Margin="0,0,0,24">
+                <TextBlock Text="Quantidade a Remover *" FontSize="13" FontWeight="Medium" Foreground="#374151" Margin="0,0,0,8"/>
+                <TextBox Text="{Binding Quantity, UpdateSourceTrigger=PropertyChanged}"
+                         FontSize="16" Padding="12,10" BorderBrush="#D1D5DB" BorderThickness="1"                          VerticalContentAlignment="Center">
+                    <TextBox.Style>
+                        <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+                            <Style.Triggers>
+                                <Trigger Property="IsFocused" Value="True">
+                                    <Setter Property="BorderBrush" Value="#2563EB"/>
+                                    <Setter Property="BorderThickness" Value="2"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBox.Style>
+                </TextBox>
+            </StackPanel>
+
+            <!-- Reason Input -->
+            <StackPanel Margin="0,0,0,24">
+                <TextBlock Text="Motivo (opcional)" FontSize="13" FontWeight="Medium" Foreground="#374151" Margin="0,0,0,8"/>
+                <TextBox Text="{Binding Reason, UpdateSourceTrigger=PropertyChanged}"
+                         FontSize="14" Padding="12,10" BorderBrush="#D1D5DB" BorderThickness="1"                          Height="80" VerticalContentAlignment="Top" TextWrapping="Wrap" AcceptsReturn="True"
+                         VerticalScrollBarVisibility="Auto">
+                    <TextBox.Style>
+                        <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+                            <Style.Triggers>
+                                <Trigger Property="IsFocused" Value="True">
+                                    <Setter Property="BorderBrush" Value="#2563EB"/>
+                                    <Setter Property="BorderThickness" Value="2"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBox.Style>
+                </TextBox>
+            </StackPanel>
+
+            <!-- Buttons -->
+            <Grid Margin="0,8,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="0" Content="Cancelar" Command="{Binding CancelCommand}"
+                        Padding="16,12" FontSize="14" FontWeight="Medium" Foreground="#374151"
+                        Background="#F3F4F6" BorderThickness="0"  Cursor="Hand"
+                        Margin="0,0,8,0">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#E5E7EB"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+                <Button Grid.Column="1" Content="Confirmar Saída" Command="{Binding SaveCommand}"
+                        Padding="16,12" FontSize="14" FontWeight="Bold" Foreground="White"
+                        Background="#F59E0B" BorderThickness="0"  Cursor="Hand"
+                        Margin="8,0,0,0" IsEnabled="{Binding IsSaving, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=inverse}">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#D97706"/>
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Background" Value="#FDE68A"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </Grid>
+
+            <!-- Saving Indicator -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,12,0,0"
+                        Visibility="{Binding IsSaving, Converter={StaticResource BoolToVisibilityConverter}}">
+                <ProgressBar Width="16" Height="16" IsIndeterminate="True" Foreground="#F59E0B" Margin="0,0,8,0"/>
+                <TextBlock Text="Salvando..." FontSize="13" Foreground="#64748B" VerticalAlignment="Center"/>
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</UserControl>

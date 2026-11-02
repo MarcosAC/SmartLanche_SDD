@@ -1,0 +1,520 @@
+﻿<Window x:Class="SmartLanche.Presentation.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:SmartLanche.Presentation.ViewModels"
+        xmlns:productVm="clr-namespace:SmartLanche.Presentation.ViewModels.Products"
+        xmlns:categoryVm="clr-namespace:SmartLanche.Presentation.ViewModels.Categories"
+        xmlns:customerVm="clr-namespace:SmartLanche.Presentation.ViewModels.Customers"
+        xmlns:orderVm="clr-namespace:SmartLanche.Presentation.ViewModels.Orders"
+        xmlns:preparationVm="clr-namespace:SmartLanche.Presentation.ViewModels.OrderPreparation"
+        xmlns:inventoryVm="clr-namespace:SmartLanche.Presentation.ViewModels.Inventory"
+        xmlns:promotionVm="clr-namespace:SmartLanche.Presentation.ViewModels.Promotions"
+        xmlns:comboVm="clr-namespace:SmartLanche.Presentation.ViewModels.Combos"
+        xmlns:paymentVm="clr-namespace:SmartLanche.Presentation.ViewModels.Payments"
+        xmlns:viewsProducts="clr-namespace:SmartLanche.Presentation.Views.Products"
+        xmlns:viewsCategories="clr-namespace:SmartLanche.Presentation.Views.Categories"
+        xmlns:viewsCustomers="clr-namespace:SmartLanche.Presentation.Views.Customers"
+        xmlns:viewsOrders="clr-namespace:SmartLanche.Presentation.Views.Orders"
+        xmlns:viewsPreparation="clr-namespace:SmartLanche.Presentation.Views.OrderPreparation"
+        xmlns:viewsInventory="clr-namespace:SmartLanche.Presentation.Views.Inventory"
+        xmlns:viewsPromotions="clr-namespace:SmartLanche.Presentation.Views.Promotions"
+        xmlns:viewsCombos="clr-namespace:SmartLanche.Presentation.Views.Combos"
+        xmlns:viewsPayments="clr-namespace:SmartLanche.Presentation.Views.Payments"
+        xmlns:controls="clr-namespace:SmartLanche.Presentation.Controls"
+        xmlns:converters="clr-namespace:SmartLanche.Presentation.Converters"
+        Title="SmartLanche"
+        Height="720"
+        Width="1200"
+        MinHeight="600"
+        MinWidth="1000"
+        WindowStartupLocation="CenterScreen"
+        Background="#F5F6FA">
+
+    <Window.Resources>
+        <SolidColorBrush x:Key="PrimaryColor"
+                Color="#2563EB"/>
+        <SolidColorBrush x:Key="SidebarColor"
+                Color="#172554"/>
+        <SolidColorBrush x:Key="TextColor"
+                Color="#1F2937"/>
+        <SolidColorBrush x:Key="MutedColor"
+                Color="#64748B"/>
+
+        <Style x:Key="MenuButtonStyle"
+                TargetType="Button">
+            <Setter Property="Foreground"
+                    Value="#E2E8F0"/>
+            <Setter Property="Background"
+                    Value="Transparent"/>
+            <Setter Property="BorderThickness"
+                    Value="0"/>
+            <Setter Property="Padding"
+                    Value="16,13"/>
+            <Setter Property="HorizontalContentAlignment"
+                    Value="Left"/>
+            <Setter Property="FontSize"
+                    Value="14"/>
+            <Setter Property="Cursor"
+                    Value="Hand"/>
+            <Setter Property="Margin"
+                    Value="0,3,0,3"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ButtonBorder"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="7"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter
+                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver"
+                                    Value="True">
+                                <Setter TargetName="ButtonBorder"
+                                        Property="Background"
+                                        Value="#263B68"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed"
+                                    Value="True">
+                                <Setter TargetName="ButtonBorder"
+                                        Property="Background"
+                                        Value="#334B7A"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="BackButtonStyle"
+                TargetType="Button">
+            <Setter Property="Foreground"
+                    Value="#374151"/>
+            <Setter Property="Background"
+                    Value="White"/>
+            <Setter Property="BorderBrush"
+                    Value="#D1D5DB"/>
+            <Setter Property="BorderThickness"
+                    Value="1"/>
+            <Setter Property="Padding"
+                    Value="14,8"/>
+            <Setter Property="Cursor"
+                    Value="Hand"/>
+            <Setter Property="Margin"
+                    Value="0,0,0,0"/>
+        </Style>
+
+        <!-- Tela inicial - Dashboard -->
+        <DataTemplate DataType="{x:Type vm:HomeViewModel}">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <Grid Margin="28">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Título -->
+                    <StackPanel Grid.Row="0" Margin="0,0,0,24">
+                        <TextBlock Text="Painel de gestão"
+                                   FontSize="28"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource TextColor}"/>
+                        <TextBlock Text="Visão geral dos pedidos e produtos"
+                                   FontSize="14"
+                                   Foreground="{StaticResource MutedColor}"
+                                   Margin="0,4,0,0"/>
+                    </StackPanel>
+
+                    <!-- Cards de métricas -->
+                    <Grid Grid.Row="1" Margin="0,0,0,24">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Pedidos Abertos -->
+                        <Border Grid.Column="0"
+                                Background="White"
+                                CornerRadius="12"
+                                Padding="24"
+                                BorderBrush="#E5E7EB"
+                                BorderThickness="1"
+                                Margin="0,0,8,0">
+                            <StackPanel>
+                                <TextBlock Text="Pedidos Abertos"
+                                           FontSize="14"
+                                           Foreground="{StaticResource MutedColor}"/>
+                                <TextBlock Text="{Binding OpenOrdersCount}"
+                                           FontSize="36"
+                                           FontWeight="Bold"
+                                           Foreground="#2563EB"
+                                           Margin="0,8,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Receita de Hoje -->
+                        <Border Grid.Column="1"
+                                Background="White"
+                                CornerRadius="12"
+                                Padding="24"
+                                BorderBrush="#E5E7EB"
+                                BorderThickness="1"
+                                Margin="8,0,8,0">
+                            <StackPanel>
+                                <TextBlock Text="Receita de Hoje"
+                                           FontSize="14"
+                                           Foreground="{StaticResource MutedColor}"/>
+                                <TextBlock Text="{Binding TodayRevenue, StringFormat='R$ {0:N2}'}"
+                                           FontSize="36"
+                                           FontWeight="Bold"
+                                           Foreground="#16A34A"
+                                           Margin="0,8,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Top Produtos (mostra o primeiro) -->
+                        <Border Grid.Column="2"
+                                Background="White"
+                                CornerRadius="12"
+                                Padding="24"
+                                BorderBrush="#E5E7EB"
+                                BorderThickness="1"
+                                Margin="8,0,0,0">
+                            <StackPanel>
+                                <TextBlock Text="Top Produto (7 dias)"
+                                           FontSize="14"
+                                           Foreground="{StaticResource MutedColor}"/>
+                                <TextBlock Text="{Binding FirstTopProduct.ProductName, FallbackValue='Sem dados'}"
+                                           FontSize="18"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource TextColor}"
+                                           Margin="0,8,0,0"
+                                           TextWrapping="Wrap"
+                                           MaxWidth="200"/>
+                                <TextBlock Text="{Binding FirstTopProduct.QuantitySold, StringFormat='{}{0} vendidos'}"
+                                           FontSize="14"
+                                           Foreground="{StaticResource MutedColor}"
+                                           Margin="0,4,0,0"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <!-- Lista completa Top 5 Produtos -->
+                    <Border Grid.Row="2"
+                            Background="White"
+                            CornerRadius="12"
+                            Padding="24"
+                            BorderBrush="#E5E7EB"
+                            BorderThickness="1">
+                        <StackPanel>
+                            <TextBlock Text="Top 5 Produtos (últimos 7 dias)"
+                                       FontSize="18"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource TextColor}"
+                                       Margin="0,0,0,16"/>
+
+                            <ItemsControl ItemsSource="{Binding TopProducts}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="#F9FAFB"
+                                                CornerRadius="8"
+                                                Padding="16"
+                                                Margin="0,0,0,8">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <TextBlock Grid.Column="0"
+                                                           Text="{Binding QuantitySold}"
+                                                           FontSize="20"
+                                                           FontWeight="Bold"
+                                                           Foreground="#2563EB"
+                                                           VerticalAlignment="Center"
+                                                           Width="50"
+                                                           TextAlignment="Center"/>
+
+                                                <TextBlock Grid.Column="1"
+                                                           Text="{Binding ProductName}"
+                                                           FontSize="16"
+                                                           FontWeight="Medium"
+                                                           Foreground="{StaticResource TextColor}"
+                                                           VerticalAlignment="Center"
+                                                           Margin="16,0,0,0"
+                                                           TextWrapping="Wrap"/>
+
+                                                <TextBlock Grid.Column="2"
+                                                           Text="vendidos"
+                                                           FontSize="13"
+                                                           Foreground="{StaticResource MutedColor}"
+                                                           VerticalAlignment="Center"
+                                                           Margin="16,0,0,0"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <TextBlock Text="Nenhum produto vendido nos últimos 7 dias."
+                                       Foreground="{StaticResource MutedColor}"
+                                       FontSize="14"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,16,0,0"
+                                       Visibility="{Binding TopProducts.Count, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=reverse}"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </ScrollViewer>
+        </DataTemplate>
+
+        <!-- Listagem de produtos -->
+        <DataTemplate DataType="{x:Type productVm:ProductListViewModel}">
+            <viewsProducts:ProductListView/>
+        </DataTemplate>
+
+        <!-- Formulário de produto -->
+        <DataTemplate DataType="{x:Type productVm:ProductFormViewModel}">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <viewsProducts:ProductFormView/>
+            </ScrollViewer>
+        </DataTemplate>
+
+        <!-- Listagem de categorias -->
+        <DataTemplate DataType="{x:Type categoryVm:CategoryListViewModel}">
+            <viewsCategories:CategoryListView/>
+        </DataTemplate>
+
+        <!-- Formulário de categoria -->
+        <DataTemplate DataType="{x:Type categoryVm:CategoryFormViewModel}">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <viewsCategories:CategoryFormView/>
+            </ScrollViewer>
+        </DataTemplate>
+
+        <!-- Listagem de clientes -->
+        <DataTemplate DataType="{x:Type customerVm:CustomerListViewModel}">
+            <viewsCustomers:CustomerListView/>
+        </DataTemplate>
+
+        <!-- Formulário de cliente -->
+        <DataTemplate DataType="{x:Type customerVm:CustomerFormViewModel}">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <viewsCustomers:CustomerFormView/>
+            </ScrollViewer>
+        </DataTemplate>
+
+        <!-- Listagem de pedidos -->
+        <DataTemplate DataType="{x:Type orderVm:OrderListViewModel}">
+            <viewsOrders:OrderListView/>
+        </DataTemplate>
+
+        <!-- Formulário de pedido -->
+        <DataTemplate DataType="{x:Type orderVm:OrderFormViewModel}">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <viewsOrders:OrderFormView/>
+            </ScrollViewer>
+        </DataTemplate>
+
+        <!-- Detalhes do pedido (read-only) -->
+        <DataTemplate DataType="{x:Type orderVm:OrderDetailViewModel}">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <viewsOrders:OrderDetailView/>
+            </ScrollViewer>
+        </DataTemplate>
+
+        <!-- Listagem de promoções -->
+        <DataTemplate DataType="{x:Type promotionVm:PromotionListViewModel}">
+            <viewsPromotions:PromotionListView/>
+        </DataTemplate>
+
+        <!-- Formulário de promoção -->
+        <DataTemplate DataType="{x:Type promotionVm:PromotionFormViewModel}">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <viewsPromotions:PromotionFormView/>
+            </ScrollViewer>
+        </DataTemplate>
+
+        <!-- Listagem de combos -->
+        <DataTemplate DataType="{x:Type comboVm:ComboListViewModel}">
+            <viewsCombos:ComboListView/>
+        </DataTemplate>
+
+        <!-- Formulário de combo -->
+        <DataTemplate DataType="{x:Type comboVm:ComboFormViewModel}">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <viewsCombos:ComboFormView/>
+            </ScrollViewer>
+        </DataTemplate>
+
+        <!-- Relatório de Inadimplência (Fiado) -->
+        <DataTemplate DataType="{x:Type paymentVm:DevedoresViewModel}">
+            <viewsPayments:DevedoresView/>
+        </DataTemplate>
+
+        <!-- Pagamentos -->
+        <DataTemplate DataType="{x:Type paymentVm:PaymentListViewModel}">
+            <viewsPayments:PaymentListView/>
+        </DataTemplate>
+
+        <!-- Pedidos em Preparação -->
+        <DataTemplate DataType="{x:Type preparationVm:OrderPreparationListViewModel}">
+            <viewsPreparation:OrderPreparationView/>
+        </DataTemplate>
+
+        <!-- Estoque -->
+        <DataTemplate DataType="{x:Type inventoryVm:InventoryListViewModel}">
+            <viewsInventory:InventoryListView/>
+        </DataTemplate>
+
+        <!-- Movimentações de Estoque -->
+        <DataTemplate DataType="{x:Type inventoryVm:InventoryMovementsViewModel}">
+            <viewsInventory:InventoryMovementsView/>
+        </DataTemplate>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="240"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Toast Container (top-right overlay) -->
+        <controls:ToastContainer Grid.Column="1"
+                                 HorizontalAlignment="Right"
+                                 VerticalAlignment="Top"
+                                 Margin="0,80,24,0"
+                                 Toasts="{Binding ToastService.Toasts, RelativeSource={RelativeSource AncestorType=Window}}"
+                                 DismissCommand="{Binding ToastService.DismissCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                 Panel.ZIndex="9999"/>
+
+        <!-- Menu lateral -->
+        <Border Grid.Column="0"
+                Background="{StaticResource SidebarColor}">
+            <DockPanel Margin="18">
+                <StackPanel DockPanel.Dock="Top">
+                    <TextBlock Text="SmartLanche"
+                               Foreground="White"
+                               FontSize="25"
+                               FontWeight="Bold"
+                               Margin="4,12,4,4"/>
+
+                    <TextBlock Text="Gestão da lanchonete"
+                               Foreground="#94A3B8"
+                               FontSize="12"
+                               Margin="4,0,4,32"/>
+
+                    <TextBlock Text="MENU PRINCIPAL"
+                               Foreground="#94A3B8"
+                               FontSize="10"
+                               FontWeight="SemiBold"
+                               Margin="8,0,0,10"/>
+
+                    <Button Content="Início"
+                            Command="{Binding NavigateHomeCommand}"
+                            Style="{StaticResource MenuButtonStyle}"/>
+
+                    <Button Content="Produtos"
+                            Command="{Binding NavigateProductsCommand}"
+                            Style="{StaticResource MenuButtonStyle}"/>
+
+                    <Button Content="Categorias"
+                            Command="{Binding NavigateCategoriesCommand}"
+                            Style="{StaticResource MenuButtonStyle}"/>
+
+                    <Button Content="Clientes"
+                            Command="{Binding NavigateCustomersCommand}"
+                            Style="{StaticResource MenuButtonStyle}"/>
+
+                    <Button Content="Pedidos"
+                            Command="{Binding NavigateOrdersCommand}"
+                            Style="{StaticResource MenuButtonStyle}"/>
+
+                    <Button Content="Pedidos em Preparação"
+                            Command="{Binding NavigateOrderPreparationCommand}"
+                            Style="{StaticResource MenuButtonStyle}"/>
+
+                    <Button Content="Estoque"
+                            Command="{Binding NavigateInventoryCommand}"
+                            Style="{StaticResource MenuButtonStyle}"/>
+
+                    <Button Content="Movimentações de Estoque"
+                            Command="{Binding NavigateInventoryMovementsCommand}"
+                            Style="{StaticResource MenuButtonStyle}"/>
+
+                    <Button Content="Promoções"
+                            Command="{Binding NavigatePromotionsCommand}"
+                            Style="{StaticResource MenuButtonStyle}"/>
+
+                    <Button Content="Combos"
+                            Command="{Binding NavigateCombosCommand}"
+                            Style="{StaticResource MenuButtonStyle}"/>
+
+                    <Button Content="Pagamentos"
+                            Command="{Binding NavigatePaymentListCommand}"
+                            Style="{StaticResource MenuButtonStyle}"/>
+
+                    <Button Content="Inadimplência (Fiado)"
+                            Command="{Binding NavigateDevedoresCommand}"
+                            Style="{StaticResource MenuButtonStyle}"/>
+                </StackPanel>
+
+                <StackPanel DockPanel.Dock="Bottom"
+                            Margin="0,20,0,8">
+                    <Separator Background="#334155"
+                               Margin="0,0,0,15"/>
+
+                    <TextBlock Text="SmartLanche"
+                               Foreground="#CBD5E1"
+                               FontSize="12"/>
+
+                    <TextBlock Text="Sistema de gestão"
+                               Foreground="#94A3B8"
+                               FontSize="11"
+                               Margin="0,4,0,0"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- Área principal -->
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="72"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0"
+                    Background="White"
+                    BorderBrush="#E5E7EB"
+                    BorderThickness="0,0,0,1">
+                <Grid Margin="28,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0"
+                               Text="{Binding CurrentPageTitle}"
+                               VerticalAlignment="Center"
+                               FontSize="20"
+                               FontWeight="SemiBold"
+                               Foreground="{StaticResource TextColor}"/>
+
+                    <Button Grid.Column="1"
+                            Content="Voltar"
+                            Command="{Binding BackCommand}"
+                            Style="{StaticResource BackButtonStyle}"
+                            VerticalAlignment="Center"/>
+                </Grid>
+            </Border>
+
+            <ContentControl Grid.Row="1"
+                            Content="{Binding CurrentViewModel}"/>
+        </Grid>
+    </Grid>
+</Window>

@@ -1,0 +1,201 @@
+<UserControl x:Class="SmartLanche.Presentation.Views.Orders.OrderDetailView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converters="clr-namespace:SmartLanche.Presentation.Converters"
+             Background="#F5F6FA">
+
+    <UserControl.Resources>
+        <converters:NullToBoolConverter x:Key="NullToBoolConverter"/>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <converters:StatusToColorConverter x:Key="StatusToColorConverter"/>
+
+        <Style x:Key="DetailLabelStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#374151"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,0,8,4"/>
+        </Style>
+
+        <Style x:Key="DetailValueStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#1F2937"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
+        </Style>
+
+        <Style x:Key="CenterAlignStyle" TargetType="TextBlock">
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
+        <Style x:Key="RightAlignStyle" TargetType="TextBlock">
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
+        <Style x:Key="ActionButtonStyle" TargetType="Button">
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="MinWidth" Value="100"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="13"/>
+        </Style>
+
+        <Style x:Key="PrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource ActionButtonStyle}">
+            <Setter Property="Background" Value="#2563EB"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Cabeçalho -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,20">
+            <TextBlock FontSize="26" FontWeight="SemiBold" Foreground="#111827"
+                       Text="Detalhes do Pedido"/>
+            <TextBlock FontSize="13" Foreground="#6B7280"
+                       Text="Visualização somente leitura"/>
+        </StackPanel>
+
+        <!-- Conteúdo -->
+        <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="24">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Header do pedido -->
+                <Border Grid.Row="0" Background="#F9FAFB" CornerRadius="6" Padding="16" Margin="0,0,0,16">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                            <TextBlock Text="Código" Style="{StaticResource DetailLabelStyle}"/>
+                            <TextBlock Text="{Binding Order.Id, StringFormat='#{0}'}"
+                                       Style="{StaticResource DetailValueStyle}" FontSize="18" FontWeight="Bold"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2" Margin="0,0,16,0">
+                            <TextBlock Text="Data" Style="{StaticResource DetailLabelStyle}"/>
+                            <TextBlock Text="{Binding Order.OrderDate, StringFormat='dd/MM/yyyy HH:mm'}"
+                                       Style="{StaticResource DetailValueStyle}"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="4" Margin="0,0,16,0">
+                            <TextBlock Text="Cliente" Style="{StaticResource DetailLabelStyle}"/>
+                            <TextBlock Text="{Binding Order.CustomerName, FallbackValue='Não informado'}"
+                                       Style="{StaticResource DetailValueStyle}"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="5" VerticalAlignment="Bottom">
+                            <TextBlock Text="Status" Style="{StaticResource DetailLabelStyle}"/>
+                            <TextBlock Text="{Binding Order.Status}"
+                                       FontSize="14" FontWeight="SemiBold"
+                                       Foreground="{Binding Order.Status, Converter={StaticResource StatusToColorConverter}}"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Observações -->
+                <Border Grid.Row="1" Background="#F9FAFB" CornerRadius="6" Padding="16" Margin="0,0,0,16"
+                        Visibility="{Binding Order.Notes, Converter={StaticResource NullToBoolConverter}, ConverterParameter=reverse}">
+                    <StackPanel>
+                        <TextBlock Text="Observações" Style="{StaticResource DetailLabelStyle}"/>
+                        <TextBlock Text="{Binding Order.Notes}" Style="{StaticResource DetailValueStyle}"
+                                   TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Itens do pedido -->
+                <Border Grid.Row="2" Background="White" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="6">
+                    <Grid>
+                        <DataGrid ItemsSource="{Binding Order.Items}"
+                                  AutoGenerateColumns="False"
+                                  IsReadOnly="True"
+                                  CanUserAddRows="False"
+                                  CanUserDeleteRows="False"
+                                  SelectionMode="Single"
+                                  SelectionUnit="FullRow"
+                                  HeadersVisibility="Column"
+                                  GridLinesVisibility="Horizontal"
+                                  RowHeaderWidth="0"
+                                  BorderThickness="0"
+                                  Background="White"
+                                  AlternatingRowBackground="#F9FAFB">
+
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Produto"
+                                                    Binding="{Binding ProductName}"
+                                                    Width="3*"/>
+
+                                <DataGridTextColumn Header="Qtd"
+                                                    Binding="{Binding Quantity}"
+                                                    Width="70"
+                                                    ElementStyle="{StaticResource CenterAlignStyle}"/>
+
+                                <DataGridTextColumn Header="Preço Unit. (R$)"
+                                                    Binding="{Binding UnitPrice, StringFormat='N2'}"
+                                                    Width="130"
+                                                    ElementStyle="{StaticResource RightAlignStyle}"/>
+
+                                <DataGridTextColumn Header="Subtotal (R$)"
+                                                    Binding="{Binding Subtotal, StringFormat='N2'}"
+                                                    Width="130"
+                                                    ElementStyle="{StaticResource RightAlignStyle}"/>
+                            </DataGrid.Columns>
+
+                            <DataGrid.RowStyle>
+                                <Style TargetType="DataGridRow">
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#F0F9FF"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGrid.RowStyle>
+                        </DataGrid>
+
+                        <TextBlock Text="Nenhum item neste pedido."
+                                   Foreground="#9CA3AF"
+                                   FontSize="14"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   Visibility="{Binding Order.Items.Count, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=reverse}"/>
+                    </Grid>
+                </Border>
+
+                <!-- Total -->
+                <Border Grid.Row="2" VerticalAlignment="Bottom" Margin="0,16,0,0">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <TextBlock Text="Total: " FontSize="18" FontWeight="SemiBold" Foreground="#1F2937"
+                                   VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding Order.TotalAmount, StringFormat='R$ {0:N2}'}"
+                                   FontSize="24" FontWeight="Bold" Foreground="#166534"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- Botão Voltar -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+            <Button Content="Voltar"
+                    Style="{StaticResource PrimaryButtonStyle}"
+                    Command="{Binding CloseCommand}"/>
+        </StackPanel>
+    </Grid>
+</UserControl>

@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SmartLanche.Application/SmartLanche.Application.csproj" />
+    <Project Path="src/SmartLanche.Domain/SmartLanche.Domain.csproj" />
+    <Project Path="src/SmartLanche.Infrastructure/SmartLanche.Infrastructure.csproj" />
+    <Project Path="src/SmartLanche.Presentation/SmartLanche.Presentation.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/SmartLanche.Application.Tests/SmartLanche.Application.Tests.csproj" />
+    <Project Path="tests/SmartLanche.Domain.Tests/SmartLanche.Domain.Tests.csproj" />
+    <Project Path="tests/SmartLanche.Infrastructure.Tests/SmartLanche.Infrastructure.Tests.csproj" />
+  </Folder>
+</Solution>

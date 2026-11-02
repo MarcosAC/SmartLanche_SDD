@@ -1,0 +1,5 @@
+/* Componentes reutilizáveis do SmartLanche */
+.stat-icon-success { background:#eaf7ef; color:#15803d; }
+.stat-icon-warning { background:#fff4df; color:#d97706; }
+.stat-icon-info { background:#eaf2ff; color:#2563eb; }
+.action-row { display:flex; gap:7px; flex-wrap:wrap; }

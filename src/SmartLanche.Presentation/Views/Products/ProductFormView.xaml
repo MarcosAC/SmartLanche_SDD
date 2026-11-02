@@ -1,0 +1,198 @@
+
+<UserControl x:Class="SmartLanche.Presentation.Views.Products.ProductFormView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="#F5F6FA">
+
+    <UserControl.Resources>
+        <Style x:Key="FieldLabelStyle"
+               TargetType="TextBlock">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#374151"/>
+            <Setter Property="Margin" Value="0,0,0,6"/>
+        </Style>
+
+        <Style x:Key="FieldControlStyle"
+               TargetType="Control">
+            <Setter Property="MinHeight" Value="36"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="Margin" Value="0,0,0,16"/>
+        </Style>
+
+        <Style x:Key="PrimaryButtonStyle"
+               TargetType="Button">
+            <Setter Property="Background" Value="#2563EB"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="20,10"/>
+            <Setter Property="MinWidth" Value="120"/>
+            <Setter Property="MinHeight" Value="40"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Grid Margin="24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Cabeçalho -->
+            <StackPanel Grid.Row="0"
+                        Margin="0,0,0,20">
+                <TextBlock FontSize="24"
+                           FontWeight="Bold"
+                           Foreground="#1F2937">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Text"
+                                    Value="Novo produto"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsEditMode}"
+                                             Value="True">
+                                    <Setter Property="Text"
+                                            Value="Editar produto"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+
+                <TextBlock Text="Preencha os dados do produto."
+                           FontSize="14"
+                           Foreground="#6B7280"
+                           Margin="0,6,0,0"/>
+            </StackPanel>
+
+            <!-- Formulário -->
+            <Border Grid.Row="1"
+                    Background="White"
+                    CornerRadius="8"
+                    Padding="24"
+                    Margin="0,0,0,16">
+
+                <StackPanel>
+                    <!-- Nome -->
+                    <TextBlock Text="Nome *"
+                               Style="{StaticResource FieldLabelStyle}"/>
+
+                    <TextBox Text="{Binding Name,
+                                            Mode=TwoWay,
+                                            UpdateSourceTrigger=PropertyChanged}"
+                             MaxLength="150"
+                             ToolTip="Informe o nome do produto"
+                             Style="{StaticResource FieldControlStyle}"/>
+
+                    <!-- Categoria -->
+                    <TextBlock Text="Categoria *"
+                               Style="{StaticResource FieldLabelStyle}"/>
+
+                    <ComboBox ItemsSource="{Binding Categories}"
+                              SelectedItem="{Binding SelectedCategory,
+                                                     Mode=TwoWay}"
+                              DisplayMemberPath="Name"
+                              ToolTip="Selecione uma categoria"
+                              Style="{StaticResource FieldControlStyle}"/>
+
+                    <TextBlock Text="Carregando categorias..."
+                               Foreground="#6B7280"
+                               Margin="0,0,0,16">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility"
+                                        Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsLoadingCategories}"
+                                                 Value="True">
+                                        <Setter Property="Visibility"
+                                                Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+
+                    <!-- Preço -->
+                    <TextBlock Text="Preço *"
+                               Style="{StaticResource FieldLabelStyle}"/>
+
+                    <TextBox Text="{Binding Price,
+                                            Mode=TwoWay,
+                                            UpdateSourceTrigger=LostFocus,
+                                            ValidatesOnExceptions=True,
+                                            NotifyOnValidationError=True}"
+                             ToolTip="Informe o preço do produto"
+                             Style="{StaticResource FieldControlStyle}"/>
+
+                    <!-- Combo -->
+                    <CheckBox Content="Este produto é um combo"
+                              IsChecked="{Binding IsCombo, Mode=TwoWay}"
+                              FontSize="14"
+                              Foreground="#374151"
+                              Margin="0,0,0,20"/>
+
+                    <!-- Descrição -->
+                    <TextBlock Text="Descrição"
+                               Style="{StaticResource FieldLabelStyle}"/>
+
+                    <TextBox Text="{Binding Description,
+                                            Mode=TwoWay,
+                                            UpdateSourceTrigger=PropertyChanged}"
+                             MaxLength="500"
+                             MinHeight="100"
+                             AcceptsReturn="True"
+                             TextWrapping="Wrap"
+                             VerticalScrollBarVisibility="Auto"
+                             VerticalContentAlignment="Top"
+                             ToolTip="Descrição opcional do produto"
+                             Style="{StaticResource FieldControlStyle}"/>
+
+                    <!-- Status: somente leitura -->
+                    <TextBlock Text="Status"
+                               Style="{StaticResource FieldLabelStyle}"/>
+
+                    <TextBlock Margin="0,0,0,20"
+                               FontSize="14"
+                               FontWeight="SemiBold">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Text" Value="Ativo"/>
+                                <Setter Property="Foreground" Value="#15803D"/>
+
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsActive}"
+                                                 Value="False">
+                                        <Setter Property="Text" Value="Inativo"/>
+                                        <Setter Property="Foreground"
+                                                Value="#B91C1C"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+
+                    <TextBlock Text="O status do produto é gerenciado pela listagem."
+                               FontSize="12"
+                               Foreground="#6B7280"
+                               Margin="0,0,0,8"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Ação -->
+            <StackPanel Grid.Row="2"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Margin="0,16,0,0">
+                <Button Content="Salvar"
+                        Command="{Binding SaveCommand}"
+                        Style="{StaticResource PrimaryButtonStyle}"/>
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</UserControl>
