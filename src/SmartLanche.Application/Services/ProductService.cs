@@ -7,16 +7,13 @@ namespace SmartLanche.Application.Services;
 
 public class ProductService : CrudServiceBase<Product, ProductDto, CreateProductRequest, UpdateProductRequest, IProductRepository>, IProductService
 {
-    private readonly ICategoryRepository _categoryRepository;
     private readonly IInventoryService _inventoryService;
 
     public ProductService(
         IServiceScopeFactory scopeFactory,
-        ICategoryRepository categoryRepository,
         IInventoryService inventoryService)
         : base(scopeFactory)
     {
-        _categoryRepository = categoryRepository ?? throw new ArgumentNullException(nameof(categoryRepository));
         _inventoryService = inventoryService ?? throw new ArgumentNullException(nameof(inventoryService));
     }
 
@@ -59,74 +56,101 @@ public class ProductService : CrudServiceBase<Product, ProductDto, CreateProduct
 
     protected override async Task<Product> CreateEntityAsync(IProductRepository repository, CreateProductRequest request, CancellationToken cancellationToken)
     {
-        var category = await _categoryRepository.GetByIdAsync(request.CategoryId, cancellationToken);
-
-        if (category is null)
-        {
-            throw new InvalidOperationException("A categoria informada não existe.");
-        }
-
-        if (!category.IsActive)
-        {
-            throw new InvalidOperationException("Não é permitido cadastrar um produto em uma categoria inativa.");
-        }
-
-        var product = new Product
-        {
-            Name = request.Name.Trim(),
-            CategoryId = request.CategoryId,
-            Category = category,
-            Price = request.Price,
-            IsCombo = request.IsCombo,
-            Description = NormalizeDescription(request.Description),
-            IsActive = true
-        };
-
-        return product;
+        // This overload is not used - the real implementation is in CreateAsync below
+        throw new NotSupportedException("Use CreateAsync with scope overload");
     }
 
     public override async Task<ProductDto> CreateAsync(CreateProductRequest request, CancellationToken cancellationToken = default)
     {
         await ValidateCreateRequestAsync(request, cancellationToken);
 
-        return await ExecuteInScopeAsync(async (repository, ct) =>
+        return await ExecuteInScopeAsync(async (scope, ct) =>
         {
-            var entity = await CreateEntityAsync(repository, request, ct);
+            var repository = scope.ServiceProvider.GetRequiredService<IProductRepository>();
+            var categoryRepository = scope.ServiceProvider.GetRequiredService<ICategoryRepository>();
 
-            await AddEntityAsync(repository, entity, ct);
+            var category = await categoryRepository.GetByIdAsync(request.CategoryId, ct);
+
+            if (category is null)
+            {
+                throw new InvalidOperationException("A categoria informada não existe.");
+            }
+
+            if (!category.IsActive)
+            {
+                throw new InvalidOperationException("Não é permitido cadastrar um produto em uma categoria inativa.");
+            }
+
+            var product = new Product
+            {
+                Name = request.Name.Trim(),
+                CategoryId = request.CategoryId,
+                Category = category,
+                Price = request.Price,
+                IsCombo = request.IsCombo,
+                Description = NormalizeDescription(request.Description),
+                IsActive = true
+            };
+
+            await repository.AddAsync(product, ct);
 
             // Create InventoryItem if requested (now entity.Id is set)
             if (request.InventoryRequest is not null)
             {
-                var inventoryRequest = request.InventoryRequest with { ProductId = entity.Id };
+                var inventoryRequest = request.InventoryRequest with { ProductId = product.Id };
                 await _inventoryService.CreateAsync(inventoryRequest, ct);
             }
 
-            return MapToDto(entity);
+            return MapToDto(product);
         }, cancellationToken);
     }
 
     protected override async Task UpdateEntityAsync(IProductRepository repository, Product entity, UpdateProductRequest request, CancellationToken cancellationToken)
     {
-        var category = await _categoryRepository.GetByIdAsync(request.CategoryId, cancellationToken);
+        // This overload is not used - the real implementation is in UpdateAsync below
+        throw new NotSupportedException("Use UpdateAsync with scope overload");
+    }
 
-        if (category is null)
+    public override async Task<ProductDto> UpdateAsync(UpdateProductRequest request, CancellationToken cancellationToken = default)
+    {
+        await ValidateUpdateRequestAsync(request, cancellationToken);
+
+        return await ExecuteInScopeAsync(async (scope, ct) =>
         {
-            throw new InvalidOperationException("A categoria informada não existe.");
-        }
+            var repository = scope.ServiceProvider.GetRequiredService<IProductRepository>();
+            var categoryRepository = scope.ServiceProvider.GetRequiredService<ICategoryRepository>();
 
-        if (!category.IsActive)
-        {
-            throw new InvalidOperationException("Não é permitido mover o produto para uma categoria inativa.");
-        }
+            var entity = await repository.GetByIdAsync(request.Id, ct);
 
-        entity.Name = request.Name.Trim();
-        entity.CategoryId = request.CategoryId;
-        entity.Category = category;
-        entity.Price = request.Price;
-        entity.IsCombo = request.IsCombo;
-        entity.Description = NormalizeDescription(request.Description);
-        // Note: IsActive is not updated here - use Deactivate/Reactivate methods
+            if (entity is null)
+            {
+                throw new InvalidOperationException($"{GetEntityName()} não encontrado.");
+            }
+
+            var category = await categoryRepository.GetByIdAsync(request.CategoryId, ct);
+
+            if (category is null)
+            {
+                throw new InvalidOperationException("A categoria informada não existe.");
+            }
+
+            if (!category.IsActive)
+            {
+                throw new InvalidOperationException("Não é permitido mover o produto para uma categoria inativa.");
+            }
+
+            entity.Name = request.Name.Trim();
+            entity.CategoryId = request.CategoryId;
+            entity.Category = category;
+            entity.Price = request.Price;
+            entity.IsCombo = request.IsCombo;
+            entity.Description = NormalizeDescription(request.Description);
+            // Note: IsActive is not updated here - use Deactivate/Reactivate methods
+
+            await repository.UpdateAsync(entity, ct);
+
+            return MapToDto(entity);
+        }, cancellationToken);
     }
 
     protected override async Task ValidateCreateRequestAsync(CreateProductRequest request, CancellationToken cancellationToken)

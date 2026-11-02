@@ -20,7 +20,11 @@ public class CustomerRepository : ICustomerRepository
 
         if (isActive.HasValue)
         {
-            query = query.Where(customer => customer.IsActive == isActive.Value);
+            query = query.IgnoreQueryFilters().Where(customer => customer.IsActive == isActive.Value);
+        }
+        else
+        {
+            query = query.IgnoreQueryFilters(); // Show all (active + inactive)
         }
 
         return await query.OrderBy(customer => customer.Name).ToListAsync(cancellationToken);
@@ -28,7 +32,7 @@ public class CustomerRepository : ICustomerRepository
 
     public async Task<Customer?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
-        return await _context.Customers.AsNoTracking()
+        return await _context.Customers.IgnoreQueryFilters().AsNoTracking()
             .Include(c => c.Orders)
             .FirstOrDefaultAsync(customer => customer.Id == id, cancellationToken);
     }

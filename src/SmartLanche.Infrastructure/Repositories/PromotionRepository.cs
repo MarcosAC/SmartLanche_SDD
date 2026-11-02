@@ -25,7 +25,11 @@ public class PromotionRepository : IPromotionRepository
 
         if (isActive.HasValue)
         {
-            query = query.Where(p => p.IsActive == isActive.Value);
+            query = query.IgnoreQueryFilters().Where(p => p.IsActive == isActive.Value);
+        }
+        else
+        {
+            query = query.IgnoreQueryFilters(); // Show all (active + inactive)
         }
 
         return await query
@@ -107,7 +111,7 @@ public class PromotionRepository : IPromotionRepository
 
     public async Task<Promotion?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
-        return await _context.Promotions.AsNoTracking()
+        return await _context.Promotions.IgnoreQueryFilters().AsNoTracking()
             .Include(p => p.ApplicableProducts)
             .Include(p => p.ApplicableCategories)
             .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);

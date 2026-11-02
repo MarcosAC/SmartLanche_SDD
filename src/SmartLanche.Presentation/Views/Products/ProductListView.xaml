@@ -39,7 +39,12 @@
         </Grid.RowDefinitions>
 
         <!-- Cabeçalho -->
-        <DockPanel Grid.Row="0" Margin="0,0,0,20">
+        <Grid Grid.Row="0" Margin="0,0,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            
             <StackPanel>
                 <TextBlock Text="Produtos"
                            FontSize="26"
@@ -52,7 +57,8 @@
                            Margin="0,5,0,0"/>
             </StackPanel>
 
-            <Button Content="Novo produto"
+            <Button Grid.Column="1"
+                    Content="+ Novo produto"
                     Command="{Binding NewItemCommand}"
                     Style="{StaticResource ActionButtonStyle}"
                     Background="#2563EB"
@@ -60,7 +66,7 @@
                     BorderThickness="0"
                     DockPanel.Dock="Right"
                     VerticalAlignment="Center"/>
-        </DockPanel>
+        </Grid>
 
         <!-- Filtro e ações -->
         <Border Grid.Row="1"
@@ -161,8 +167,8 @@
                 BorderBrush="#E5E7EB"
                 BorderThickness="1">
 
-            <DataGrid ItemsSource="{Binding Products}"
-                      SelectedItem="{Binding SelectedProduct, Mode=TwoWay}"
+            <DataGrid ItemsSource="{Binding Items}"
+                      SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
                       AutoGenerateColumns="False"
                       IsReadOnly="True"
                       CanUserAddRows="False"

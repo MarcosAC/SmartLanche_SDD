@@ -25,7 +25,11 @@ public class ComboRepository : IComboRepository
 
         if (isActive.HasValue)
         {
-            query = query.Where(c => c.IsActive == isActive.Value);
+            query = query.IgnoreQueryFilters().Where(c => c.IsActive == isActive.Value);
+        }
+        else
+        {
+            query = query.IgnoreQueryFilters(); // Show all (active + inactive)
         }
 
         return await query
@@ -47,7 +51,7 @@ public class ComboRepository : IComboRepository
 
     public async Task<Combo?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
-        return await _context.Combos.AsNoTracking()
+        return await _context.Combos.IgnoreQueryFilters().AsNoTracking()
             .Include(c => c.ComboItems)
                 .ThenInclude(ci => ci.Product)
             .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);

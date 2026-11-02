@@ -194,8 +194,8 @@
                 CornerRadius="8">
 
             <Grid>
-                <DataGrid ItemsSource="{Binding Payments}"
-                          SelectedItem="{Binding SelectedPayment, Mode=TwoWay}"
+                <DataGrid ItemsSource="{Binding Items}"
+                          SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
                           AutoGenerateColumns="False"
                           IsReadOnly="True"
                           CanUserAddRows="False"

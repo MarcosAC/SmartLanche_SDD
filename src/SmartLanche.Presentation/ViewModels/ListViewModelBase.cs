@@ -185,13 +185,31 @@ public abstract class CrudListViewModelBase<TDto, TService> : ListViewModelBase<
     public ICommand DeactivateItemCommand { get; }
     public ICommand ReactivateItemCommand { get; }
 
+    private string? _selectedFilter = "Todos";
+
+    /// <summary>
+    /// Gets or sets the selected filter from the status ComboBox.
+    /// Values: "Todos", "Ativos", "Inativos"
+    /// </summary>
+    public string? SelectedFilter
+    {
+        get => _selectedFilter;
+        set
+        {
+            if (SetProperty(ref _selectedFilter, value))
+            {
+                _ = LoadAsync(); // Reload when filter changes
+            }
+        }
+    }
+
     protected CrudListViewModelBase(TService service) : base(service)
     {
-        DeactivateItemCommand = new RelayCommand(
+        DeactivateItemCommand = new AsyncRelayCommand(
             async _ => await ChangeItemStatusAsync(false),
             _ => SelectedItem is { IsActive: true } && !IsLoading);
 
-        ReactivateItemCommand = new RelayCommand(
+        ReactivateItemCommand = new AsyncRelayCommand(
             async _ => await ChangeItemStatusAsync(true),
             _ => SelectedItem is { IsActive: false } && !IsLoading);
     }
@@ -205,11 +223,17 @@ public abstract class CrudListViewModelBase<TDto, TService> : ListViewModelBase<
     }
 
     /// <summary>
-    /// Override to provide custom active filter logic.
+    /// Returns the active filter based on SelectedFilter.
+    /// Override for custom filter logic.
     /// </summary>
     protected virtual bool? GetActiveFilter()
     {
-        return null; // Default: show all
+        return SelectedFilter switch
+        {
+            "Ativos" => true,
+            "Inativos" => false,
+            _ => null // "Todos" or null
+        };
     }
 
     protected virtual async Task ChangeItemStatusAsync(bool activate)
@@ -234,8 +258,33 @@ public abstract class CrudListViewModelBase<TDto, TService> : ListViewModelBase<
                 SuccessMessage = $"{GetEntityName()} desativado com sucesso.";
             }
 
-            await LoadAsync();
+            // Load items directly without ExecuteWithLoadingAsync to avoid nested loading guard
+            await LoadItemsAsync();
         });
+    }
+
+    /// <summary>
+    /// Loads items without the ExecuteWithLoadingAsync wrapper (for nested calls).
+    /// </summary>
+    protected async Task LoadItemsAsync()
+    {
+        var items = await GetItemsAsync();
+
+        // Apply search filter (client-side by default)
+        if (!string.IsNullOrWhiteSpace(SearchText))
+        {
+            var searchTerm = SearchText.ToLowerInvariant();
+            items = ApplySearchFilter(items, searchTerm);
+        }
+
+        // Apply sorting
+        items = ApplySort(items);
+
+        Items.Clear();
+        foreach (var item in items)
+        {
+            Items.Add(item);
+        }
     }
 
     protected abstract string GetEntityName();

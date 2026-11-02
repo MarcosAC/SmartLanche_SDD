@@ -67,7 +67,7 @@ public class InventoryOrderIntegrationTests : IDisposable
         var orderPaymentService = new OrderPaymentService(_orderRepository, _customerRepository, paymentService, pendingPaymentService, inventoryService);
         _orderService = new OrderService(_orderRepository, _customerRepository, _productRepository, inventoryService, orderPromotionService, orderPaymentService);
 
-        _productService = new ProductService(scopeFactory, _categoryRepository, inventoryService);
+        _productService = new ProductService(scopeFactory, inventoryService);
         _comboService = new ComboService(scopeFactory, _productRepository, _orderRepository, _orderService, NullLogger<ComboService>.Instance);
 
         // Register the created services

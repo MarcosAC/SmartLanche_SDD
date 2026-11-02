@@ -21,7 +21,11 @@ public class CategoryRepository : ICategoryRepository
 
         if (isActive.HasValue)
         {
-            query = query.Where(category => category.IsActive == isActive.Value);
+            query = query.IgnoreQueryFilters().Where(category => category.IsActive == isActive.Value);
+        }
+        else
+        {
+            query = query.IgnoreQueryFilters(); // Show all (active + inactive)
         }
 
         return await query.OrderBy(category => category.Name).ToListAsync(cancellationToken);
@@ -29,7 +33,7 @@ public class CategoryRepository : ICategoryRepository
 
     public async Task<Category?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
-        return await _context.Categories.FirstOrDefaultAsync(category => category.Id == id, cancellationToken);
+        return await _context.Categories.IgnoreQueryFilters().FirstOrDefaultAsync(category => category.Id == id, cancellationToken);
     }
 
     public async Task<bool> ExistsByNormalizedNameAsync(string normalizedName, int? excludeId = null, CancellationToken cancellationToken = default)

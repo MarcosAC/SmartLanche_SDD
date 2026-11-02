@@ -48,7 +48,7 @@
 
         <!-- Grid -->
         <DataGrid Grid.Row="2"
-                  ItemsSource="{Binding Devedores}"
+                  ItemsSource="{Binding Items}"
                   AutoGenerateColumns="False"
                   CanUserAddRows="False"
                   CanUserDeleteRows="False"

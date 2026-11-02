@@ -178,7 +178,7 @@
                 CornerRadius="6">
 
             <Grid>
-                <DataGrid ItemsSource="{Binding PendingPayments}"
+                <DataGrid ItemsSource="{Binding Items}"
                           AutoGenerateColumns="False"
                           IsReadOnly="True"
                           CanUserAddRows="False"

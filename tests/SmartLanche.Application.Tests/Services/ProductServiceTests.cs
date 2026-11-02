@@ -27,7 +27,6 @@ public class ProductServiceTests : IDisposable
 
         _service = new ProductService(
             _serviceProvider.GetRequiredService<IServiceScopeFactory>(),
-            _categoryRepository,
             _inventoryService);
     }
 

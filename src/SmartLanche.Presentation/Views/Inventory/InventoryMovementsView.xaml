@@ -182,7 +182,7 @@
         <Border Grid.Row="1" Grid.RowSpan="2" Background="White" BorderBrush="#E5E7EB" BorderThickness="1" Padding="0"
                 Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=inverse}">
 
-            <DataGrid ItemsSource="{Binding Movements}"
+            <DataGrid ItemsSource="{Binding Items}"
                       AutoGenerateColumns="False"
                       IsReadOnly="True"
                       HeadersVisibility="Column"

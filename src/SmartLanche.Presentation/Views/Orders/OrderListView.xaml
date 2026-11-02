@@ -243,8 +243,8 @@
                 Padding="12">
 
             <Grid>
-                <DataGrid ItemsSource="{Binding Orders}"
-                          SelectedItem="{Binding SelectedOrder, Mode=TwoWay}"
+                <DataGrid ItemsSource="{Binding Items}"
+                          SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
                           AutoGenerateColumns="False"
                           IsReadOnly="True"
                           CanUserAddRows="False"
