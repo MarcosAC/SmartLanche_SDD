@@ -195,7 +195,7 @@
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
 
-                    <DataGridTextColumn Header="Valor Unit." Binding="{Binding UnitPrice, StringFormat='R$ {0:N2}'}" Width="110">
+                    <DataGridTextColumn Header="Valor Unit." Binding="{Binding UnitPrice, StringFormat='C2', ConverterCulture='pt-BR'}" Width="110">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
                                 <Setter Property="VerticalAlignment" Value="Center"/>
@@ -206,7 +206,7 @@
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
 
-                    <DataGridTextColumn Header="Valor Total" Binding="{Binding TotalValue, StringFormat='R$ {0:N2}'}" Width="110" FontWeight="SemiBold">
+                    <DataGridTextColumn Header="Valor Total" Binding="{Binding TotalValue, StringFormat='C2', ConverterCulture='pt-BR'}" Width="110" FontWeight="SemiBold">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
                                 <Setter Property="VerticalAlignment" Value="Center"/>

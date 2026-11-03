@@ -232,12 +232,12 @@
                         </DataGridTemplateColumn>
 
                         <DataGridTextColumn Header="Valor Pago (R$)"
-                                            Binding="{Binding ValorPago, StringFormat='N2'}"
+                                            Binding="{Binding ValorPago, StringFormat='C2', ConverterCulture='pt-BR'}"
                                             Width="120"
                                             ElementStyle="{StaticResource RightAlignStyle}"/>
 
                         <DataGridTextColumn Header="Troco (R$)"
-                                            Binding="{Binding Troco, StringFormat='N2'}"
+                                            Binding="{Binding Troco, StringFormat='C2', ConverterCulture='pt-BR'}"
                                             Width="100"
                                             ElementStyle="{StaticResource RightAlignStyle}"/>
 
@@ -247,7 +247,7 @@
                                             ElementStyle="{StaticResource CenterAlignStyle}"/>
 
                         <DataGridTextColumn Header="Valor Parcela (R$)"
-                                            Binding="{Binding ValorParcela, StringFormat='N2'}"
+                                            Binding="{Binding ValorParcela, StringFormat='C2', ConverterCulture='pt-BR'}"
                                             Width="120"
                                             ElementStyle="{StaticResource RightAlignStyle}"/>
 

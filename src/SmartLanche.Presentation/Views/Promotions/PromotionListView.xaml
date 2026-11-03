@@ -208,7 +208,7 @@
                         </DataGridTemplateColumn>
 
                         <DataGridTextColumn Header="Valor"
-                                            Binding="{Binding DiscountValue, StringFormat={}{0:N2}}"
+                                            Binding="{Binding DiscountValue, StringFormat='N2', ConverterCulture='pt-BR'}"
                                             Width="100"/>
 
                         <DataGridTextColumn Header="Início"
