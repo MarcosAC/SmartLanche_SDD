@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Globalization;
+using System.IO;
 using System.Windows;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -32,6 +33,11 @@ public partial class App : System.Windows.Application
     protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+
+        // Set Brazilian Portuguese culture for currency formatting
+        var ptBrCulture = new CultureInfo("pt-BR");
+        CultureInfo.DefaultThreadCurrentCulture = ptBrCulture;
+        CultureInfo.DefaultThreadCurrentUICulture = ptBrCulture;
 
         // Configure Serilog
         var logPath = Path.Combine(AppContext.BaseDirectory, "logs", "smartlanche-.log");

@@ -194,7 +194,7 @@
                                         Width="1.5*"/>
 
                     <DataGridTextColumn Header="Preço"
-                                        Binding="{Binding Price, StringFormat={}{0:C2}}"
+                                        Binding="{Binding Price, StringFormat='C2', ConverterCulture='pt-BR'}"
                                         Width="*"/>
 
                     <DataGridCheckBoxColumn Header="Combo"
