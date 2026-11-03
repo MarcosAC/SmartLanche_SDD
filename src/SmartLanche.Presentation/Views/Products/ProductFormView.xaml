@@ -2,6 +2,8 @@
 <UserControl x:Class="SmartLanche.Presentation.Views.Products.ProductFormView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:behaviors="clr-namespace:SmartLanche.Presentation.Behaviors"
              Background="#F5F6FA">
 
     <UserControl.Resources>
@@ -122,13 +124,12 @@
                     <TextBlock Text="Preço *"
                                Style="{StaticResource FieldLabelStyle}"/>
 
-                    <TextBox Text="{Binding Price,
-                                            Mode=TwoWay,
-                                            UpdateSourceTrigger=LostFocus,
-                                            ValidatesOnExceptions=True,
-                                            NotifyOnValidationError=True}"
-                             ToolTip="Informe o preço do produto"
-                             Style="{StaticResource FieldControlStyle}"/>
+                    <TextBox ToolTip="Informe o preço do produto"
+                             Style="{StaticResource FieldControlStyle}">
+                        <i:Interaction.Behaviors>
+                            <behaviors:CurrencyTextBoxBehavior Value="{Binding Price, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        </i:Interaction.Behaviors>
+                    </TextBox>
 
                     <!-- Combo -->
                     <CheckBox Content="Este produto é um combo"
