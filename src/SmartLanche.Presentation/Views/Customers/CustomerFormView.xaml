@@ -1,6 +1,8 @@
 <UserControl x:Class="SmartLanche.Presentation.Views.Customers.CustomerFormView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:behaviors="clr-namespace:SmartLanche.Presentation.Behaviors"
              Background="#F5F6FA">
 
     <UserControl.Resources>
@@ -139,12 +141,13 @@
                     <TextBlock Text="Limite de Crédito (R$)"
                                Style="{StaticResource FormLabelStyle}"/>
 
-                    <TextBox Text="{Binding CreditLimit,
-                                            UpdateSourceTrigger=PropertyChanged,
-                                            StringFormat={}{0:N2}}"
+                    <TextBox ToolTip="Limite de crédito para fiado (opcional)."
                              Style="{StaticResource FormTextBoxStyle}"
-                             MinHeight="38"
-                             ToolTip="Limite de crédito para fiado (opcional)."/>
+                             MinHeight="38">
+                        <i:Interaction.Behaviors>
+                            <behaviors:CurrencyTextBoxBehavior Value="{Binding CreditLimit, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        </i:Interaction.Behaviors>
+                    </TextBox>
                 </StackPanel>
 
                 <!-- Situação -->
