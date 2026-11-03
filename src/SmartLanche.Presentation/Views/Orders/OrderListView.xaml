@@ -284,7 +284,7 @@
                         </DataGridTemplateColumn>
 
                         <DataGridTextColumn Header="Total (R$)"
-                                            Binding="{Binding TotalAmount, StringFormat='N2'}"
+                                            Binding="{Binding TotalAmount, StringFormat='C2', ConverterCulture='pt-BR'}"
                                             Width="120"/>
 
                         <DataGridTemplateColumn Header="Ações"

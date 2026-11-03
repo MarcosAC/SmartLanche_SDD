@@ -119,7 +119,7 @@
                                         Width="2*"/>
 
                     <DataGridTextColumn Header="Preço (R$)"
-                                        Binding="{Binding Price, StringFormat='N2'}"
+                                        Binding="{Binding Price, StringFormat='C2', ConverterCulture='pt-BR'}"
                                         Width="120"
                                         ElementStyle="{StaticResource RightAlignStyle}"/>
 

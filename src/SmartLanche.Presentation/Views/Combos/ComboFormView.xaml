@@ -164,7 +164,7 @@
                     <TextBox Text="{Binding Price,
                                             Mode=TwoWay,
                                             UpdateSourceTrigger=LostFocus,
-                                            StringFormat=C2}"
+                                            StringFormat=C2, ConverterCulture='pt-BR'}"
                              ToolTip="Preço especial do combo (deve ser menor que a soma dos itens)"
                              Style="{StaticResource FieldControlStyle}"/>
 
@@ -241,7 +241,7 @@
                                                     Width="120"/>
 
                                 <DataGridTextColumn Header="Preço Unit."
-                                                    Binding="{Binding ProductPrice, StringFormat={}{0:C2}}"
+                                                    Binding="{Binding ProductPrice, StringFormat='C2', ConverterCulture='pt-BR'}"
                                                     Width="120"
                                                     IsReadOnly="True"/>
 
@@ -250,7 +250,7 @@
                                                         IsReadOnly="True">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding Subtotal, StringFormat={}{0:C2}}"
+                                            <TextBlock Text="{Binding Subtotal, StringFormat='C2', ConverterCulture='pt-BR'}"
                                                        VerticalAlignment="Center"
                                                        FontWeight="SemiBold"
                                                        Foreground="#1F2937"/>
@@ -297,7 +297,7 @@
                             <TextBlock Text="Soma dos itens: "
                                        FontSize="13"
                                        Foreground="#374151"/>
-                            <TextBlock Text="{Binding ItemsTotal, StringFormat={}{0:C2}}"
+                            <TextBlock Text="{Binding ItemsTotal, StringFormat='C2', ConverterCulture='pt-BR'}"
                                        FontSize="13"
                                        FontWeight="Bold"
                                        Foreground="#166534"/>
@@ -305,7 +305,7 @@
                                        FontSize="13"
                                        Foreground="#374151"
                                        Margin="16,0,0,0"/>
-                            <TextBlock Text="{Binding Price, StringFormat={}{0:C2}}"
+                            <TextBlock Text="{Binding Price, StringFormat='C2', ConverterCulture='pt-BR'}"
                                        FontSize="13"
                                        FontWeight="Bold"
                                        Foreground="#15803D"/>
@@ -313,7 +313,7 @@
                                        FontSize="13"
                                        Foreground="#374151"
                                        Margin="16,0,0,0"/>
-                            <TextBlock Text="{Binding DiscountAmount, StringFormat={}{0:C2}}"
+                            <TextBlock Text="{Binding DiscountAmount, StringFormat='C2', ConverterCulture='pt-BR'}"
                                        FontSize="13"
                                        FontWeight="Bold"
                                        Foreground="#DC2626"/>

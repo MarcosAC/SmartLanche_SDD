@@ -207,17 +207,17 @@
                                             ElementStyle="{StaticResource CenterAlignStyle}"/>
 
                         <DataGridTextColumn Header="Valor Original (R$)"
-                                            Binding="{Binding ValorOriginal, StringFormat='N2'}"
+                                            Binding="{Binding ValorOriginal, StringFormat='C2', ConverterCulture='pt-BR'}"
                                             Width="130"
                                             ElementStyle="{StaticResource RightAlignStyle}"/>
 
                         <DataGridTextColumn Header="Valor Pago (R$)"
-                                            Binding="{Binding ValorPago, StringFormat='N2'}"
+                                            Binding="{Binding ValorPago, StringFormat='C2', ConverterCulture='pt-BR'}"
                                             Width="120"
                                             ElementStyle="{StaticResource RightAlignStyle}"/>
 
                         <DataGridTextColumn Header="Saldo (R$)"
-                                            Binding="{Binding SaldoPendente, StringFormat='N2'}"
+                                            Binding="{Binding SaldoPendente, StringFormat='C2', ConverterCulture='pt-BR'}"
                                             Width="120"
                                             ElementStyle="{StaticResource RightAlignStyle}"/>
 
