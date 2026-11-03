@@ -24,15 +24,17 @@
             <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
 
-        <Style x:Key="SaveButtonStyle"
+        <Style x:Key="PrimaryButtonStyle"
                TargetType="Button">
             <Setter Property="Background" Value="#2563EB"/>
             <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="14"/>
             <Setter Property="Padding" Value="20,10"/>
-            <Setter Property="MinWidth" Value="130"/>
+            <Setter Property="MinWidth" Value="120"/>
+            <Setter Property="MinHeight" Value="40"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
         </Style>
     </UserControl.Resources>
 
@@ -186,7 +188,7 @@
                             HorizontalAlignment="Right">
 
                     <Button Command="{Binding SaveCommand}"
-                            Style="{StaticResource SaveButtonStyle}">
+                            Style="{StaticResource PrimaryButtonStyle}">
                         <Button.Content>
                             <TextBlock>
                                 <TextBlock.Style>
