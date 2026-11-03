@@ -148,12 +148,12 @@
                                                     ElementStyle="{StaticResource CenterAlignStyle}"/>
 
                                 <DataGridTextColumn Header="Preço Unit. (R$)"
-                                                    Binding="{Binding UnitPrice, StringFormat='N2'}"
+                                                    Binding="{Binding UnitPrice, StringFormat='C2', ConverterCulture='pt-BR'}"
                                                     Width="130"
                                                     ElementStyle="{StaticResource RightAlignStyle}"/>
 
                                 <DataGridTextColumn Header="Subtotal (R$)"
-                                                    Binding="{Binding Subtotal, StringFormat='N2'}"
+                                                    Binding="{Binding Subtotal, StringFormat='C2', ConverterCulture='pt-BR'}"
                                                     Width="130"
                                                     ElementStyle="{StaticResource RightAlignStyle}"/>
                             </DataGrid.Columns>
@@ -183,7 +183,7 @@
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                         <TextBlock Text="Total: " FontSize="18" FontWeight="SemiBold" Foreground="#1F2937"
                                    VerticalAlignment="Center"/>
-                        <TextBlock Text="{Binding Order.TotalAmount, StringFormat='R$ {0:N2}'}"
+                        <TextBlock Text="{Binding Order.TotalAmount, StringFormat='C2', ConverterCulture='pt-BR'}"
                                    FontSize="24" FontWeight="Bold" Foreground="#166534"
                                    VerticalAlignment="Center"/>
                     </StackPanel>

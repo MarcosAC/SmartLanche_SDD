@@ -388,7 +388,7 @@
                                                                 Binding="{Binding Description}"
                                                                 Width="3*"/>
                                             <DataGridTextColumn Header="Preço (R$)"
-                                                                Binding="{Binding Price, StringFormat='N2'}"
+                                                                Binding="{Binding Price, StringFormat='C2', ConverterCulture='pt-BR'}"
                                                                 Width="120"
                                                                 ElementStyle="{StaticResource RightAlignStyle}"/>
                                             <DataGridTextColumn Header="Itens"
@@ -473,12 +473,12 @@
                                                     ElementStyle="{StaticResource CenterAlignStyle}"/>
 
                                 <DataGridTextColumn Header="Preço Unit. (R$)"
-                                                    Binding="{Binding UnitPrice, StringFormat='N2'}"
+                                                    Binding="{Binding UnitPrice, StringFormat='C2', ConverterCulture='pt-BR'}"
                                                     Width="120"
                                                     ElementStyle="{StaticResource RightAlignStyle}"/>
 
                                 <DataGridTextColumn Header="Subtotal (R$)"
-                                                    Binding="{Binding Subtotal, StringFormat='N2'}"
+                                                    Binding="{Binding Subtotal, StringFormat='C2', ConverterCulture='pt-BR'}"
                                                     Width="120"
                                                     ElementStyle="{StaticResource RightAlignStyle}"/>
 
@@ -556,7 +556,7 @@
                             <StackPanel Grid.Column="1" Margin="0,0,16,0">
                                 <TextBlock Text="Valor Pago (R$)"
                                            Style="{StaticResource FormLabelStyle}"/>
-                                <TextBox Text="{Binding ValorPago, UpdateSourceTrigger=PropertyChanged, StringFormat='N2'}"
+                                <TextBox Text="{Binding ValorPago, UpdateSourceTrigger=PropertyChanged, StringFormat='C2', ConverterCulture='pt-BR'}"
                                          Style="{StaticResource FormTextBoxStyle}"
                                          Width="150"
                                          ToolTip="Informe o valor recebido">
@@ -586,7 +586,7 @@
                                         Visibility="{Binding ShowTroco, Converter={StaticResource BoolToVisibilityConverter}}">
                                 <TextBlock Text="Troco (R$)"
                                            Style="{StaticResource FormLabelStyle}"/>
-                                <TextBlock Text="{Binding Troco, StringFormat='N2', FallbackValue='0,00'}"
+                                <TextBlock Text="{Binding Troco, StringFormat='C2', ConverterCulture='pt-BR', FallbackValue='R$ 0,00'}"
                                            FontSize="16"
                                            FontWeight="Bold"
                                            Foreground="#166534"
@@ -613,7 +613,7 @@
                                         Visibility="{Binding ShowParcelas, Converter={StaticResource BoolToVisibilityConverter}}">
                                 <TextBlock Text="Valor Parcela (R$)"
                                            Style="{StaticResource FormLabelStyle}"/>
-                                <TextBlock Text="{Binding ValorParcela, StringFormat='N2', FallbackValue='0,00'}"
+                                <TextBlock Text="{Binding ValorParcela, StringFormat='C2', ConverterCulture='pt-BR', FallbackValue='R$ 0,00'}"
                                            FontSize="16"
                                            FontWeight="Bold"
                                            Foreground="#0369A1"
@@ -665,7 +665,7 @@
                                        FontSize="18"
                                        FontWeight="SemiBold"
                                        Foreground="#1F2937"/>
-                            <TextBlock Text="{Binding TotalAmount, StringFormat='R$ {0:N2}'}"
+                            <TextBlock Text="{Binding TotalAmount, StringFormat='C2', ConverterCulture='pt-BR'}"
                                        FontSize="24"
                                        FontWeight="Bold"
                                        Foreground="#166534"/>

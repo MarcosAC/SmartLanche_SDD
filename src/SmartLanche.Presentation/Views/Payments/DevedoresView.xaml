@@ -75,7 +75,7 @@
                                     Binding="{Binding UltimaPendenciaData, StringFormat='dd/MM/yyyy'}"
                                     Width="120"/>
                 <DataGridTextColumn Header="Saldo Devedor"
-                                    Binding="{Binding SaldoDevedor, StringFormat='R$ {0:N2}'}"
+                                    Binding="{Binding SaldoDevedor, StringFormat='C2', ConverterCulture='pt-BR'}"
                                     Width="120">
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="TextBlock">

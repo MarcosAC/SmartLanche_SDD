@@ -33,7 +33,7 @@
                                     Binding="{Binding Id}"
                                     Width="50"/>
                 <DataGridTextColumn Header="Valor Pago"
-                                    Binding="{Binding ValorPago, StringFormat='R$ {0:N2}'}"
+                                    Binding="{Binding ValorPago, StringFormat='C2', ConverterCulture='pt-BR'}"
                                     Width="100"/>
                 <DataGridTextColumn Header="Data/Hora"
                                     Binding="{Binding DataHora, StringFormat='dd/MM/yyyy HH:mm'}"

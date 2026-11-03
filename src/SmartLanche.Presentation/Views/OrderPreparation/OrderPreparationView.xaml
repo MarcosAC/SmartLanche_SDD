@@ -185,7 +185,7 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
-                    <DataGridTextColumn Header="Total" Binding="{Binding TotalAmount, StringFormat='R$ {0:N2}'}" Width="100">
+                    <DataGridTextColumn Header="Total" Binding="{Binding TotalAmount, StringFormat='C2', ConverterCulture='pt-BR'}" Width="100">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
                                 <Setter Property="VerticalAlignment" Value="Center"/>
