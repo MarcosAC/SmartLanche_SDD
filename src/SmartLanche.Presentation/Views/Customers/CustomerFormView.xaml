@@ -94,8 +94,7 @@
                     <TextBlock Text="Nome *"
                                Style="{StaticResource FormLabelStyle}"/>
 
-                    <TextBox Text="{Binding Name,
-                                            UpdateSourceTrigger=PropertyChanged}"
+                    <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
                              Style="{StaticResource FormTextBoxStyle}"
                              MaxLength="150"
                              MinHeight="38"
