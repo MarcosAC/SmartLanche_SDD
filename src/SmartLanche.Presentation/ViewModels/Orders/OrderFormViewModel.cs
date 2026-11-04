@@ -228,7 +228,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
 
     public string Status => _order?.Status.ToString() ?? "Novo";
 
-    public bool CanAddItems => _order is not null && _order.Status == OrderStatus.Pendente && OrderItems.Count > 0;
+    public bool CanAddItems => _order is not null && _order.Status == OrderStatus.Pendente;
 
     public bool CanStartPreparation => _order is not null && _order.Status == OrderStatus.Pendente && OrderItems.Count > 0;
 
@@ -399,9 +399,6 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
             // Check for suggested combos after adding item
             await LoadSuggestedCombosAsync();
 
-            // Auto-recalculate with promotions
-            await RecalculateAsync();
-
             SelectedProduct = null;
             Quantity = 1;
 
@@ -490,8 +487,6 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(CanAddItems));
             OnPropertyChanged(nameof(CanCloseWithPayment));
             UpdateCommandStates();
-
-            await RecalculateAsync();
 
             SuccessMessage = $"Combo '{combo.Name}' adicionado ao pedido.";
         }
