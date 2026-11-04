@@ -56,7 +56,7 @@ public sealed class ProductPickerViewModel : INotifyPropertyChanged
                 query = query.Where(p => p.Name.ToLowerInvariant().Contains(term));
             }
 
-            if (SelectedCategoryId.HasValue)
+            if (SelectedCategoryId.HasValue && SelectedCategoryId.Value > 0)
             {
                 query = query.Where(p => p.CategoryId == SelectedCategoryId.Value);
             }

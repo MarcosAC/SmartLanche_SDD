@@ -185,7 +185,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
         {
             var query = Products.AsEnumerable();
 
-            if (SelectedCategoryId.HasValue)
+            if (SelectedCategoryId.HasValue && SelectedCategoryId.Value > 0)
             {
                 query = query.Where(p => p.CategoryId == SelectedCategoryId.Value);
             }
