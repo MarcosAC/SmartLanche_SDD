@@ -300,10 +300,10 @@ public class PaymentServiceTests
     }
 
     [Fact]
-    public async Task ProcessPaymentAsync_ClosedOrder_ReturnsFailure()
+    public async Task ProcessPaymentAsync_FinalizedOrder_ReturnsFailure()
     {
         var order = await CreateOrderAsync(total: 50m);
-        order.Status = OrderStatus.Fechado;
+        order.Status = OrderStatus.Finalizado;
         await _orderRepository.UpdateAsync(order);
 
         var request = new ProcessPaymentRequest(
@@ -317,7 +317,7 @@ public class PaymentServiceTests
         var result = await _service.ProcessPaymentAsync(request);
 
         Assert.False(result.Success);
-        Assert.Contains("abertos", result.ErrorMessage!);
+        Assert.Contains("pendentes", result.ErrorMessage!);
     }
 
     [Fact]
@@ -338,7 +338,7 @@ public class PaymentServiceTests
         var result = await _service.ProcessPaymentAsync(request);
 
         Assert.False(result.Success);
-        Assert.Contains("abertos", result.ErrorMessage!);
+        Assert.Contains("pendentes", result.ErrorMessage!);
     }
 
     #endregion
@@ -518,7 +518,7 @@ public class PaymentServiceTests
         var order = new Order
         {
             CustomerId = customerId,
-            Status = OrderStatus.Aberto,
+            Status = OrderStatus.Pendente,
             TotalAmount = total,
             OrderDate = date ?? DateTime.Now
         };
@@ -601,14 +601,14 @@ public class PaymentServiceTests
 
         public Task<Order?> GetOpenOrderAsync(int? customerId = null, CancellationToken cancellationToken = default)
         {
-            var query = _orders.Where(o => o.Status == OrderStatus.Aberto);
+            var query = _orders.Where(o => o.Status == OrderStatus.Pendente);
             if (customerId.HasValue)
                 query = query.Where(o => o.CustomerId == customerId.Value);
             return Task.FromResult<Order?>(query.OrderByDescending(o => o.OrderDate).FirstOrDefault());
         }
 
         public Task<bool> ExistsOpenOrderForCustomerAsync(int customerId, CancellationToken cancellationToken = default)
-            => Task.FromResult(_orders.Any(o => o.CustomerId == customerId && o.Status == OrderStatus.Aberto));
+            => Task.FromResult(_orders.Any(o => o.CustomerId == customerId && o.Status == OrderStatus.Pendente));
 
         public Task<IReadOnlyList<OrderItem>> GetItemsByOrderAsync(int orderId, CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<OrderItem>>([]);

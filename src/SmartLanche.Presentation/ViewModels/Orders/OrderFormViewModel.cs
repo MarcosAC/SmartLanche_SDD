@@ -16,6 +16,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
     private readonly IOrderService _orderService;
     private readonly IProductService _productService;
     private readonly ICustomerService _customerService;
+    private readonly ICategoryService _categoryService;
     private readonly IComboService _comboService;
     private readonly IServiceProvider _services;
 
@@ -28,14 +29,12 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
     private decimal _valorPago;
     private int _parcelas = 1;
     private string _paymentObservacoes = string.Empty;
-    private bool _isProductPickerOpen;
+    private int? _selectedCategoryId;
     private bool _isLoading;
     private string? _errorMessage;
     private string? _successMessage;
     private bool _wasSaved;
 
-    // Product picker view model
-    private ProductPickerViewModel? _productPickerViewModel;
     private ObservableCollection<ComboDto> _suggestedCombos = [];
 
     public event Action? RequestClose;
@@ -45,12 +44,14 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
         IOrderService orderService,
         IProductService productService,
         ICustomerService customerService,
+        ICategoryService categoryService,
         IComboService comboService,
         IServiceProvider services)
     {
         _orderService = orderService ?? throw new ArgumentNullException(nameof(orderService));
         _productService = productService ?? throw new ArgumentNullException(nameof(productService));
         _customerService = customerService ?? throw new ArgumentNullException(nameof(customerService));
+        _categoryService = categoryService ?? throw new ArgumentNullException(nameof(categoryService));
         _comboService = comboService ?? throw new ArgumentNullException(nameof(comboService));
         _services = services ?? throw new ArgumentNullException(nameof(services));
 
@@ -58,12 +59,13 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
         LoadCommand = new RelayCommand(async _ => await LoadAsync());
         AddItemCommand = new RelayCommand(async p => await AddItemAsync(p), _ => CanAddItems && !IsLoading);
         RemoveItemCommand = new RelayCommand(async i => await RemoveItemAsync(i), _ => CanAddItems && !IsLoading);
-        OpenProductPickerCommand = new RelayCommand(async _ => { IsProductPickerOpen = true; await LoadProductPickerAsync(); });
-        CloseProductPickerCommand = new RelayCommand(_ => IsProductPickerOpen = false);
         AddComboCommand = new RelayCommand(async id => await AddComboAsync(id), _ => CanAddItems && !IsLoading);
         RecalculateCommand = new RelayCommand(async _ => await RecalculateAsync(), _ => CanAddItems && !IsLoading);
+        StartPreparationCommand = new RelayCommand(async _ => await StartPreparationAsync(), _ => CanStartPreparation && !IsLoading);
+        MarkAsReadyCommand = new RelayCommand(async _ => await MarkAsReadyAsync(), _ => CanMarkAsReady && !IsLoading);
+        FinalizeOrderCommand = new RelayCommand(async _ => await FinalizeOrderAsync(), _ => CanFinalizeOrder && !IsLoading);
         CloseOrderCommand = new RelayCommand(async _ => await CloseOrderAsync(), _ => CanAddItems && !IsLoading);
-        CancelOrderCommand = new RelayCommand(async _ => await CancelOrderAsync(), _ => CanAddItems && !IsLoading);
+        CancelOrderCommand = new RelayCommand(async _ => await CancelOrderAsync(), _ => CanCancelOrder && !IsLoading);
         CloseWithPaymentCommand = new RelayCommand(async _ => await CloseWithPaymentAsync(), _ => CanCloseWithPayment && !IsLoading);
         ClearFormCommand = new RelayCommand(_ => ClearForm());
     }
@@ -71,10 +73,11 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
     public ICommand LoadCommand { get; }
     public ICommand AddItemCommand { get; }
     public ICommand RemoveItemCommand { get; }
-    public ICommand OpenProductPickerCommand { get; }
-    public ICommand CloseProductPickerCommand { get; }
     public ICommand AddComboCommand { get; }
     public ICommand RecalculateCommand { get; }
+    public ICommand StartPreparationCommand { get; }
+    public ICommand MarkAsReadyCommand { get; }
+    public ICommand FinalizeOrderCommand { get; }
     public ICommand CloseOrderCommand { get; }
     public ICommand CancelOrderCommand { get; }
     public ICommand CloseWithPaymentCommand { get; }
@@ -82,12 +85,9 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
 
     public ObservableCollection<OrderItemDto> OrderItems { get; } = [];
     public ObservableCollection<CustomerDto> Customers { get; } = [];
+    public ObservableCollection<ProductDto> Products { get; } = [];
+    public ObservableCollection<CategoryDto> Categories { get; } = [];
     public ObservableCollection<FormaPagamento> FormasPagamento { get; } = new(Enum.GetValues<FormaPagamento>());
-
-    public ProductPickerViewModel ProductPickerViewModel => _productPickerViewModel ??= new ProductPickerViewModel(
-            _services.GetRequiredService<IProductService>(),
-            _services.GetRequiredService<ICategoryService>());
-
     public ObservableCollection<PromotionDto> AppliedPromotions { get; } = [];
     public ObservableCollection<ComboDto> SuggestedCombos => _suggestedCombos;
 
@@ -167,10 +167,31 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
         set => SetProperty(ref _paymentObservacoes, value);
     }
 
-    public bool IsProductPickerOpen
+    public int? SelectedCategoryId
     {
-        get => _isProductPickerOpen;
-        set => SetProperty(ref _isProductPickerOpen, value);
+        get => _selectedCategoryId;
+        set
+        {
+            if (SetProperty(ref _selectedCategoryId, value))
+            {
+                OnPropertyChanged(nameof(FilteredProducts));
+            }
+        }
+    }
+
+    public ObservableCollection<ProductDto> FilteredProducts
+    {
+        get
+        {
+            var query = Products.AsEnumerable();
+
+            if (SelectedCategoryId.HasValue)
+            {
+                query = query.Where(p => p.CategoryId == SelectedCategoryId.Value);
+            }
+
+            return new ObservableCollection<ProductDto>(query.Where(p => p.IsActive));
+        }
     }
 
     public bool IsLoading
@@ -207,13 +228,22 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
 
     public string Status => _order?.Status.ToString() ?? "Novo";
 
-    public bool CanAddItems => _order is not null && _order.Status == OrderStatus.Aberto && OrderItems.Count > 0;
+    public bool CanAddItems => _order is not null && _order.Status == OrderStatus.Pendente && OrderItems.Count > 0;
 
-    public bool ShowParcelas => _order is not null && _order.Status == OrderStatus.Aberto && SelectedFormaPagamento == FormaPagamento.Cartao;
+    public bool CanStartPreparation => _order is not null && _order.Status == OrderStatus.Pendente && OrderItems.Count > 0;
 
-    public bool ShowTroco => _order is not null && _order.Status == OrderStatus.Aberto && SelectedFormaPagamento == FormaPagamento.Dinheiro;
+    public bool CanMarkAsReady => _order is not null && _order.Status == OrderStatus.EmPreparacao;
 
-    public bool ShowCustomerSelection => _order is not null && _order.Status == OrderStatus.Aberto && SelectedFormaPagamento == FormaPagamento.Fiado;
+    public bool CanFinalizeOrder => _order is not null && _order.Status == OrderStatus.Pronto;
+
+    public bool CanCancelOrder => _order is not null &&
+        (_order.Status == OrderStatus.Pendente || _order.Status == OrderStatus.EmPreparacao || _order.Status == OrderStatus.Pronto);
+
+    public bool ShowParcelas => _order is not null && _order.Status == OrderStatus.Pendente && SelectedFormaPagamento == FormaPagamento.Cartao;
+
+    public bool ShowTroco => _order is not null && _order.Status == OrderStatus.Pendente && SelectedFormaPagamento == FormaPagamento.Dinheiro;
+
+    public bool ShowCustomerSelection => _order is not null && _order.Status == OrderStatus.Pendente && SelectedFormaPagamento == FormaPagamento.Fiado;
 
     public decimal Troco => ShowTroco ? Math.Max(0, ValorPago - TotalAmount) : 0;
 
@@ -221,7 +251,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
 
     public bool CanCloseWithPayment =>
         _order is not null &&
-        _order.Status == OrderStatus.Aberto &&
+        _order.Status == OrderStatus.Pendente &&
         OrderItems.Count > 0 &&
         ((ShowCustomerSelection && SelectedCustomer is not null) || !ShowCustomerSelection);
 
@@ -232,6 +262,8 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
         OrderItems.Clear();
         AppliedPromotions.Clear();
         _suggestedCombos.Clear();
+        Products.Clear();
+        Categories.Clear();
 
         // Load customers
         var customers = await _customerService.GetAllAsync(true);
@@ -239,6 +271,18 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
         {
             Customers.Add(c);
         }
+
+        // Load categories
+        var categories = await _categoryService.GetAllAsync(true);
+        Categories.Add(new CategoryDto { Id = 0, Name = "Todos" }); // "Todos" option
+        foreach (var c in categories)
+        {
+            Categories.Add(c);
+        }
+        SelectedCategoryId = 0; // Default to "Todos"
+
+        // Load products
+        await LoadProductsAsync();
 
         if (existingOrder is not null)
         {
@@ -274,6 +318,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
         }
 
         UpdatePaymentVisibility();
+        UpdateCommandStates();
     }
 
     private async Task LoadAsync()
@@ -285,9 +330,22 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
         }
     }
 
-    private async Task LoadProductPickerAsync()
+    private async Task LoadProductsAsync()
     {
-        await ProductPickerViewModel.LoadAsync();
+        try
+        {
+            var products = await _productService.GetAllAsync(true);
+            Products.Clear();
+            foreach (var p in products)
+            {
+                Products.Add(p);
+            }
+            OnPropertyChanged(nameof(FilteredProducts));
+        }
+        catch
+        {
+            ErrorMessage = "Não foi possível carregar os produtos.";
+        }
     }
 
     private async Task LoadSuggestedCombosAsync()
@@ -312,7 +370,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
 
     private async Task AddItemAsync(object? parameter)
     {
-        if (_order is null || _order.Status != OrderStatus.Aberto || IsLoading) return;
+        if (_order is null || _order.Status != OrderStatus.Pendente || IsLoading) return;
 
         var product = parameter as ProductDto ?? SelectedProduct;
         if (product is null) return;
@@ -336,6 +394,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(Status));
             OnPropertyChanged(nameof(CanAddItems));
             OnPropertyChanged(nameof(CanCloseWithPayment));
+            UpdateCommandStates();
 
             // Check for suggested combos after adding item
             await LoadSuggestedCombosAsync();
@@ -345,7 +404,6 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
 
             SelectedProduct = null;
             Quantity = 1;
-            IsProductPickerOpen = false;
 
             SuccessMessage = "Item adicionado ao pedido.";
         }
@@ -361,7 +419,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
 
     private async Task RemoveItemAsync(object? parameter)
     {
-        if (_order is null || _order.Status != OrderStatus.Aberto || IsLoading) return;
+        if (_order is null || _order.Status != OrderStatus.Pendente || IsLoading) return;
 
         var item = parameter as OrderItemDto ?? SelectedOrderItem;
         if (item is null) return;
@@ -383,6 +441,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(Status));
             OnPropertyChanged(nameof(CanAddItems));
             OnPropertyChanged(nameof(CanCloseWithPayment));
+            UpdateCommandStates();
 
             SuccessMessage = "Item removido do pedido.";
         }
@@ -398,7 +457,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
 
     private async Task AddComboAsync(object? parameter)
     {
-        if (_order is null || _order.Status != OrderStatus.Aberto || IsLoading) return;
+        if (_order is null || _order.Status != OrderStatus.Pendente || IsLoading) return;
 
         if (parameter is not int comboId) return;
 
@@ -430,6 +489,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(Status));
             OnPropertyChanged(nameof(CanAddItems));
             OnPropertyChanged(nameof(CanCloseWithPayment));
+            UpdateCommandStates();
 
             await RecalculateAsync();
 
@@ -447,7 +507,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
 
     private async Task RecalculateAsync()
     {
-        if (_order is null || _order.Status != OrderStatus.Aberto || IsLoading) return;
+        if (_order is null || _order.Status != OrderStatus.Pendente || IsLoading) return;
 
         try
         {
@@ -483,9 +543,102 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
         }
     }
 
+    private async Task StartPreparationAsync()
+    {
+        if (_order is null || _order.Status != OrderStatus.Pendente || IsLoading) return;
+
+        try
+        {
+            IsLoading = true;
+            ClearMessages();
+
+            _order = await _orderService.StartPreparationAsync(_order.Id);
+
+            OnPropertyChanged(nameof(TotalAmount));
+            OnPropertyChanged(nameof(Status));
+            OnPropertyChanged(nameof(CanAddItems));
+            OnPropertyChanged(nameof(CanCloseWithPayment));
+            UpdateCommandStates();
+
+            SuccessMessage = "Preparação iniciada.";
+            WasSaved = true;
+            RequestClose?.Invoke();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = ex.Message;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task MarkAsReadyAsync()
+    {
+        if (_order is null || _order.Status != OrderStatus.EmPreparacao || IsLoading) return;
+
+        try
+        {
+            IsLoading = true;
+            ClearMessages();
+
+            _order = await _orderService.MarkAsReadyAsync(_order.Id);
+
+            OnPropertyChanged(nameof(TotalAmount));
+            OnPropertyChanged(nameof(Status));
+            OnPropertyChanged(nameof(CanAddItems));
+            OnPropertyChanged(nameof(CanCloseWithPayment));
+            UpdateCommandStates();
+
+            SuccessMessage = "Pedido marcado como pronto.";
+            WasSaved = true;
+            RequestClose?.Invoke();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = ex.Message;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task FinalizeOrderAsync()
+    {
+        if (_order is null || _order.Status != OrderStatus.Pronto || IsLoading) return;
+
+        try
+        {
+            IsLoading = true;
+            ClearMessages();
+
+            _order = await _orderService.FinalizeAsync(_order.Id);
+
+            OnPropertyChanged(nameof(TotalAmount));
+            OnPropertyChanged(nameof(Status));
+            OnPropertyChanged(nameof(CanAddItems));
+            OnPropertyChanged(nameof(CanCloseWithPayment));
+            UpdateCommandStates();
+
+            SuccessMessage = "Pedido finalizado com sucesso.";
+            WasSaved = true;
+            RequestClose?.Invoke();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = ex.Message;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
     private async Task CloseOrderAsync()
     {
-        if (_order is null || _order.Status != OrderStatus.Aberto || IsLoading) return;
+        if (_order is null || _order.Status != OrderStatus.Pendente || IsLoading) return;
 
         try
         {
@@ -499,6 +652,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(Status));
             OnPropertyChanged(nameof(CanAddItems));
             OnPropertyChanged(nameof(CanCloseWithPayment));
+            UpdateCommandStates();
 
             SuccessMessage = "Pedido fechado com sucesso.";
             WasSaved = true;
@@ -516,7 +670,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
 
     private async Task CancelOrderAsync()
     {
-        if (_order is null || _order.Status != OrderStatus.Aberto || IsLoading) return;
+        if (_order is null || CanCancelOrder == false || IsLoading) return;
 
         var result = MessageBox.Show(
             "Tem certeza que deseja cancelar este pedido?",
@@ -538,6 +692,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(Status));
             OnPropertyChanged(nameof(CanAddItems));
             OnPropertyChanged(nameof(CanCloseWithPayment));
+            UpdateCommandStates();
 
             SuccessMessage = "Pedido cancelado.";
             WasSaved = true;
@@ -555,7 +710,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
 
     private async Task CloseWithPaymentAsync()
     {
-        if (_order is null || _order.Status != OrderStatus.Aberto || IsLoading) return;
+        if (_order is null || _order.Status != OrderStatus.Pendente || IsLoading) return;
 
         if (ShowCustomerSelection && SelectedCustomer is null)
         {
@@ -601,6 +756,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(Status));
             OnPropertyChanged(nameof(CanAddItems));
             OnPropertyChanged(nameof(CanCloseWithPayment));
+            UpdateCommandStates();
 
             if (result.PendingPayment is not null)
             {
@@ -657,6 +813,15 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(Troco));
         OnPropertyChanged(nameof(ValorParcela));
         OnPropertyChanged(nameof(CanCloseWithPayment));
+    }
+
+    private void UpdateCommandStates()
+    {
+        OnPropertyChanged(nameof(CanAddItems));
+        OnPropertyChanged(nameof(CanStartPreparation));
+        OnPropertyChanged(nameof(CanMarkAsReady));
+        OnPropertyChanged(nameof(CanFinalizeOrder));
+        OnPropertyChanged(nameof(CanCancelOrder));
     }
 
     private bool SetProperty<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)

@@ -59,6 +59,14 @@ public class OrderServiceTests : IDisposable
         _serviceProvider.Dispose();
     }
 
+    private async Task<OrderDto> AdvanceOrderToReadyAsync(int orderId)
+    {
+        // Pendente -> EmPreparacao
+        await _service.StartPreparationAsync(orderId);
+        // EmPreparacao -> Pronto
+        return await _service.MarkAsReadyAsync(orderId);
+    }
+
     [Fact]
     public async Task CreateAsync_WithoutCustomer_CreatesOrder()
     {
@@ -66,7 +74,7 @@ public class OrderServiceTests : IDisposable
 
         Assert.True(result.Id > 0);
         Assert.Null(result.CustomerId);
-        Assert.Equal(OrderStatus.Aberto, result.Status);
+        Assert.Equal(OrderStatus.Pendente, result.Status);
         Assert.Equal(0m, result.TotalAmount);
         Assert.Empty(result.Items);
     }
@@ -81,7 +89,7 @@ public class OrderServiceTests : IDisposable
         Assert.True(result.Id > 0);
         Assert.Equal(customer.Id, result.CustomerId);
         Assert.Equal(customer.Name, result.CustomerName);
-        Assert.Equal(OrderStatus.Aberto, result.Status);
+        Assert.Equal(OrderStatus.Pendente, result.Status);
         Assert.Equal(0m, result.TotalAmount);
     }
 
@@ -115,7 +123,7 @@ public class OrderServiceTests : IDisposable
                 Quantity = 2
             });
 
-        Assert.Equal(OrderStatus.Aberto, result.Status);
+        Assert.Equal(OrderStatus.Pendente, result.Status);
         Assert.Equal(51.00m, result.TotalAmount);
         Assert.Single(result.Items);
         Assert.Equal(product.Id, result.Items[0].ProductId);
@@ -141,11 +149,12 @@ public class OrderServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task AddItemAsync_ToClosedOrder_ThrowsInvalidOperationException()
+    public async Task AddItemAsync_ToFinalizedOrder_ThrowsInvalidOperationException()
     {
         var order = await _service.CreateAsync(new CreateOrderRequest());
         var product = await CreateProductAsync();
         await _service.AddItemAsync(new AddOrderItemRequest { OrderId = order.Id, ProductId = product.Id, Quantity = 1 });
+        await AdvanceOrderToReadyAsync(order.Id);
         await _service.CloseAsync(new CloseOrderRequest { OrderId = order.Id });
 
         await Assert.ThrowsAsync<InvalidOperationException>(
@@ -274,11 +283,12 @@ public class OrderServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task RemoveItemAsync_FromClosedOrder_ThrowsInvalidOperationException()
+    public async Task RemoveItemAsync_FromFinalizedOrder_ThrowsInvalidOperationException()
     {
         var order = await _service.CreateAsync(new CreateOrderRequest());
         var product = await CreateProductAsync();
         var addResult = await _service.AddItemAsync(new AddOrderItemRequest { OrderId = order.Id, ProductId = product.Id, Quantity = 1 });
+        await AdvanceOrderToReadyAsync(order.Id);
         await _service.CloseAsync(new CloseOrderRequest { OrderId = order.Id });
 
         await Assert.ThrowsAsync<InvalidOperationException>(
@@ -364,11 +374,12 @@ public class OrderServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task UpdateItemQuantityAsync_ForClosedOrder_ThrowsInvalidOperationException()
+    public async Task UpdateItemQuantityAsync_ForFinalizedOrder_ThrowsInvalidOperationException()
     {
         var order = await _service.CreateAsync(new CreateOrderRequest());
         var product = await CreateProductAsync();
         var addResult = await _service.AddItemAsync(new AddOrderItemRequest { OrderId = order.Id, ProductId = product.Id, Quantity = 1 });
+        await AdvanceOrderToReadyAsync(order.Id);
         await _service.CloseAsync(new CloseOrderRequest { OrderId = order.Id });
 
         await Assert.ThrowsAsync<InvalidOperationException>(
@@ -397,15 +408,16 @@ public class OrderServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task CloseAsync_WithItems_ClosesOrder()
+    public async Task CloseAsync_WithItems_FinalizesOrder()
     {
         var order = await _service.CreateAsync(new CreateOrderRequest());
         var product = await CreateProductAsync(price: 20.00m);
         await _service.AddItemAsync(new AddOrderItemRequest { OrderId = order.Id, ProductId = product.Id, Quantity = 2 });
+        await AdvanceOrderToReadyAsync(order.Id);
 
         var result = await _service.CloseAsync(new CloseOrderRequest { OrderId = order.Id });
 
-        Assert.Equal(OrderStatus.Fechado, result.Status);
+        Assert.Equal(OrderStatus.Finalizado, result.Status);
         Assert.Equal(40.00m, result.TotalAmount);
     }
 
@@ -426,11 +438,12 @@ public class OrderServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task CloseAsync_AlreadyClosedOrder_ThrowsInvalidOperationException()
+    public async Task CloseAsync_AlreadyFinalizedOrder_ThrowsInvalidOperationException()
     {
         var order = await _service.CreateAsync(new CreateOrderRequest());
         var product = await CreateProductAsync();
         await _service.AddItemAsync(new AddOrderItemRequest { OrderId = order.Id, ProductId = product.Id, Quantity = 1 });
+        await AdvanceOrderToReadyAsync(order.Id);
         await _service.CloseAsync(new CloseOrderRequest { OrderId = order.Id });
 
         await Assert.ThrowsAsync<InvalidOperationException>(
@@ -469,14 +482,15 @@ public class OrderServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task CancelAsync_ClosedOrder_CancelsAndRestoresStock()
+    public async Task CancelAsync_FinalizedOrder_CancelsAndRestoresStock()
     {
         var order = await _service.CreateAsync(new CreateOrderRequest());
         var product = await CreateProductAsync();
         await _service.AddItemAsync(new AddOrderItemRequest { OrderId = order.Id, ProductId = product.Id, Quantity = 1 });
+        await AdvanceOrderToReadyAsync(order.Id);
         await _service.CloseAsync(new CloseOrderRequest { OrderId = order.Id });
 
-        // Act - Cancel closed order (should work now for stock restoration)
+        // Act - Cancel finalized order (should work now for stock restoration)
         var result = await _service.CancelAsync(new CancelOrderRequest { OrderId = order.Id });
 
         // Assert - Order cancelled successfully
@@ -499,10 +513,11 @@ public class OrderServiceTests : IDisposable
         var openOrder = await _service.CreateAsync(new CreateOrderRequest());
         var product = await CreateProductAsync();
         await _service.AddItemAsync(new AddOrderItemRequest { OrderId = openOrder.Id, ProductId = product.Id, Quantity = 1 });
+        await AdvanceOrderToReadyAsync(openOrder.Id);
         await _service.CloseAsync(new CloseOrderRequest { OrderId = openOrder.Id });
 
-        var openOrders = await _service.GetAllAsync(new OrderFilterRequest { Status = (int)OrderStatus.Aberto });
-        var closedOrders = await _service.GetAllAsync(new OrderFilterRequest { Status = (int)OrderStatus.Fechado });
+        var openOrders = await _service.GetAllAsync(new OrderFilterRequest { Status = (int)OrderStatus.Pendente });
+        var closedOrders = await _service.GetAllAsync(new OrderFilterRequest { Status = (int)OrderStatus.Finalizado });
 
         Assert.Empty(openOrders);
         Assert.Single(closedOrders);
@@ -750,11 +765,12 @@ public class OrderServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task RecalculateWithPromotionsAsync_ClosedOrder_ThrowsInvalidOperationException()
+    public async Task RecalculateWithPromotionsAsync_FinalizedOrder_ThrowsInvalidOperationException()
     {
         var order = await _service.CreateAsync(new CreateOrderRequest());
         var product = await CreateProductAsync(price: 100.00m);
         await _service.AddItemAsync(new AddOrderItemRequest { OrderId = order.Id, ProductId = product.Id, Quantity = 1 });
+        await AdvanceOrderToReadyAsync(order.Id);
         await _service.CloseAsync(new CloseOrderRequest { OrderId = order.Id });
 
         _promotionService.AddPromotion(new PromotionDto
@@ -1081,7 +1097,7 @@ public class OrderServiceTests : IDisposable
 
         public Task<Order?> GetOpenOrderAsync(int? customerId = null, CancellationToken cancellationToken = default)
         {
-            var query = _orders.Where(o => o.Status == OrderStatus.Aberto);
+            var query = _orders.Where(o => o.Status == OrderStatus.Pendente);
 
             if (customerId.HasValue)
                 query = query.Where(o => o.CustomerId == customerId.Value);
@@ -1096,7 +1112,7 @@ public class OrderServiceTests : IDisposable
 
         public Task<bool> ExistsOpenOrderForCustomerAsync(int customerId, CancellationToken cancellationToken = default)
         {
-            return Task.FromResult(_orders.Any(o => o.CustomerId == customerId && o.Status == OrderStatus.Aberto));
+            return Task.FromResult(_orders.Any(o => o.CustomerId == customerId && o.Status == OrderStatus.Pendente));
         }
 
         public Task<IReadOnlyList<OrderItem>> GetItemsByOrderAsync(int orderId, CancellationToken cancellationToken = default)

@@ -48,7 +48,7 @@ public class OrderPreparationService : IOrderPreparationService
         return MapToDto(order);
     }
 
-    public async Task<OrderDto?> MarkAsDeliveredAsync(int orderId, CancellationToken cancellationToken = default)
+    public async Task<OrderDto?> MarkAsReadyAsync(int orderId, CancellationToken cancellationToken = default)
     {
         var order = await _orderRepository.GetByIdAsync(orderId, cancellationToken);
 
@@ -57,7 +57,7 @@ public class OrderPreparationService : IOrderPreparationService
             return null;
         }
 
-        order.MarkAsDelivered();
+        order.MarkAsReady();
 
         await _orderRepository.UpdateAsync(order, cancellationToken);
 

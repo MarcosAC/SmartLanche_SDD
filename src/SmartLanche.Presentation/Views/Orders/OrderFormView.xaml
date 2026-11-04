@@ -152,30 +152,67 @@
         </Grid.RowDefinitions>
 
         <!-- Cabeçalho -->
-        <StackPanel Grid.Row="0"
-                    Margin="0,0,0,20">
-            <TextBlock FontSize="26"
-                       FontWeight="SemiBold"
-                       Foreground="#111827">
-                <TextBlock.Style>
-                    <Style TargetType="TextBlock">
-                        <Setter Property="Text" Value="Novo pedido"/>
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding Order.Id, Converter={StaticResource NullToBoolConverter}}"
-                                         Value="True">
-                                <Setter Property="Text"
-                                        Value="Editar pedido"/>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </TextBlock.Style>
-            </TextBlock>
+        <Border Grid.Row="0"
+                Margin="0,0,0,20">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
-            <TextBlock Text="Adicione itens e gerencie o pedido."
-                       Margin="0,6,0,0"
-                       FontSize="13"
-                       Foreground="#6B7280"/>
-        </StackPanel>
+                <StackPanel Grid.Column="0">
+                    <TextBlock FontSize="26"
+                               FontWeight="SemiBold"
+                               Foreground="#111827">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Text" Value="Novo pedido"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Order.Id, Converter={StaticResource NullToBoolConverter}}"
+                                                 Value="True">
+                                        <Setter Property="Text"
+                                                Value="Editar pedido"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+
+                    <TextBlock Text="Adicione itens e gerencie o pedido."
+                               Margin="0,6,0,0"
+                               FontSize="13"
+                               Foreground="#6B7280"/>
+                </StackPanel>
+
+                <!-- Status Workflow Buttons -->
+                <StackPanel Grid.Column="1"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Bottom"
+                            Margin="0,0,0,8">
+                    <Button Content="Iniciar Preparação"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            Command="{Binding StartPreparationCommand}"
+                            Visibility="{Binding CanStartPreparation, Converter={StaticResource BoolToVisibilityConverter}}"
+                            ToolTip="Iniciar preparação do pedido (Pendente → Em Preparo)"/>
+                    <Button Content="Marcar como Pronto"
+                            Style="{StaticResource SuccessButtonStyle}"
+                            Command="{Binding MarkAsReadyCommand}"
+                            Visibility="{Binding CanMarkAsReady, Converter={StaticResource BoolToVisibilityConverter}}"
+                            ToolTip="Marcar pedido como pronto (Em Preparo → Pronto)"/>
+                    <Button Content="Finalizar Pedido"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            Command="{Binding FinalizeOrderCommand}"
+                            Visibility="{Binding CanFinalizeOrder, Converter={StaticResource BoolToVisibilityConverter}}"
+                            ToolTip="Finalizar pedido (Pronto → Finalizado)"/>
+                    <Button Content="Cancelar Pedido"
+                            Style="{StaticResource DangerButtonStyle}"
+                            Command="{Binding CancelOrderCommand}"
+                            Visibility="{Binding CanCancelOrder, Converter={StaticResource BoolToVisibilityConverter}}"
+                            ToolTip="Cancelar pedido"/>
+                </StackPanel>
+            </Grid>
+        </Border>
 
         <!-- Formulário -->
         <Border Grid.Row="1"
@@ -188,12 +225,13 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <!-- Cabeçalho do pedido: Cliente -->
+                <!-- Cabeçalho do pedido: Cliente + Produtos -->
                 <Border Grid.Row="0"
                         Background="#F9FAFB"
                         CornerRadius="6"
@@ -203,10 +241,6 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Grid.Column="0" Margin="0,0,16,0">
@@ -221,51 +255,136 @@
                                       ToolTip="Selecione o cliente (opcional)."/>
                         </StackPanel>
 
-                        <StackPanel Grid.Column="2" Margin="0,0,16,0">
-                            <TextBlock Text="Produto"
-                                       Style="{StaticResource FormLabelStyle}"/>
-                            <Button Content="{Binding SelectedProduct.Name, FallbackValue='Selecionar Produto', TargetNullValue='Selecionar Produto'}"
-                                    Style="{StaticResource PrimaryActionButtonStyle}"
-                                    Width="280"
-                                    HorizontalContentAlignment="Left"
-                                    Padding="10,8"
-                                    Command="{Binding OpenProductPickerCommand}"
-                                    ToolTip="Clique para buscar e selecionar produto">
-                            <Button.InputBindings>
-                                <KeyBinding Key="Enter" Command="{Binding AddItemCommand}"
-                                            CommandParameter="{Binding SelectedProduct}"/>
-                            </Button.InputBindings>
-                        </Button>
-                        </StackPanel>
+                        <!-- Filtro de categoria e grid de produtos inline -->
+                        <Border Grid.Column="1"
+                                Background="White"
+                                BorderBrush="#E5E7EB"
+                                BorderThickness="1"
+                                CornerRadius="6"
+                                Padding="12">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
 
-                        <StackPanel Grid.Column="3" Margin="0,0,16,0">
+                                <!-- Filtro de categoria -->
+                                <StackPanel Grid.Row="0"
+                                            Orientation="Horizontal"
+                                            Margin="0,0,0,12">
+                                    <TextBlock Text="Categoria:"
+                                               Style="{StaticResource FormLabelStyle}"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,12,0"/>
+                                    <ComboBox ItemsSource="{Binding Categories}"
+                                              DisplayMemberPath="Name"
+                                              SelectedValuePath="Id"
+                                              SelectedValue="{Binding SelectedCategoryId, UpdateSourceTrigger=PropertyChanged}"
+                                              Style="{StaticResource FormComboBoxStyle}"
+                                              Width="200"
+                                              ToolTip="Filtrar produtos por categoria"/>
+                                </StackPanel>
+
+                                <!-- Grid de produtos filtrados -->
+                                <DataGrid Grid.Row="1"
+                                          ItemsSource="{Binding FilteredProducts}"
+                                          SelectedItem="{Binding SelectedProduct, Mode=TwoWay}"
+                                          AutoGenerateColumns="False"
+                                          IsReadOnly="True"
+                                          CanUserAddRows="False"
+                                          CanUserDeleteRows="False"
+                                          SelectionMode="Single"
+                                          SelectionUnit="FullRow"
+                                          HeadersVisibility="Column"
+                                          GridLinesVisibility="Horizontal"
+                                          RowHeaderWidth="0"
+                                          BorderThickness="0"
+                                          Background="White"
+                                          AlternatingRowBackground="#F9FAFB"
+                                          MaxHeight="200">
+                                    <DataGrid.InputBindings>
+                                        <MouseBinding Gesture="LeftDoubleClick"
+                                                      Command="{Binding AddItemCommand}"
+                                                      CommandParameter="{Binding SelectedProduct}"/>
+                                        <KeyBinding Key="Enter"
+                                                    Command="{Binding AddItemCommand}"
+                                                    CommandParameter="{Binding SelectedProduct}"/>
+                                    </DataGrid.InputBindings>
+
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Produto"
+                                                            Binding="{Binding Name}"
+                                                            Width="2*"/>
+                                        <DataGridTextColumn Header="Categoria"
+                                                            Binding="{Binding CategoryName}"
+                                                            Width="150"/>
+                                        <DataGridTextColumn Header="Preço (R$)"
+                                                            Binding="{Binding Price, StringFormat='C2', ConverterCulture='pt-BR'}"
+                                                            Width="120"
+                                                            ElementStyle="{StaticResource RightAlignStyle}"/>
+                                        <DataGridTemplateColumn Header="Ação"
+                                                                Width="100">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Button Content="Adicionar"
+                                                            Style="{StaticResource PrimaryActionButtonStyle}"
+                                                            Padding="6,3"
+                                                            MinWidth="70"
+                                                            Command="{Binding DataContext.AddItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                            CommandParameter="{Binding}"/>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- Quantidade (movida para linha separada quando necessário) -->
+                <Border Grid.Row="1"
+                        Background="#F9FAFB"
+                        CornerRadius="6"
+                        Padding="16"
+                        Margin="0,0,0,16"
+                        Visibility="{Binding CanAddItems, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Margin="0,0,16,0">
                             <TextBlock Text="Quantidade"
                                        Style="{StaticResource FormLabelStyle}"/>
                             <TextBox Text="{Binding Quantity, UpdateSourceTrigger=PropertyChanged}"
                                      Style="{StaticResource FormTextBoxStyle}"
                                      Width="100"
                                      ToolTip="Informe a quantidade.">
-                            <TextBox.InputBindings>
-                                <KeyBinding Key="Enter" Command="{Binding AddItemCommand}"
-                                            CommandParameter="{Binding SelectedProduct}"/>
-                            </TextBox.InputBindings>
-                        </TextBox>
+                                <TextBox.InputBindings>
+                                    <KeyBinding Key="Enter" Command="{Binding AddItemCommand}"
+                                                CommandParameter="{Binding SelectedProduct}"/>
+                                </TextBox.InputBindings>
+                            </TextBox>
                         </StackPanel>
 
-                        <StackPanel Grid.Column="4" Margin="0,0,16,0" VerticalAlignment="Bottom">
+                        <StackPanel Grid.Column="1" Margin="0,0,16,0" VerticalAlignment="Bottom">
                             <TextBlock Text=" "
                                        Style="{StaticResource FormLabelStyle}"/>
-                            <Button Content="Adicionar"
+                            <Button Content="Adicionar Item Selecionado"
                                     Style="{StaticResource PrimaryActionButtonStyle}"
-                                    MinWidth="90"
+                                    MinWidth="160"
                                     Command="{Binding AddItemCommand}"
+                                    CommandParameter="{Binding SelectedProduct}"
                                     ToolTip="Adicionar item ao pedido"/>
                         </StackPanel>
                     </Grid>
                 </Border>
 
                 <!-- Promoções Aplicadas -->
-                <Border Grid.Row="1"
+                <Border Grid.Row="2"
                         Background="#FEF3C7"
                         BorderBrush="#FCD34D"
                         BorderThickness="1"
@@ -336,104 +455,6 @@
                                 ToolTip="Recalcular total aplicando promoções elegíveis"
                                 Margin="12,0,0,0"/>
                     </Grid>
-                </Border>
-
-                <!-- Product Picker with Tabs (Products / Combos) -->
-                <Border Grid.Row="2"
-                        Background="#F9FAFB"
-                        BorderBrush="#E5E7EB"
-                        BorderThickness="1"
-                        CornerRadius="6"
-                        Padding="16"
-                        Margin="0,0,0,16"
-                        Visibility="{Binding IsProductPickerOpen, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <TabControl>
-                        <!-- Aba Produtos -->
-                        <TabItem Header="📦 Produtos" Padding="16,8">
-                            <viewsOrders:ProductPickerView DataContext="{Binding ProductPickerViewModel}"/>
-                        </TabItem>
-
-                        <!-- Aba Combos Sugeridos -->
-                        <TabItem Header="🎁 Combos Sugeridos" Padding="16,8"
-                                 Visibility="{Binding SuggestedCombos.Count, Converter={StaticResource CountToVisibilityConverter}}">
-                            <Border Background="White"
-                                    BorderBrush="#E5E7EB"
-                                    BorderThickness="1"
-                                    CornerRadius="6"
-                                    Padding="8">
-                                <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="*"/>
-                                        <RowDefinition Height="Auto"/>
-                                    </Grid.RowDefinitions>
-
-                                    <DataGrid Grid.Row="0"
-                                              ItemsSource="{Binding SuggestedCombos}"
-                                              AutoGenerateColumns="False"
-                                              IsReadOnly="True"
-                                              CanUserAddRows="False"
-                                              CanUserDeleteRows="False"
-                                              SelectionMode="Single"
-                                              SelectionUnit="FullRow"
-                                              HeadersVisibility="Column"
-                                              GridLinesVisibility="Horizontal"
-                                              RowHeaderWidth="0"
-                                              BorderThickness="0"
-                                              Background="White"
-                                              AlternatingRowBackground="#F9FAFB"
-                                              MaxHeight="350">
-                                        <DataGrid.Columns>
-                                            <DataGridTextColumn Header="Combo"
-                                                                Binding="{Binding Name}"
-                                                                Width="3*"/>
-                                            <DataGridTextColumn Header="Descrição"
-                                                                Binding="{Binding Description}"
-                                                                Width="3*"/>
-                                            <DataGridTextColumn Header="Preço (R$)"
-                                                                Binding="{Binding Price, StringFormat='C2', ConverterCulture='pt-BR'}"
-                                                                Width="120"
-                                                                ElementStyle="{StaticResource RightAlignStyle}"/>
-                                            <DataGridTextColumn Header="Itens"
-                                                                Binding="{Binding Items.Count}"
-                                                                Width="80"
-                                                                ElementStyle="{StaticResource CenterAlignStyle}"/>
-                                            <DataGridTemplateColumn Header="Ação"
-                                                                    Width="120">
-                                                <DataGridTemplateColumn.CellTemplate>
-                                                    <DataTemplate>
-                                                        <Button Content="Adicionar"
-                                                                Style="{StaticResource PrimaryActionButtonStyle}"
-                                                                Padding="8,4"
-                                                                MinWidth="80"
-                                                                Command="{Binding DataContext.AddComboCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                                CommandParameter="{Binding Id}"/>
-                                                    </DataTemplate>
-                                                </DataGridTemplateColumn.CellTemplate>
-                                            </DataGridTemplateColumn>
-                                        </DataGrid.Columns>
-                                    </DataGrid>
-
-                                    <TextBlock Grid.Row="0"
-                                               Text="Nenhum combo disponível."
-                                               Foreground="#9CA3AF"
-                                               FontSize="14"
-                                               HorizontalAlignment="Center"
-                                               VerticalAlignment="Center"
-                                               Visibility="{Binding SuggestedCombos.Count, Converter={StaticResource CountToVisibilityConverter}}"/>
-
-                                    <StackPanel Grid.Row="1"
-                                                Orientation="Horizontal"
-                                                HorizontalAlignment="Right"
-                                                Margin="0,12,0,0">
-                                        <Button Content="Fechar"
-                                                Style="{StaticResource SecondaryPickerButtonStyle}"
-                                                Command="{Binding CloseProductPickerCommand}"
-                                                MinWidth="90"/>
-                                    </StackPanel>
-                                </Grid>
-                            </Border>
-                        </TabItem>
-                    </TabControl>
                 </Border>
 
                 <!-- Grid de itens -->

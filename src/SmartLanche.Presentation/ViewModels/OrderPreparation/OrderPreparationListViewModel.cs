@@ -26,7 +26,7 @@ public sealed class OrderPreparationListViewModel : ListViewModelBase<OrderPrepa
 
     public ICommand RefreshCommand { get; }
     public ICommand StartPreparationCommand { get; }
-    public ICommand MarkDeliveredCommand { get; }
+    public ICommand MarkReadyCommand { get; }
     public ICommand CancelCommand { get; }
     public ICommand ViewDetailCommand { get; }
 
@@ -40,9 +40,9 @@ public sealed class OrderPreparationListViewModel : ListViewModelBase<OrderPrepa
         _toastService = toastService ?? throw new ArgumentNullException(nameof(toastService));
 
         RefreshCommand = new RelayCommand(async _ => await LoadAsync());
-        StartPreparationCommand = new RelayCommand<OrderPreparationDto>(async dto => await StartPreparationAsync(dto), dto => dto?.Status == OrderStatus.Aberto);
-        MarkDeliveredCommand = new RelayCommand<OrderPreparationDto>(async dto => await MarkDeliveredAsync(dto), dto => dto?.Status == OrderStatus.EmPreparacao);
-        CancelCommand = new RelayCommand<OrderPreparationDto>(async dto => await CancelAsync(dto), dto => dto?.Status == OrderStatus.Aberto || dto?.Status == OrderStatus.EmPreparacao);
+        StartPreparationCommand = new RelayCommand<OrderPreparationDto>(async dto => await StartPreparationAsync(dto), dto => dto?.Status == OrderStatus.Pendente);
+        MarkReadyCommand = new RelayCommand<OrderPreparationDto>(async dto => await MarkReadyAsync(dto), dto => dto?.Status == OrderStatus.EmPreparacao);
+        CancelCommand = new RelayCommand<OrderPreparationDto>(async dto => await CancelAsync(dto), dto => dto?.Status == OrderStatus.Pendente || dto?.Status == OrderStatus.EmPreparacao);
         ViewDetailCommand = new RelayCommand<OrderPreparationDto>(async dto => await ViewDetailAsync(dto));
 
         Service.OrderChanged += OnOrderChanged;
@@ -106,16 +106,16 @@ public sealed class OrderPreparationListViewModel : ListViewModelBase<OrderPrepa
         });
     }
 
-    private async Task MarkDeliveredAsync(OrderPreparationDto? orderDto)
+    private async Task MarkReadyAsync(OrderPreparationDto? orderDto)
     {
         if (orderDto is null) return;
 
         await ExecuteWithLoadingAsync(async () =>
         {
-            var result = await Service.MarkAsDeliveredAsync(orderDto.Id);
+            var result = await Service.MarkAsReadyAsync(orderDto.Id);
             if (result is not null)
             {
-                _toastService.ShowSuccess($"Pedido #{orderDto.Id} marcado como entregue");
+                _toastService.ShowSuccess($"Pedido #{orderDto.Id} marcado como pronto");
                 await LoadAsync();
             }
             else

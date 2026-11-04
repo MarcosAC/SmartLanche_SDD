@@ -36,9 +36,9 @@ public class OrderPaymentService : BaseService, IOrderPaymentService
             return new CloseOrderWithPaymentResult(false, null, null, null, "O pedido informado não existe.");
         }
 
-        if (order.Status != OrderStatus.Aberto)
+        if (order.Status != OrderStatus.Pronto)
         {
-            return new CloseOrderWithPaymentResult(false, null, null, null, "Apenas pedidos abertos podem ser fechados.");
+            return new CloseOrderWithPaymentResult(false, null, null, null, "Apenas pedidos prontos podem ser finalizados.");
         }
 
         if (!order.OrderItems.Any())
@@ -87,7 +87,7 @@ public class OrderPaymentService : BaseService, IOrderPaymentService
             }
         }
 
-        order.Close();
+        order.Finalize();
 
         await _orderRepository.UpdateAsync(order, cancellationToken);
 

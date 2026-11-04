@@ -35,7 +35,7 @@ public class OrderService : BaseService, IOrderService
         var orders = await _orderRepository.GetAllAsync(null, null, DateTime.Now.AddDays(-days), null, null, null, true, cancellationToken);
 
         var productSales = orders
-            .Where(o => o.Status == OrderStatus.Fechado)
+            .Where(o => o.Status == OrderStatus.Finalizado)
             .SelectMany(o => o.OrderItems)
             .GroupBy(i => i.Product.Name)
             .Select(g => new ProductSalesDto
@@ -93,7 +93,7 @@ public class OrderService : BaseService, IOrderService
         {
             CustomerId = request.CustomerId,
             OrderDate = DateTime.Now,
-            Status = OrderStatus.Aberto,
+            Status = OrderStatus.Pendente,
             TotalAmount = 0,
             Notes = string.Empty
         };
@@ -112,7 +112,7 @@ public class OrderService : BaseService, IOrderService
             throw new InvalidOperationException("O pedido informado não existe.");
         }
 
-        if (order.Status != OrderStatus.Aberto)
+        if (order.Status != OrderStatus.Pendente)
         {
             throw new InvalidOperationException("Apenas pedidos abertos podem ser alterados.");
         }
@@ -174,7 +174,7 @@ public class OrderService : BaseService, IOrderService
             throw new InvalidOperationException("O pedido informado não existe.");
         }
 
-        if (order.Status != OrderStatus.Aberto)
+        if (order.Status != OrderStatus.Pendente)
         {
             throw new InvalidOperationException("Apenas pedidos abertos podem ser alterados.");
         }
@@ -203,7 +203,7 @@ public class OrderService : BaseService, IOrderService
             throw new InvalidOperationException("O pedido informado não existe.");
         }
 
-        if (order.Status != OrderStatus.Aberto)
+        if (order.Status != OrderStatus.Pendente)
         {
             throw new InvalidOperationException("Apenas pedidos abertos podem ser alterados.");
         }
@@ -239,17 +239,17 @@ public class OrderService : BaseService, IOrderService
             throw new InvalidOperationException("O pedido informado não existe.");
         }
 
-        if (order.Status != OrderStatus.Aberto)
+        if (order.Status != OrderStatus.Pronto)
         {
-            throw new InvalidOperationException("Apenas pedidos abertos podem ser fechados.");
+            throw new InvalidOperationException("Apenas pedidos prontos podem ser finalizados.");
         }
 
         if (!order.OrderItems.Any())
         {
-            throw new InvalidOperationException("Pedido não pode ser fechado sem itens.");
+            throw new InvalidOperationException("Pedido não pode ser finalizado sem itens.");
         }
 
-        order.Close();
+        order.Finalize();
 
         await _orderRepository.UpdateAsync(order, cancellationToken);
 
@@ -269,7 +269,7 @@ public class OrderService : BaseService, IOrderService
             throw new InvalidOperationException("O pedido informado não existe.");
         }
 
-        var wasDelivered = order.Status == OrderStatus.Fechado || order.Status == OrderStatus.Entregue;
+        var wasDelivered = order.Status == OrderStatus.Finalizado || order.Status == OrderStatus.Pronto;
 
         if (order.Status == OrderStatus.Cancelado)
         {
@@ -280,11 +280,82 @@ public class OrderService : BaseService, IOrderService
 
         await _orderRepository.UpdateAsync(order, cancellationToken);
 
-        // If order was delivered, restore stock
+        // If order was delivered/ready, restore stock
         if (wasDelivered)
         {
             await _inventoryService.EstornarBaixaPedidoAsync(order.Id, cancellationToken);
         }
+
+        return MapToDto(order);
+    }
+
+    public async Task<OrderDto> StartPreparationAsync(int orderId, CancellationToken cancellationToken = default)
+    {
+        var order = await _orderRepository.GetByIdAsync(orderId, cancellationToken);
+
+        if (order is null)
+        {
+            throw new InvalidOperationException("O pedido informado não existe.");
+        }
+
+        if (order.Status != OrderStatus.Pendente)
+        {
+            throw new InvalidOperationException("Apenas pedidos pendentes podem iniciar preparação.");
+        }
+
+        order.StartPreparation();
+
+        await _orderRepository.UpdateAsync(order, cancellationToken);
+
+        return MapToDto(order);
+    }
+
+    public async Task<OrderDto> MarkAsReadyAsync(int orderId, CancellationToken cancellationToken = default)
+    {
+        var order = await _orderRepository.GetByIdAsync(orderId, cancellationToken);
+
+        if (order is null)
+        {
+            throw new InvalidOperationException("O pedido informado não existe.");
+        }
+
+        if (order.Status != OrderStatus.EmPreparacao)
+        {
+            throw new InvalidOperationException("Apenas pedidos em preparo podem ser marcados como prontos.");
+        }
+
+        order.MarkAsReady();
+
+        await _orderRepository.UpdateAsync(order, cancellationToken);
+
+        return MapToDto(order);
+    }
+
+    public async Task<OrderDto> FinalizeAsync(int orderId, CancellationToken cancellationToken = default)
+    {
+        var order = await _orderRepository.GetByIdAsync(orderId, cancellationToken);
+
+        if (order is null)
+        {
+            throw new InvalidOperationException("O pedido informado não existe.");
+        }
+
+        if (order.Status != OrderStatus.Pronto)
+        {
+            throw new InvalidOperationException("Apenas pedidos prontos podem ser finalizados.");
+        }
+
+        if (!order.OrderItems.Any())
+        {
+            throw new InvalidOperationException("Pedido não pode ser finalizado sem itens.");
+        }
+
+        order.Finalize();
+
+        await _orderRepository.UpdateAsync(order, cancellationToken);
+
+        // Trigger automatic stock deduction
+        await _inventoryService.BaixaAutomaticaPedidoAsync(order.Id, order.OrderItems.ToList(), cancellationToken);
 
         return MapToDto(order);
     }

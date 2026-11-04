@@ -66,6 +66,12 @@ public class OrderServiceCloseWithPaymentTests : IDisposable
         _serviceProvider.Dispose();
     }
 
+    private async Task AdvanceOrderToReadyAsync(int orderId)
+    {
+        await _service.StartPreparationAsync(orderId);
+        await _service.MarkAsReadyAsync(orderId);
+    }
+
     #region CloseWithPaymentAsync - Validations
 
     [Fact]
@@ -86,11 +92,11 @@ public class OrderServiceCloseWithPaymentTests : IDisposable
     }
 
     [Fact]
-    public async Task CloseWithPaymentAsync_ClosedOrder_ReturnsFailure()
+    public async Task CloseWithPaymentAsync_FinalizedOrder_ReturnsFailure()
     {
         var order = await CreateOrderWithItemsAsync(total: 50m);
-        order.Close();
-        await _orderRepository.UpdateAsync(order);
+        await AdvanceOrderToReadyAsync(order.Id);
+        await _service.CloseAsync(new CloseOrderRequest { OrderId = order.Id });
 
         var request = new CloseOrderWithPaymentRequest(
             order.Id,
@@ -103,7 +109,7 @@ public class OrderServiceCloseWithPaymentTests : IDisposable
         var result = await _service.CloseWithPaymentAsync(request);
 
         Assert.False(result.Success);
-        Assert.Contains("abertos", result.ErrorMessage!);
+        Assert.Contains("prontos", result.ErrorMessage!);
     }
 
     [Fact]
@@ -124,13 +130,14 @@ public class OrderServiceCloseWithPaymentTests : IDisposable
         var result = await _service.CloseWithPaymentAsync(request);
 
         Assert.False(result.Success);
-        Assert.Contains("abertos", result.ErrorMessage!);
+        Assert.Contains("prontos", result.ErrorMessage!);
     }
 
     [Fact]
     public async Task CloseWithPaymentAsync_OrderWithoutItems_ReturnsFailure()
     {
         var order = await CreateOrderAsync(); // Sem itens
+        await AdvanceOrderToReadyAsync(order.Id);
 
         var request = new CloseOrderWithPaymentRequest(
             order.Id,
@@ -154,6 +161,7 @@ public class OrderServiceCloseWithPaymentTests : IDisposable
     public async Task CloseWithPaymentAsync_Dinheiro_ExactAmount_ClosesOrderAndCreatesPayment()
     {
         var order = await CreateOrderWithItemsAsync(total: 50m);
+        await AdvanceOrderToReadyAsync(order.Id);
 
         var request = new CloseOrderWithPaymentRequest(
             order.Id,
@@ -175,13 +183,14 @@ public class OrderServiceCloseWithPaymentTests : IDisposable
 
         // Verify order is closed
         var updatedOrder = await _orderRepository.GetByIdAsync(order.Id);
-        Assert.Equal(OrderStatus.Fechado, updatedOrder!.Status);
+        Assert.Equal(OrderStatus.Finalizado, updatedOrder!.Status);
     }
 
     [Fact]
     public async Task CloseWithPaymentAsync_Dinheiro_WithTroco_ClosesOrderAndCreatesPaymentWithTroco()
     {
         var order = await CreateOrderWithItemsAsync(total: 50m);
+        await AdvanceOrderToReadyAsync(order.Id);
 
         var request = new CloseOrderWithPaymentRequest(
             order.Id,
@@ -204,6 +213,7 @@ public class OrderServiceCloseWithPaymentTests : IDisposable
     public async Task CloseWithPaymentAsync_Dinheiro_InsufficientAmount_ReturnsFailure()
     {
         var order = await CreateOrderWithItemsAsync(total: 100m);
+        await AdvanceOrderToReadyAsync(order.Id);
 
         var request = new CloseOrderWithPaymentRequest(
             order.Id,
@@ -218,9 +228,9 @@ public class OrderServiceCloseWithPaymentTests : IDisposable
         Assert.False(result.Success);
         Assert.Contains("insuficiente", result.ErrorMessage!);
 
-        // Order should remain open
+        // Order should remain in Pronto status (not finalized)
         var updatedOrder = await _orderRepository.GetByIdAsync(order.Id);
-        Assert.Equal(OrderStatus.Aberto, updatedOrder!.Status);
+        Assert.Equal(OrderStatus.Pronto, updatedOrder!.Status);
     }
 
     #endregion
@@ -231,6 +241,7 @@ public class OrderServiceCloseWithPaymentTests : IDisposable
     public async Task CloseWithPaymentAsync_Cartao_ExactAmount_ClosesOrder()
     {
         var order = await CreateOrderWithItemsAsync(total: 75m);
+        await AdvanceOrderToReadyAsync(order.Id);
 
         var request = new CloseOrderWithPaymentRequest(
             order.Id,
@@ -255,6 +266,7 @@ public class OrderServiceCloseWithPaymentTests : IDisposable
     public async Task CloseWithPaymentAsync_Cartao_WrongAmount_ReturnsFailure()
     {
         var order = await CreateOrderWithItemsAsync(total: 100m);
+        await AdvanceOrderToReadyAsync(order.Id);
 
         var request = new CloseOrderWithPaymentRequest(
             order.Id,
@@ -274,6 +286,7 @@ public class OrderServiceCloseWithPaymentTests : IDisposable
     public async Task CloseWithPaymentAsync_Cartao_InvalidParcelas_ReturnsFailure()
     {
         var order = await CreateOrderWithItemsAsync(total: 50m);
+        await AdvanceOrderToReadyAsync(order.Id);
 
         var request = new CloseOrderWithPaymentRequest(
             order.Id,
@@ -293,6 +306,7 @@ public class OrderServiceCloseWithPaymentTests : IDisposable
     public async Task CloseWithPaymentAsync_Cartao_ParcelasExceeds12_ReturnsFailure()
     {
         var order = await CreateOrderWithItemsAsync(total: 50m);
+        await AdvanceOrderToReadyAsync(order.Id);
 
         var request = new CloseOrderWithPaymentRequest(
             order.Id,
@@ -316,6 +330,7 @@ public class OrderServiceCloseWithPaymentTests : IDisposable
     public async Task CloseWithPaymentAsync_Pix_ExactAmount_ClosesOrder()
     {
         var order = await CreateOrderWithItemsAsync(total: 30m);
+        await AdvanceOrderToReadyAsync(order.Id);
 
         var request = new CloseOrderWithPaymentRequest(
             order.Id,
@@ -340,6 +355,7 @@ public class OrderServiceCloseWithPaymentTests : IDisposable
     public async Task CloseWithPaymentAsync_Pix_WrongAmount_ReturnsFailure()
     {
         var order = await CreateOrderWithItemsAsync(total: 50m);
+        await AdvanceOrderToReadyAsync(order.Id);
 
         var request = new CloseOrderWithPaymentRequest(
             order.Id,
@@ -364,6 +380,7 @@ public class OrderServiceCloseWithPaymentTests : IDisposable
     {
         var customer = await CreateCustomerAsync(creditLimit: 1000m);
         var order = await CreateOrderWithItemsAsync(customer.Id, total: 200m);
+        await AdvanceOrderToReadyAsync(order.Id);
 
         var request = new CloseOrderWithPaymentRequest(
             order.Id,
@@ -388,7 +405,7 @@ public class OrderServiceCloseWithPaymentTests : IDisposable
 
         // Verify order is closed
         var updatedOrder = await _orderRepository.GetByIdAsync(order.Id);
-        Assert.Equal(OrderStatus.Fechado, updatedOrder!.Status);
+        Assert.Equal(OrderStatus.Finalizado, updatedOrder!.Status);
     }
 
     [Fact]
@@ -397,6 +414,7 @@ public class OrderServiceCloseWithPaymentTests : IDisposable
         // O OrderService.CloseWithPaymentAsync NÃO valida CustomerId para Fiado
         // Essa validação é feita no nível da UI/ViewModel
         var order = await CreateOrderWithItemsAsync(total: 200m);
+        await AdvanceOrderToReadyAsync(order.Id);
 
         var request = new CloseOrderWithPaymentRequest(
             order.Id,
@@ -421,6 +439,7 @@ public class OrderServiceCloseWithPaymentTests : IDisposable
     {
         var customer = await CreateCustomerAsync(creditLimit: 1000m, isActive: false);
         var order = await CreateOrderWithItemsAsync(customer.Id, total: 200m);
+        await AdvanceOrderToReadyAsync(order.Id);
 
         var request = new CloseOrderWithPaymentRequest(
             order.Id,
@@ -441,6 +460,7 @@ public class OrderServiceCloseWithPaymentTests : IDisposable
     {
         var customer = await CreateCustomerAsync(creditLimit: 100m);
         var order = await CreateOrderWithItemsAsync(customer.Id, total: 200m);
+        await AdvanceOrderToReadyAsync(order.Id);
 
         var request = new CloseOrderWithPaymentRequest(
             order.Id,
@@ -463,6 +483,7 @@ public class OrderServiceCloseWithPaymentTests : IDisposable
     {
         var customer = await CreateCustomerAsync(creditLimit: 500m);
         var order = await CreateOrderWithItemsAsync(customer.Id, total: 200m);
+        await AdvanceOrderToReadyAsync(order.Id);
 
         // Criar uma pendência anterior de 100
         var pendingPayment = await _pendingPaymentRepository.AddAsync(new PendingPayment
@@ -498,6 +519,7 @@ public class OrderServiceCloseWithPaymentTests : IDisposable
     {
         var customer = await CreateCustomerAsync(creditLimit: 0m); // Sem limite
         var order = await CreateOrderWithItemsAsync(customer.Id, total: 10000m);
+        await AdvanceOrderToReadyAsync(order.Id);
 
         var request = new CloseOrderWithPaymentRequest(
             order.Id,
@@ -535,7 +557,7 @@ public class OrderServiceCloseWithPaymentTests : IDisposable
         var order = new Order
         {
             CustomerId = customerId,
-            Status = OrderStatus.Aberto,
+            Status = OrderStatus.Pendente,
             TotalAmount = 0,
             OrderDate = DateTime.Now,
             Notes = string.Empty
@@ -618,10 +640,10 @@ public class OrderServiceCloseWithPaymentTests : IDisposable
         }
 
         public Task<Order?> GetOpenOrderAsync(int? customerId = null, CancellationToken cancellationToken = default)
-            => Task.FromResult<Order?>(_orders.Where(o => o.Status == OrderStatus.Aberto && (!customerId.HasValue || o.CustomerId == customerId)).OrderByDescending(o => o.OrderDate).FirstOrDefault());
+            => Task.FromResult<Order?>(_orders.Where(o => o.Status == OrderStatus.Pendente && (!customerId.HasValue || o.CustomerId == customerId)).OrderByDescending(o => o.OrderDate).FirstOrDefault());
 
         public Task<bool> ExistsOpenOrderForCustomerAsync(int customerId, CancellationToken cancellationToken = default)
-            => Task.FromResult(_orders.Any(o => o.CustomerId == customerId && o.Status == OrderStatus.Aberto));
+            => Task.FromResult(_orders.Any(o => o.CustomerId == customerId && o.Status == OrderStatus.Pendente));
 
         public Task<IReadOnlyList<OrderItem>> GetItemsByOrderAsync(int orderId, CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<OrderItem>>([]);

@@ -22,13 +22,13 @@ public class OrderStatusToVisibilityConverter : IValueConverter
 
         bool visible = param switch
         {
-            "status_aberto" => status == OrderStatus.Aberto,
+            "status_aberto" => status == OrderStatus.Pendente,
             "status_empreparacao" => status == OrderStatus.EmPreparacao,
-            "status_entregue" => status == OrderStatus.Entregue,
-            "status_fechado" => status == OrderStatus.Fechado,
+            "status_pronto" => status == OrderStatus.Pronto,
+            "status_finalizado" => status == OrderStatus.Finalizado,
             "status_cancelado" => status == OrderStatus.Cancelado,
-            "status_cancelable" => status == OrderStatus.Aberto || status == OrderStatus.EmPreparacao,
-            "status_actionable" => status == OrderStatus.Aberto || status == OrderStatus.EmPreparacao || status == OrderStatus.Entregue,
+            "status_cancelable" => status == OrderStatus.Pendente || status == OrderStatus.EmPreparacao || status == OrderStatus.Pronto,
+            "status_actionable" => status == OrderStatus.Pendente || status == OrderStatus.EmPreparacao || status == OrderStatus.Pronto,
             _ => false
         };
 

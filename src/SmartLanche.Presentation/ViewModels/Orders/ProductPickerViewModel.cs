@@ -137,10 +137,12 @@ public sealed class ProductPickerViewModel : INotifyPropertyChanged
 
             var categories = await _categoryService.GetAllAsync(true);
             Categories.Clear();
+            Categories.Add(new CategoryDto { Id = 0, Name = "Todos" }); // "Todos" option
             foreach (var c in categories)
             {
                 Categories.Add(c);
             }
+            SelectedCategoryId = 0; // Default to "Todos"
 
             OnPropertyChanged(nameof(FilteredProducts));
         }

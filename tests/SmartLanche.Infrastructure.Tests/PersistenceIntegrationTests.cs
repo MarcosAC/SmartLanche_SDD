@@ -581,7 +581,7 @@ public class PersistenceIntegrationTests
                 {
                     CustomerId = customerId,
                     OrderDate = DateTime.Now,
-                    Status = OrderStatus.Aberto,
+                    Status = OrderStatus.Pendente,
                     TotalAmount = 0,
                     Notes = "Pedido de teste"
                 };
@@ -598,7 +598,7 @@ public class PersistenceIntegrationTests
 
                 Assert.NotNull(savedOrder);
                 Assert.Equal(customerId, savedOrder.CustomerId);
-                Assert.Equal(OrderStatus.Aberto, savedOrder.Status);
+                Assert.Equal(OrderStatus.Pendente, savedOrder.Status);
                 Assert.Equal(0, savedOrder.TotalAmount);
                 Assert.Equal("Pedido de teste", savedOrder.Notes);
                 Assert.NotNull(savedOrder.Customer);
@@ -632,7 +632,7 @@ public class PersistenceIntegrationTests
                 {
                     CustomerId = null,
                     OrderDate = DateTime.Now,
-                    Status = OrderStatus.Aberto,
+                    Status = OrderStatus.Pendente,
                     TotalAmount = 0,
                     Notes = string.Empty
                 };
@@ -649,7 +649,7 @@ public class PersistenceIntegrationTests
 
                 Assert.NotNull(savedOrder);
                 Assert.Null(savedOrder.CustomerId);
-                Assert.Equal(OrderStatus.Aberto, savedOrder.Status);
+                Assert.Equal(OrderStatus.Pendente, savedOrder.Status);
                 Assert.Equal(0, savedOrder.TotalAmount);
             }
         }
@@ -704,7 +704,7 @@ public class PersistenceIntegrationTests
                 {
                     CustomerId = customerId,
                     OrderDate = DateTime.Now,
-                    Status = OrderStatus.Aberto,
+                    Status = OrderStatus.Pendente,
                     TotalAmount = 0,
                     Notes = string.Empty
                 };
@@ -732,7 +732,7 @@ public class PersistenceIntegrationTests
 
                 Assert.NotNull(savedOrder);
                 Assert.Equal(customerId, savedOrder.CustomerId);
-                Assert.Equal(OrderStatus.Aberto, savedOrder.Status);
+                Assert.Equal(OrderStatus.Pendente, savedOrder.Status);
                 Assert.Equal(51.00m, savedOrder.TotalAmount);
                 Assert.Single(savedOrder.OrderItems);
 
@@ -796,7 +796,7 @@ public class PersistenceIntegrationTests
                 {
                     CustomerId = customerId,
                     OrderDate = DateTime.Now,
-                    Status = OrderStatus.Aberto,
+                    Status = OrderStatus.Pendente,
                     TotalAmount = 0,
                     Notes = string.Empty
                 };
@@ -874,7 +874,7 @@ public class PersistenceIntegrationTests
                 {
                     CustomerId = customerId,
                     OrderDate = DateTime.Now,
-                    Status = OrderStatus.Aberto,
+                    Status = OrderStatus.Pendente,
                     TotalAmount = 0,
                     Notes = string.Empty
                 };
@@ -972,7 +972,7 @@ public class PersistenceIntegrationTests
                 {
                     CustomerId = customerId,
                     OrderDate = DateTime.Now,
-                    Status = OrderStatus.Aberto,
+                    Status = OrderStatus.Pendente,
                     TotalAmount = 0,
                     Notes = string.Empty
                 };

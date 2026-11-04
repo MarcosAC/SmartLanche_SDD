@@ -13,10 +13,10 @@ public class StatusToColorConverter : IValueConverter
         {
             return status switch
             {
-                OrderStatus.Aberto => "#2563EB",
+                OrderStatus.Pendente => "#2563EB",
                 OrderStatus.EmPreparacao => "#F59E0B",
-                OrderStatus.Entregue => "#16A34A",
-                OrderStatus.Fechado => "#16A34A",
+                OrderStatus.Pronto => "#16A34A",
+                OrderStatus.Finalizado => "#059669",
                 OrderStatus.Cancelado => "#6B7280",
                 _ => "#6B7280"
             };

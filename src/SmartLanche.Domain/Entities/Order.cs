@@ -44,10 +44,11 @@ public class Order
 
         var validTransitions = new Dictionary<OrderStatus, OrderStatus[]>
         {
-            [OrderStatus.Aberto] = [OrderStatus.EmPreparacao, OrderStatus.Fechado, OrderStatus.Cancelado],
-            [OrderStatus.EmPreparacao] = [OrderStatus.Entregue, OrderStatus.Cancelado],
-            [OrderStatus.Fechado] = [OrderStatus.Cancelado],
-            [OrderStatus.Entregue] = [OrderStatus.Fechado, OrderStatus.Cancelado],
+            [OrderStatus.Pendente] = [OrderStatus.EmPreparacao, OrderStatus.Cancelado],
+            [OrderStatus.EmPreparacao] = [OrderStatus.Pronto, OrderStatus.Cancelado],
+            [OrderStatus.Pronto] = [OrderStatus.Finalizado, OrderStatus.Cancelado],
+            [OrderStatus.Finalizado] = [OrderStatus.Cancelado],
+            [OrderStatus.Cancelado] = [],
         };
 
         if (!validTransitions.TryGetValue(Status, out var allowed) || !allowed.Contains(newStatus))
@@ -63,21 +64,20 @@ public class Order
         PreparationStartedAt = DateTime.Now;
     }
 
-    public void MarkAsDelivered()
+    public void MarkAsReady()
     {
-        ValidateStatusTransition(OrderStatus.Entregue);
-        Status = OrderStatus.Entregue;
-        DeliveredAt = DateTime.Now;
+        ValidateStatusTransition(OrderStatus.Pronto);
+        Status = OrderStatus.Pronto;
     }
 
-    public void Close()
+    public void Finalize()
     {
-        ValidateStatusTransition(OrderStatus.Fechado);
+        ValidateStatusTransition(OrderStatus.Finalizado);
         if (!OrderItems.Any())
         {
-            throw new InvalidOperationException("Pedido não pode ser fechado sem itens");
+            throw new InvalidOperationException("Pedido não pode ser finalizado sem itens");
         }
-        Status = OrderStatus.Fechado;
+        Status = OrderStatus.Finalizado;
     }
 
     public void Cancel()

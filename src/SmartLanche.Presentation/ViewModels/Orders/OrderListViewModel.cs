@@ -24,6 +24,9 @@ public sealed class OrderListViewModel : ListViewModelBase<OrderDto, IOrderServi
 
     public ICommand CloseOrderCommand { get; }
     public ICommand CancelOrderCommand { get; }
+    public ICommand StartPreparationCommand { get; }
+    public ICommand MarkAsReadyCommand { get; }
+    public ICommand FinalizeOrderCommand { get; }
 
     public int? SelectedStatus
     {
@@ -84,10 +87,19 @@ public sealed class OrderListViewModel : ListViewModelBase<OrderDto, IOrderServi
         RequestEditItem += (order) => RequestViewOrder?.Invoke(order);
 
         CloseOrderCommand = new RelayCommand(async _ => await CloseOrderAsync(),
-            _ => SelectedItem?.Status == OrderStatus.Aberto && !IsLoading);
+            _ => SelectedItem?.Status == OrderStatus.Pendente && !IsLoading);
+
+        StartPreparationCommand = new RelayCommand(async _ => await StartPreparationAsync(),
+            _ => SelectedItem?.Status == OrderStatus.Pendente && !IsLoading);
+
+        MarkAsReadyCommand = new RelayCommand(async _ => await MarkAsReadyAsync(),
+            _ => SelectedItem?.Status == OrderStatus.EmPreparacao && !IsLoading);
+
+        FinalizeOrderCommand = new RelayCommand(async _ => await FinalizeOrderAsync(),
+            _ => SelectedItem?.Status == OrderStatus.Pronto && !IsLoading);
 
         CancelOrderCommand = new RelayCommand(async _ => await CancelOrderAsync(),
-            _ => SelectedItem?.Status == OrderStatus.Aberto && !IsLoading);
+            _ => (SelectedItem?.Status == OrderStatus.Pendente || SelectedItem?.Status == OrderStatus.EmPreparacao || SelectedItem?.Status == OrderStatus.Pronto) && !IsLoading);
     }
 
     protected override async Task<IReadOnlyList<OrderDto>> GetItemsAsync()
@@ -168,6 +180,42 @@ public sealed class OrderListViewModel : ListViewModelBase<OrderDto, IOrderServi
             await Service.CancelAsync(request);
 
             SuccessMessage = "Pedido cancelado com sucesso.";
+            await LoadAsync();
+        });
+    }
+
+    private async Task StartPreparationAsync()
+    {
+        if (SelectedItem is null || IsLoading) return;
+
+        await ExecuteWithLoadingAsync(async () =>
+        {
+            await Service.StartPreparationAsync(SelectedItem.Id);
+            SuccessMessage = "Preparação iniciada.";
+            await LoadAsync();
+        });
+    }
+
+    private async Task MarkAsReadyAsync()
+    {
+        if (SelectedItem is null || IsLoading) return;
+
+        await ExecuteWithLoadingAsync(async () =>
+        {
+            await Service.MarkAsReadyAsync(SelectedItem.Id);
+            SuccessMessage = "Pedido marcado como pronto.";
+            await LoadAsync();
+        });
+    }
+
+    private async Task FinalizeOrderAsync()
+    {
+        if (SelectedItem is null || IsLoading) return;
+
+        await ExecuteWithLoadingAsync(async () =>
+        {
+            await Service.FinalizeAsync(SelectedItem.Id);
+            SuccessMessage = "Pedido finalizado com sucesso.";
             await LoadAsync();
         });
     }
