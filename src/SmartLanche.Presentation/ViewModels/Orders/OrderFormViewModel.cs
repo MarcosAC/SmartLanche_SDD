@@ -228,7 +228,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
 
     public string Status => _order?.Status.ToString() ?? "Novo";
 
-    public bool CanAddItems => _order is not null && _order.Status == OrderStatus.Pendente && OrderItems.Count > 0;
+    public bool CanAddItems => _order is not null && _order.Status == OrderStatus.Pendente;
 
     public bool CanStartPreparation => _order is not null && _order.Status == OrderStatus.Pendente && OrderItems.Count > 0;
 
