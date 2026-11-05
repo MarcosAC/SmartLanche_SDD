@@ -593,7 +593,7 @@
                             <StackPanel Grid.Column="1" Margin="0,0,16,0">
                                 <TextBlock Text="Valor Pago (R$)"
                                            Style="{StaticResource FormLabelStyle}"/>
-                                <TextBox Text="{Binding ValorPago, UpdateSourceTrigger=PropertyChanged, StringFormat='C2', ConverterCulture='pt-BR'}"
+                                <TextBox Text="{Binding ValorPago, UpdateSourceTrigger=PropertyChanged, StringFormat='C2', ConverterCulture='pt-BR', TargetNullValue=''}"
                                          Style="{StaticResource FormTextBoxStyle}"
                                          Width="150"
                                          ToolTip="Informe o valor recebido">
