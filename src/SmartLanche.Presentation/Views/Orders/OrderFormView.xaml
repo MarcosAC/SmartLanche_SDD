@@ -225,7 +225,6 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
@@ -314,22 +313,78 @@
                                     <DataGrid.Columns>
                                         <DataGridTextColumn Header="Produto"
                                                             Binding="{Binding Name}"
-                                                            Width="2*"/>
+                                                            Width="3*"/>
                                         <DataGridTextColumn Header="Categoria"
                                                             Binding="{Binding CategoryName}"
-                                                            Width="150"/>
+                                                            Width="2*"/>
                                         <DataGridTextColumn Header="Preço (R$)"
                                                             Binding="{Binding Price, StringFormat='C2', ConverterCulture='pt-BR'}"
                                                             Width="120"
                                                             ElementStyle="{StaticResource RightAlignStyle}"/>
-                                        <DataGridTemplateColumn Header="Ação"
+
+                                        <!-- Quantidade com botões +/- -->
+                                        <DataGridTemplateColumn Header="Qtd"
                                                                 Width="100">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Border Background="White"
+                                                            BorderBrush="#D1D5DB"
+                                                            BorderThickness="1"
+                                                            CornerRadius="4"
+                                                            Padding="2">
+                                                        <StackPanel Orientation="Horizontal"
+                                                                    HorizontalAlignment="Center"
+                                                                    VerticalAlignment="Center">
+                                                            <Button Content="−"
+                                                                    Width="28"
+                                                                    Height="28"
+                                                                    FontSize="16"
+                                                                    FontWeight="Bold"
+                                                                    Foreground="#374151"
+                                                                    Background="#F3F4F6"
+                                                                    BorderBrush="#D1D5DB"
+                                                                    BorderThickness="1,1,0,1"
+                                                                    Padding="0"
+                                                                    Command="{Binding DataContext.DecreaseQuantityCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                    CommandParameter="{Binding}"
+                                                                    ToolTip="Diminuir quantidade"/>
+                                                            <TextBlock Text="{Binding Quantity, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                       Width="40"
+                                                                       TextAlignment="Center"
+                                                                       VerticalAlignment="Center"
+                                                                       FontSize="14"
+                                                                       FontWeight="SemiBold"
+                                                                       Foreground="#1F2937"/>
+                                                            <Button Content="+"
+                                                                    Width="28"
+                                                                    Height="28"
+                                                                    FontSize="14"
+                                                                    FontWeight="Bold"
+                                                                    Foreground="#374151"
+                                                                    Background="#F3F4F6"
+                                                                    BorderBrush="#D1D5DB"
+                                                                    BorderThickness="0,1,1,1"
+                                                                    Padding="0"
+                                                                    Command="{Binding DataContext.IncreaseQuantityCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                    CommandParameter="{Binding}"
+                                                                    ToolTip="Aumentar quantidade"/>
+                                                        </StackPanel>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+
+                                        <!-- Botão Adicionar -->
+                                        <DataGridTemplateColumn Header="Ação"
+                                                                Width="90">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <Button Content="Adicionar"
                                                             Style="{StaticResource PrimaryActionButtonStyle}"
                                                             Padding="6,3"
                                                             MinWidth="70"
+                                                            HorizontalAlignment="Center"
+                                                            VerticalAlignment="Center"
                                                             Command="{Binding DataContext.AddItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                             CommandParameter="{Binding}"/>
                                                 </DataTemplate>
@@ -342,49 +397,8 @@
                     </Grid>
                 </Border>
 
-                <!-- Quantidade (movida para linha separada quando necessário) -->
-                <Border Grid.Row="1"
-                        Background="#F9FAFB"
-                        CornerRadius="6"
-                        Padding="16"
-                        Margin="0,0,0,16"
-                        Visibility="{Binding CanAddItems, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-
-                        <StackPanel Grid.Column="0" Margin="0,0,16,0">
-                            <TextBlock Text="Quantidade"
-                                       Style="{StaticResource FormLabelStyle}"/>
-                            <TextBox Text="{Binding Quantity, UpdateSourceTrigger=PropertyChanged}"
-                                     Style="{StaticResource FormTextBoxStyle}"
-                                     Width="100"
-                                     ToolTip="Informe a quantidade.">
-                                <TextBox.InputBindings>
-                                    <KeyBinding Key="Enter" Command="{Binding AddItemCommand}"
-                                                CommandParameter="{Binding SelectedProduct}"/>
-                                </TextBox.InputBindings>
-                            </TextBox>
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="1" Margin="0,0,16,0" VerticalAlignment="Bottom">
-                            <TextBlock Text=" "
-                                       Style="{StaticResource FormLabelStyle}"/>
-                            <Button Content="Adicionar Item Selecionado"
-                                    Style="{StaticResource PrimaryActionButtonStyle}"
-                                    MinWidth="160"
-                                    Command="{Binding AddItemCommand}"
-                                    CommandParameter="{Binding SelectedProduct}"
-                                    ToolTip="Adicionar item ao pedido"/>
-                        </StackPanel>
-                    </Grid>
-                </Border>
-
                 <!-- Promoções Aplicadas -->
-                <Border Grid.Row="2"
+                <Border Grid.Row="1"
                         Background="#FEF3C7"
                         BorderBrush="#FCD34D"
                         BorderThickness="1"
@@ -458,7 +472,7 @@
                 </Border>
 
                 <!-- Grid de itens -->
-                <Border Grid.Row="3"
+                <Border Grid.Row="2"
                         Background="White"
                         BorderBrush="#E5E7EB"
                         BorderThickness="1"
@@ -488,7 +502,7 @@
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Produto"
                                                     Binding="{Binding ProductName}"
-                                                    Width="3*"/>
+                                                    Width="4*"/>
 
                                 <DataGridTextColumn Header="Qtd"
                                                     Binding="{Binding Quantity}"
@@ -497,12 +511,12 @@
 
                                 <DataGridTextColumn Header="Preço Unit. (R$)"
                                                     Binding="{Binding UnitPrice, StringFormat='C2', ConverterCulture='pt-BR'}"
-                                                    Width="120"
+                                                    Width="150"
                                                     ElementStyle="{StaticResource RightAlignStyle}"/>
 
                                 <DataGridTextColumn Header="Subtotal (R$)"
                                                     Binding="{Binding Subtotal, StringFormat='C2', ConverterCulture='pt-BR'}"
-                                                    Width="120"
+                                                    Width="150"
                                                     ElementStyle="{StaticResource RightAlignStyle}"/>
 
                                 <DataGridTemplateColumn Header="Ações"
@@ -534,7 +548,7 @@
                 </Border>
 
                 <!-- Pagamento -->
-                <Border Grid.Row="4"
+                <Border Grid.Row="3"
                         Background="#F0F9FF"
                         BorderBrush="#0EA5E9"
                         BorderThickness="1"
@@ -672,7 +686,7 @@
                 </Border>
 
                 <!-- Total e ações -->
-                <Border Grid.Row="5"
+                <Border Grid.Row="4"
                         Background="#F9FAFB"
                         CornerRadius="6"
                         Padding="16"

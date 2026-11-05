@@ -24,7 +24,6 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
     private ProductDto? _selectedProduct;
     private OrderItemDto? _selectedOrderItem;
     private CustomerDto? _selectedCustomer;
-    private int _quantity = 1;
     private FormaPagamento _selectedFormaPagamento = FormaPagamento.Dinheiro;
     private decimal _valorPago;
     private int _parcelas = 1;
@@ -68,6 +67,10 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
         CancelOrderCommand = new RelayCommand(async _ => await CancelOrderAsync(), _ => CanCancelOrder && !IsLoading);
         CloseWithPaymentCommand = new RelayCommand(async _ => await CloseWithPaymentAsync(), _ => CanCloseWithPayment && !IsLoading);
         ClearFormCommand = new RelayCommand(_ => ClearForm());
+        IncreaseQuantityCommand = new RelayCommand(p => IncreaseQuantity(p as ProductDto));
+        DecreaseQuantityCommand = new RelayCommand(p => DecreaseQuantity(p as ProductDto));
+        IncreaseOrderItemQuantityCommand = new RelayCommand(async p => await IncreaseOrderItemQuantityAsync(p as OrderItemDto), _ => CanAddItems && !IsLoading);
+        DecreaseOrderItemQuantityCommand = new RelayCommand(async p => await DecreaseOrderItemQuantityAsync(p as OrderItemDto), _ => CanAddItems && !IsLoading);
     }
 
     public ICommand LoadCommand { get; }
@@ -82,6 +85,10 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
     public ICommand CancelOrderCommand { get; }
     public ICommand CloseWithPaymentCommand { get; }
     public ICommand ClearFormCommand { get; }
+    public ICommand IncreaseQuantityCommand { get; }
+    public ICommand DecreaseQuantityCommand { get; }
+    public ICommand IncreaseOrderItemQuantityCommand { get; }
+    public ICommand DecreaseOrderItemQuantityCommand { get; }
 
     public ObservableCollection<OrderItemDto> OrderItems { get; } = [];
     public ObservableCollection<CustomerDto> Customers { get; } = [];
@@ -115,12 +122,6 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
     {
         get => _selectedCustomer;
         set => SetProperty(ref _selectedCustomer, value);
-    }
-
-    public int Quantity
-    {
-        get => _quantity;
-        set => SetProperty(ref _quantity, Math.Max(1, value));
     }
 
     public FormaPagamento SelectedFormaPagamento
@@ -338,6 +339,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
             Products.Clear();
             foreach (var p in products)
             {
+                p.Quantity = 1;
                 Products.Add(p);
             }
             OnPropertyChanged(nameof(FilteredProducts));
@@ -380,7 +382,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
             IsLoading = true;
             ClearMessages();
 
-            var request = new AddOrderItemRequest { OrderId = _order.Id, ProductId = product.Id, Quantity = Quantity };
+            var request = new AddOrderItemRequest { OrderId = _order.Id, ProductId = product.Id, Quantity = product.Quantity };
             _order = await _orderService.AddItemAsync(request);
 
             // Refresh items
@@ -399,10 +401,100 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
             // Check for suggested combos after adding item
             await LoadSuggestedCombosAsync();
 
+            // Reset quantity for next selection
+            product.Quantity = 1;
+            OnPropertyChanged(nameof(FilteredProducts));
             SelectedProduct = null;
-            Quantity = 1;
 
             SuccessMessage = "Item adicionado ao pedido.";
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = ex.Message;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private void IncreaseQuantity(ProductDto? product)
+    {
+        if (product is not null && product.Quantity < 99)
+        {
+            product.Quantity++;
+            OnPropertyChanged(nameof(FilteredProducts));
+        }
+    }
+
+    private void DecreaseQuantity(ProductDto? product)
+    {
+        if (product is not null && product.Quantity > 1)
+        {
+            product.Quantity--;
+            OnPropertyChanged(nameof(FilteredProducts));
+        }
+    }
+
+    private async Task IncreaseOrderItemQuantityAsync(OrderItemDto? item)
+    {
+        if (_order is null || _order.Status != OrderStatus.Pendente || IsLoading || item is null) return;
+        if (item.Quantity >= 99) return;
+
+        try
+        {
+            IsLoading = true;
+            ClearMessages();
+
+            var request = new UpdateOrderItemRequest { OrderId = _order.Id, OrderItemId = item.Id, Quantity = item.Quantity + 1 };
+            _order = await _orderService.UpdateItemQuantityAsync(request);
+
+            OrderItems.Clear();
+            foreach (var oi in _order.Items)
+            {
+                OrderItems.Add(oi);
+            }
+
+            OnPropertyChanged(nameof(TotalAmount));
+            OnPropertyChanged(nameof(CanCloseWithPayment));
+            UpdateCommandStates();
+
+            SuccessMessage = "Quantidade atualizada.";
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = ex.Message;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task DecreaseOrderItemQuantityAsync(OrderItemDto? item)
+    {
+        if (_order is null || _order.Status != OrderStatus.Pendente || IsLoading || item is null) return;
+        if (item.Quantity <= 1) return;
+
+        try
+        {
+            IsLoading = true;
+            ClearMessages();
+
+            var request = new UpdateOrderItemRequest { OrderId = _order.Id, OrderItemId = item.Id, Quantity = item.Quantity - 1 };
+            _order = await _orderService.UpdateItemQuantityAsync(request);
+
+            OrderItems.Clear();
+            foreach (var oi in _order.Items)
+            {
+                OrderItems.Add(oi);
+            }
+
+            OnPropertyChanged(nameof(TotalAmount));
+            OnPropertyChanged(nameof(CanCloseWithPayment));
+            UpdateCommandStates();
+
+            SuccessMessage = "Quantidade atualizada.";
         }
         catch (Exception ex)
         {
@@ -778,7 +870,6 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
     private void ClearForm()
     {
         SelectedProduct = null;
-        Quantity = 1;
         SelectedCustomer = null;
         SelectedFormaPagamento = FormaPagamento.Dinheiro;
         ValorPago = 0;
