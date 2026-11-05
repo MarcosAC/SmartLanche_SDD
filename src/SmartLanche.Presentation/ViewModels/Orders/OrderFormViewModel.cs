@@ -124,6 +124,26 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
         set => SetProperty(ref _selectedCustomer, value);
     }
 
+    public int? SelectedCustomerId
+    {
+        get => SelectedCustomer?.Id;
+        set
+        {
+            if (value.HasValue)
+            {
+                var customer = Customers.FirstOrDefault(c => c.Id == value.Value);
+                if (customer is not null)
+                {
+                    SelectedCustomer = customer;
+                }
+            }
+            else
+            {
+                SelectedCustomer = null;
+            }
+        }
+    }
+
     public FormaPagamento SelectedFormaPagamento
     {
         get => _selectedFormaPagamento;
