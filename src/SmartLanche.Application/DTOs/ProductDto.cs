@@ -19,4 +19,7 @@ public class ProductDto : IEntityDto
     public string? Description { get; set; }
 
     public bool IsActive { get; set; }
+
+    // UI-only property for quantity selection in order form
+    public int Quantity { get; set; } = 1;
 }
