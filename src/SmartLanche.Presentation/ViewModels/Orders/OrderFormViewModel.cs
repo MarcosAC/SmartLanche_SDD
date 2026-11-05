@@ -203,6 +203,8 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
             if (SetProperty(ref _isLoading, value))
             {
                 CommandManager.InvalidateRequerySuggested();
+                OnPropertyChanged(nameof(CanAddItems));
+                OnPropertyChanged(nameof(CanCloseWithPayment));
             }
         }
     }
@@ -229,7 +231,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
 
     public string Status => _order?.Status.ToString() ?? "Novo";
 
-    public bool CanAddItems => _order is not null && _order.Status == OrderStatus.Pendente;
+    public bool CanAddItems => (_order is null || _order.Status == OrderStatus.Pendente) && !IsLoading;
 
     public bool CanStartPreparation => _order is not null && _order.Status == OrderStatus.Pendente && OrderItems.Count > 0;
 
@@ -308,14 +310,12 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
         }
         else
         {
-            // Create new order
-            _order = await _orderService.CreateAsync(new CreateOrderRequest { CustomerId = null });
-            if (_order is not null)
-            {
-                OnPropertyChanged(nameof(Order));
-                OnPropertyChanged(nameof(TotalAmount));
-                OnPropertyChanged(nameof(Status));
-            }
+            // Don't create order in DB yet - lazy creation on first item/combo
+            _order = null;
+            OnPropertyChanged(nameof(Order));
+            OnPropertyChanged(nameof(TotalAmount));
+            OnPropertyChanged(nameof(Status));
+            OnPropertyChanged(nameof(CanAddItems));
         }
 
         UpdatePaymentVisibility();
@@ -372,7 +372,8 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
 
     private async Task AddItemAsync(object? parameter)
     {
-        if (_order is null || _order.Status != OrderStatus.Pendente || IsLoading) return;
+        if (_order is not null && _order.Status != OrderStatus.Pendente) return;
+        if (IsLoading) return;
 
         var product = parameter as ProductDto ?? SelectedProduct;
         if (product is null) return;
@@ -381,6 +382,13 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
         {
             IsLoading = true;
             ClearMessages();
+
+            // Lazy creation: create order only when first item is added
+            if (_order is null)
+            {
+                var customerId = SelectedCustomer?.Id;
+                _order = await _orderService.CreateAsync(new CreateOrderRequest { CustomerId = customerId });
+            }
 
             var request = new AddOrderItemRequest { OrderId = _order.Id, ProductId = product.Id, Quantity = product.Quantity };
             _order = await _orderService.AddItemAsync(request);
@@ -397,6 +405,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(CanAddItems));
             OnPropertyChanged(nameof(CanCloseWithPayment));
             UpdateCommandStates();
+            UpdatePaymentVisibility();
 
             // Check for suggested combos after adding item
             await LoadSuggestedCombosAsync();
@@ -546,7 +555,8 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
 
     private async Task AddComboAsync(object? parameter)
     {
-        if (_order is null || _order.Status != OrderStatus.Pendente || IsLoading) return;
+        if (_order is not null && _order.Status != OrderStatus.Pendente) return;
+        if (IsLoading) return;
 
         if (parameter is not int comboId) return;
 
@@ -560,6 +570,13 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
             {
                 ErrorMessage = "Combo não encontrado.";
                 return;
+            }
+
+            // Lazy creation: create order only when first combo is added
+            if (_order is null)
+            {
+                var customerId = SelectedCustomer?.Id;
+                _order = await _orderService.CreateAsync(new CreateOrderRequest { CustomerId = customerId });
             }
 
             foreach (var comboItem in combo.Items)
@@ -579,6 +596,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(CanAddItems));
             OnPropertyChanged(nameof(CanCloseWithPayment));
             UpdateCommandStates();
+            UpdatePaymentVisibility();
 
             SuccessMessage = $"Combo '{combo.Name}' adicionado ao pedido.";
         }
