@@ -1076,6 +1076,16 @@ public class OrderServiceTests : IDisposable
             return Task.FromResult(order);
         }
 
+        public Task<Order?> GetByIdTrackedAsync(int id, CancellationToken cancellationToken = default)
+        {
+            var order = _orders.FirstOrDefault(o => o.Id == id);
+            if (order != null)
+            {
+                LoadNavigationProperties(order);
+            }
+            return Task.FromResult(order);
+        }
+
         public Task AddAsync(Order order, CancellationToken cancellationToken = default)
         {
             order.Id = _nextId++;

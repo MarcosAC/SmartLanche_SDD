@@ -912,6 +912,11 @@ public class ComboServiceTests
             return Task.FromResult(_orders.FirstOrDefault(o => o.Id == id));
         }
 
+        public Task<Order?> GetByIdTrackedAsync(int id, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(_orders.FirstOrDefault(o => o.Id == id));
+        }
+
         public Task AddAsync(Order order, CancellationToken cancellationToken = default)
         {
             order.Id = _nextId++;

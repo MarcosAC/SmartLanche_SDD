@@ -580,6 +580,12 @@ public class PaymentServiceTests
             return Task.FromResult<Order?>(LastRetrievedOrder);
         }
 
+        public Task<Order?> GetByIdTrackedAsync(int id, CancellationToken cancellationToken = default)
+        {
+            LastRetrievedOrder = _orders.FirstOrDefault(o => o.Id == id);
+            return Task.FromResult<Order?>(LastRetrievedOrder);
+        }
+
         public Task AddAsync(Order order, CancellationToken cancellationToken = default)
         {
             order.Id = _nextOrderId++;

@@ -90,6 +90,15 @@ public class OrderRepository : IOrderRepository
             .FirstOrDefaultAsync(order => order.Id == id, cancellationToken);
     }
 
+    public async Task<Order?> GetByIdTrackedAsync(int id, CancellationToken cancellationToken = default)
+    {
+        return await _context.Orders
+            .Include(order => order.Customer)
+            .Include(order => order.OrderItems)
+                .ThenInclude(item => item.Product)
+            .FirstOrDefaultAsync(order => order.Id == id, cancellationToken);
+    }
+
     public async Task AddAsync(Order order, CancellationToken cancellationToken = default)
     {
         await _context.Orders.AddAsync(order, cancellationToken);

@@ -618,6 +618,9 @@ public class InventoryOrderIntegrationTests : IDisposable
         public Task<Order?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
             => Task.FromResult<Order?>(_orders.FirstOrDefault(o => o.Id == id));
 
+        public Task<Order?> GetByIdTrackedAsync(int id, CancellationToken cancellationToken = default)
+            => Task.FromResult<Order?>(_orders.FirstOrDefault(o => o.Id == id));
+
         public Task AddAsync(Order order, CancellationToken cancellationToken = default)
         {
             order.Id = _nextId++;

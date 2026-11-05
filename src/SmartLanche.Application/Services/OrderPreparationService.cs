@@ -32,7 +32,7 @@ public class OrderPreparationService : IOrderPreparationService
 
     public async Task<OrderDto?> StartPreparationAsync(int orderId, CancellationToken cancellationToken = default)
     {
-        var order = await _orderRepository.GetByIdAsync(orderId, cancellationToken);
+        var order = await _orderRepository.GetByIdTrackedAsync(orderId, cancellationToken);
 
         if (order is null)
         {
@@ -50,7 +50,7 @@ public class OrderPreparationService : IOrderPreparationService
 
     public async Task<OrderDto?> MarkAsReadyAsync(int orderId, CancellationToken cancellationToken = default)
     {
-        var order = await _orderRepository.GetByIdAsync(orderId, cancellationToken);
+        var order = await _orderRepository.GetByIdTrackedAsync(orderId, cancellationToken);
 
         if (order is null)
         {
@@ -68,7 +68,7 @@ public class OrderPreparationService : IOrderPreparationService
 
     public async Task<OrderDto?> CancelOrderAsync(int orderId, CancellationToken cancellationToken = default)
     {
-        var order = await _orderRepository.GetByIdAsync(orderId, cancellationToken);
+        var order = await _orderRepository.GetByIdTrackedAsync(orderId, cancellationToken);
 
         if (order is null)
         {

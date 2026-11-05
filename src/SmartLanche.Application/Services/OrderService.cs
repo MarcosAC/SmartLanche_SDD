@@ -105,7 +105,7 @@ public class OrderService : BaseService, IOrderService
 
     public async Task<OrderDto> AddItemAsync(AddOrderItemRequest request, CancellationToken cancellationToken = default)
     {
-        var order = await _orderRepository.GetByIdAsync(request.OrderId, cancellationToken);
+        var order = await _orderRepository.GetByIdTrackedAsync(request.OrderId, cancellationToken);
 
         if (order is null)
         {
@@ -167,7 +167,7 @@ public class OrderService : BaseService, IOrderService
 
     public async Task<OrderDto> RemoveItemAsync(int orderId, int orderItemId, CancellationToken cancellationToken = default)
     {
-        var order = await _orderRepository.GetByIdAsync(orderId, cancellationToken);
+        var order = await _orderRepository.GetByIdTrackedAsync(orderId, cancellationToken);
 
         if (order is null)
         {
@@ -196,7 +196,7 @@ public class OrderService : BaseService, IOrderService
 
     public async Task<OrderDto> UpdateItemQuantityAsync(UpdateOrderItemRequest request, CancellationToken cancellationToken = default)
     {
-        var order = await _orderRepository.GetByIdAsync(request.OrderId, cancellationToken);
+        var order = await _orderRepository.GetByIdTrackedAsync(request.OrderId, cancellationToken);
 
         if (order is null)
         {
@@ -232,7 +232,7 @@ public class OrderService : BaseService, IOrderService
 
     public async Task<OrderDto> CloseAsync(CloseOrderRequest request, CancellationToken cancellationToken = default)
     {
-        var order = await _orderRepository.GetByIdAsync(request.OrderId, cancellationToken);
+        var order = await _orderRepository.GetByIdTrackedAsync(request.OrderId, cancellationToken);
 
         if (order is null)
         {
@@ -262,7 +262,7 @@ public class OrderService : BaseService, IOrderService
 
     public async Task<OrderDto> CancelAsync(CancelOrderRequest request, CancellationToken cancellationToken = default)
     {
-        var order = await _orderRepository.GetByIdAsync(request.OrderId, cancellationToken);
+        var order = await _orderRepository.GetByIdTrackedAsync(request.OrderId, cancellationToken);
 
         if (order is null)
         {
@@ -291,7 +291,7 @@ public class OrderService : BaseService, IOrderService
 
     public async Task<OrderDto> StartPreparationAsync(int orderId, CancellationToken cancellationToken = default)
     {
-        var order = await _orderRepository.GetByIdAsync(orderId, cancellationToken);
+        var order = await _orderRepository.GetByIdTrackedAsync(orderId, cancellationToken);
 
         if (order is null)
         {
@@ -312,7 +312,7 @@ public class OrderService : BaseService, IOrderService
 
     public async Task<OrderDto> MarkAsReadyAsync(int orderId, CancellationToken cancellationToken = default)
     {
-        var order = await _orderRepository.GetByIdAsync(orderId, cancellationToken);
+        var order = await _orderRepository.GetByIdTrackedAsync(orderId, cancellationToken);
 
         if (order is null)
         {
@@ -333,7 +333,7 @@ public class OrderService : BaseService, IOrderService
 
     public async Task<OrderDto> FinalizeAsync(int orderId, CancellationToken cancellationToken = default)
     {
-        var order = await _orderRepository.GetByIdAsync(orderId, cancellationToken);
+        var order = await _orderRepository.GetByIdTrackedAsync(orderId, cancellationToken);
 
         if (order is null)
         {

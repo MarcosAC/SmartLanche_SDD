@@ -113,4 +113,14 @@ public sealed class FakeOrderRepository : FakeRepositoryBase<Order>, IOrderRepos
             item.Product = _productRepository.GetByIdAsync(item.ProductId).Result;
         }
     }
+
+    public Task<Order?> GetByIdTrackedAsync(int id, CancellationToken cancellationToken = default)
+    {
+        _entities.TryGetValue(id, out var order);
+        if (order != null)
+        {
+            LoadNavigationProperties(order);
+        }
+        return Task.FromResult(order);
+    }
 }

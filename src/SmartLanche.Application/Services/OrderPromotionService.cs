@@ -20,7 +20,7 @@ public class OrderPromotionService : BaseService, IOrderPromotionService
 
     public async Task<OrderDto> RecalculateWithPromotionsAsync(int orderId, CancellationToken cancellationToken = default)
     {
-        var order = await _orderRepository.GetByIdAsync(orderId, cancellationToken);
+        var order = await _orderRepository.GetByIdTrackedAsync(orderId, cancellationToken);
 
         if (order is null)
         {

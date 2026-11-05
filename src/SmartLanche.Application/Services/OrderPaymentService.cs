@@ -29,7 +29,7 @@ public class OrderPaymentService : BaseService, IOrderPaymentService
 
     public async Task<CloseOrderWithPaymentResult> CloseWithPaymentAsync(CloseOrderWithPaymentRequest request, CancellationToken cancellationToken = default)
     {
-        var order = await _orderRepository.GetByIdAsync(request.OrderId, cancellationToken);
+        var order = await _orderRepository.GetByIdTrackedAsync(request.OrderId, cancellationToken);
 
         if (order is null)
         {
