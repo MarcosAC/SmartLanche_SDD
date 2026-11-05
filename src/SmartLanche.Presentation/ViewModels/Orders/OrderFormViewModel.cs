@@ -25,7 +25,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
     private OrderItemDto? _selectedOrderItem;
     private CustomerDto? _selectedCustomer;
     private FormaPagamento _selectedFormaPagamento = FormaPagamento.Dinheiro;
-    private decimal? _valorPago;
+    private decimal _valorPago;
     private int _parcelas = 1;
     private string _paymentObservacoes = string.Empty;
     private int? _selectedCategoryId;
@@ -157,7 +157,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
         }
     }
 
-    public decimal? ValorPago
+    public decimal ValorPago
     {
         get => _valorPago;
         set
@@ -268,7 +268,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
 
     public bool ShowCustomerSelection => _order is not null && _order.Status == OrderStatus.Pendente && SelectedFormaPagamento == FormaPagamento.Fiado;
 
-    public decimal Troco => ShowTroco ? Math.Max(0, (ValorPago ?? 0) - TotalAmount) : 0;
+    public decimal Troco => ShowTroco ? Math.Max(0, ValorPago - TotalAmount) : 0;
 
     public decimal ValorParcela => ShowParcelas && Parcelas > 0 ? Math.Round(TotalAmount / Parcelas, 2) : 0;
 
@@ -862,7 +862,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
             var request = new CloseOrderWithPaymentRequest(
                 _order.Id,
                 SelectedFormaPagamento,
-                ValorPago ?? 0,
+                ValorPago,
                 Parcelas,
                 PaymentObservacoes,
                 ShowCustomerSelection ? SelectedCustomer!.Id : null);
