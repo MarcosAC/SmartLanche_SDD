@@ -603,7 +603,7 @@ public class PendingPaymentServiceTests
         var order = new Order
         {
             CustomerId = customerId,
-            Status = OrderStatus.Pendente,
+            Status = OrderStatus.EmPreparacao,
             TotalAmount = total,
             OrderDate = DateTime.Now
         };
@@ -738,10 +738,10 @@ public class PendingPaymentServiceTests
         }
 
         public Task<Order?> GetOpenOrderAsync(int? customerId = null, CancellationToken cancellationToken = default)
-            => Task.FromResult<Order?>(_orders.Where(o => o.Status == OrderStatus.Pendente && (!customerId.HasValue || o.CustomerId == customerId)).OrderByDescending(o => o.OrderDate).FirstOrDefault());
+            => Task.FromResult<Order?>(_orders.Where(o => o.Status == OrderStatus.EmPreparacao && (!customerId.HasValue || o.CustomerId == customerId)).OrderByDescending(o => o.OrderDate).FirstOrDefault());
 
         public Task<bool> ExistsOpenOrderForCustomerAsync(int customerId, CancellationToken cancellationToken = default)
-            => Task.FromResult(_orders.Any(o => o.CustomerId == customerId && o.Status == OrderStatus.Pendente));
+            => Task.FromResult(_orders.Any(o => o.CustomerId == customerId && o.Status == OrderStatus.EmPreparacao));
 
         public Task<IReadOnlyList<OrderItem>> GetItemsByOrderAsync(int orderId, CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<OrderItem>>([]);

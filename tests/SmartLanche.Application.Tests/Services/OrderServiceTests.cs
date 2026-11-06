@@ -55,9 +55,7 @@ public class OrderServiceTests : IDisposable
 
     private async Task<OrderDto> AdvanceOrderToReadyAsync(int orderId)
     {
-        // Pendente -> EmPreparacao
-        await _service.StartPreparationAsync(orderId);
-        // EmPreparacao -> Pronto
+        // Order starts as EmPreparacao -> Pronto
         return await _service.MarkAsReadyAsync(orderId);
     }
 
@@ -68,7 +66,7 @@ public class OrderServiceTests : IDisposable
 
         Assert.True(result.Id > 0);
         Assert.Null(result.CustomerId);
-        Assert.Equal(OrderStatus.Pendente, result.Status);
+        Assert.Equal(OrderStatus.EmPreparacao, result.Status);
         Assert.Equal(0m, result.TotalAmount);
         Assert.Empty(result.Items);
     }
@@ -83,7 +81,7 @@ public class OrderServiceTests : IDisposable
         Assert.True(result.Id > 0);
         Assert.Equal(customer.Id, result.CustomerId);
         Assert.Equal(customer.Name, result.CustomerName);
-        Assert.Equal(OrderStatus.Pendente, result.Status);
+        Assert.Equal(OrderStatus.EmPreparacao, result.Status);
         Assert.Equal(0m, result.TotalAmount);
     }
 
@@ -117,7 +115,7 @@ public class OrderServiceTests : IDisposable
                 Quantity = 2
             });
 
-        Assert.Equal(OrderStatus.Pendente, result.Status);
+        Assert.Equal(OrderStatus.EmPreparacao, result.Status);
         Assert.Equal(51.00m, result.TotalAmount);
         Assert.Single(result.Items);
         Assert.Equal(product.Id, result.Items[0].ProductId);
@@ -510,7 +508,7 @@ public class OrderServiceTests : IDisposable
         await AdvanceOrderToReadyAsync(openOrder.Id);
         await _service.CloseAsync(new CloseOrderRequest { OrderId = openOrder.Id });
 
-        var openOrders = await _service.GetAllAsync(new OrderFilterRequest { Status = (int)OrderStatus.Pendente });
+        var openOrders = await _service.GetAllAsync(new OrderFilterRequest { Status = (int)OrderStatus.EmPreparacao });
         var closedOrders = await _service.GetAllAsync(new OrderFilterRequest { Status = (int)OrderStatus.Finalizado });
 
         Assert.Empty(openOrders);
@@ -1106,7 +1104,7 @@ public class OrderServiceTests : IDisposable
 
         public Task<Order?> GetOpenOrderAsync(int? customerId = null, CancellationToken cancellationToken = default)
         {
-            var query = _orders.Where(o => o.Status == OrderStatus.Pendente);
+            var query = _orders.Where(o => o.Status == OrderStatus.EmPreparacao);
 
             if (customerId.HasValue)
                 query = query.Where(o => o.CustomerId == customerId.Value);
@@ -1121,7 +1119,7 @@ public class OrderServiceTests : IDisposable
 
         public Task<bool> ExistsOpenOrderForCustomerAsync(int customerId, CancellationToken cancellationToken = default)
         {
-            return Task.FromResult(_orders.Any(o => o.CustomerId == customerId && o.Status == OrderStatus.Pendente));
+            return Task.FromResult(_orders.Any(o => o.CustomerId == customerId && o.Status == OrderStatus.EmPreparacao));
         }
 
         public Task<IReadOnlyList<OrderItem>> GetItemsByOrderAsync(int orderId, CancellationToken cancellationToken = default)

@@ -317,7 +317,7 @@ public class PaymentServiceTests
         var result = await _service.ProcessPaymentAsync(request);
 
         Assert.False(result.Success);
-        Assert.Contains("pendentes", result.ErrorMessage!);
+        Assert.Contains("Apenas pedidos em preparação ou prontos podem receber pagamento", result.ErrorMessage!);
     }
 
     [Fact]
@@ -338,7 +338,7 @@ public class PaymentServiceTests
         var result = await _service.ProcessPaymentAsync(request);
 
         Assert.False(result.Success);
-        Assert.Contains("pendentes", result.ErrorMessage!);
+        Assert.Contains("Apenas pedidos em preparação ou prontos podem receber pagamento", result.ErrorMessage!);
     }
 
     #endregion
@@ -518,7 +518,7 @@ public class PaymentServiceTests
         var order = new Order
         {
             CustomerId = customerId,
-            Status = OrderStatus.Pendente,
+            Status = OrderStatus.EmPreparacao,
             TotalAmount = total,
             OrderDate = date ?? DateTime.Now
         };
@@ -610,14 +610,14 @@ public class PaymentServiceTests
 
         public Task<Order?> GetOpenOrderAsync(int? customerId = null, CancellationToken cancellationToken = default)
         {
-            var query = _orders.Where(o => o.Status == OrderStatus.Pendente);
+            var query = _orders.Where(o => o.Status == OrderStatus.EmPreparacao);
             if (customerId.HasValue)
                 query = query.Where(o => o.CustomerId == customerId.Value);
             return Task.FromResult<Order?>(query.OrderByDescending(o => o.OrderDate).FirstOrDefault());
         }
 
         public Task<bool> ExistsOpenOrderForCustomerAsync(int customerId, CancellationToken cancellationToken = default)
-            => Task.FromResult(_orders.Any(o => o.CustomerId == customerId && o.Status == OrderStatus.Pendente));
+            => Task.FromResult(_orders.Any(o => o.CustomerId == customerId && o.Status == OrderStatus.EmPreparacao));
 
         public Task<IReadOnlyList<OrderItem>> GetItemsByOrderAsync(int orderId, CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<OrderItem>>([]);

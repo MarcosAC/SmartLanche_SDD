@@ -97,7 +97,7 @@ public class OrderService : BaseService, IOrderService
         {
             CustomerId = request.CustomerId,
             OrderDate = DateTime.Now,
-            Status = OrderStatus.Pendente,
+            Status = OrderStatus.EmPreparacao,
             TotalAmount = 0,
             Notes = string.Empty
         };
@@ -116,9 +116,9 @@ public class OrderService : BaseService, IOrderService
             throw new InvalidOperationException("O pedido informado não existe.");
         }
 
-        if (order.Status != OrderStatus.Pendente)
+        if (order.Status != OrderStatus.EmPreparacao)
         {
-            throw new InvalidOperationException("Apenas pedidos abertos podem ser alterados.");
+            throw new InvalidOperationException("Apenas pedidos em preparação podem ser alterados.");
         }
 
         var product = await _productRepository.GetByIdAsync(request.ProductId, cancellationToken);
@@ -178,9 +178,9 @@ public class OrderService : BaseService, IOrderService
             throw new InvalidOperationException("O pedido informado não existe.");
         }
 
-        if (order.Status != OrderStatus.Pendente)
+        if (order.Status != OrderStatus.EmPreparacao)
         {
-            throw new InvalidOperationException("Apenas pedidos abertos podem ser alterados.");
+            throw new InvalidOperationException("Apenas pedidos em preparação podem ser alterados.");
         }
 
         var item = order.OrderItems.FirstOrDefault(i => i.Id == orderItemId);
@@ -207,9 +207,9 @@ public class OrderService : BaseService, IOrderService
             throw new InvalidOperationException("O pedido informado não existe.");
         }
 
-        if (order.Status != OrderStatus.Pendente)
+        if (order.Status != OrderStatus.EmPreparacao)
         {
-            throw new InvalidOperationException("Apenas pedidos abertos podem ser alterados.");
+            throw new InvalidOperationException("Apenas pedidos em preparação podem ser alterados.");
         }
 
         var item = order.OrderItems.FirstOrDefault(i => i.Id == request.OrderItemId);
@@ -243,16 +243,16 @@ public class OrderService : BaseService, IOrderService
             throw new InvalidOperationException("O pedido informado não existe.");
         }
 
-        // Allow closing both Pendente and Pronto orders when payment is provided
+        // Allow closing both EmPreparacao and Pronto orders when payment is provided
         var hasPaymentInfo = request.FormaPagamento.HasValue;
         var validStatusForClose = hasPaymentInfo
-            ? (order.Status == OrderStatus.Pendente || order.Status == OrderStatus.Pronto)
+            ? (order.Status == OrderStatus.EmPreparacao || order.Status == OrderStatus.Pronto)
             : order.Status == OrderStatus.Pronto;
 
         if (!validStatusForClose)
         {
             throw new InvalidOperationException(hasPaymentInfo
-                ? "Apenas pedidos pendentes ou prontos podem ser fechados com pagamento."
+                ? "Apenas pedidos em preparação ou prontos podem ser fechados com pagamento."
                 : "Apenas pedidos prontos podem ser finalizados.");
         }
 
@@ -336,15 +336,7 @@ public class OrderService : BaseService, IOrderService
             throw new InvalidOperationException("Pedido já foi cancelado.");
         }
 
-        // If order is Pendente and DeleteIfPendente is true, delete completely (used by OrderFormViewModel)
-        if (order.Status == OrderStatus.Pendente && request.DeleteIfPendente)
-        {
-            order.Cancel();
-            await _orderRepository.DeleteAsync(order, cancellationToken);
-            return MapToDto(order);
-        }
-
-        // For other statuses, or Pendente with DeleteIfPendente=false, mark as Cancelado and keep in database
+        // For all non-Cancelado statuses, mark as Cancelado and keep in database
         var wasDelivered = order.Status == OrderStatus.Finalizado || order.Status == OrderStatus.Pronto;
 
         order.Cancel();
@@ -370,27 +362,6 @@ public class OrderService : BaseService, IOrderService
         }
 
         await _orderRepository.DeleteAsync(order, cancellationToken);
-    }
-
-    public async Task<OrderDto> StartPreparationAsync(int orderId, CancellationToken cancellationToken = default)
-    {
-        var order = await _orderRepository.GetByIdTrackedAsync(orderId, cancellationToken);
-
-        if (order is null)
-        {
-            throw new InvalidOperationException("O pedido informado não existe.");
-        }
-
-        if (order.Status != OrderStatus.Pendente)
-        {
-            throw new InvalidOperationException("Apenas pedidos pendentes podem iniciar preparação.");
-        }
-
-        order.StartPreparation();
-
-        await _orderRepository.UpdateAsync(order, cancellationToken);
-
-        return MapToDto(order);
     }
 
     public async Task<OrderDto> MarkAsReadyAsync(int orderId, CancellationToken cancellationToken = default)

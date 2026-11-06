@@ -25,7 +25,6 @@ public sealed class OrderPreparationListViewModel : ListViewModelBase<OrderPrepa
     }
 
     public ICommand RefreshCommand { get; }
-    public ICommand StartPreparationCommand { get; }
     public ICommand MarkReadyCommand { get; }
     public ICommand CancelCommand { get; }
     public ICommand ViewDetailCommand { get; }
@@ -40,7 +39,6 @@ public sealed class OrderPreparationListViewModel : ListViewModelBase<OrderPrepa
         _toastService = toastService ?? throw new ArgumentNullException(nameof(toastService));
 
         RefreshCommand = new RelayCommand(async _ => await LoadAsync());
-        StartPreparationCommand = new RelayCommand<OrderPreparationDto>(async dto => await StartPreparationAsync(dto), dto => dto?.Status == OrderStatus.Pendente);
         MarkReadyCommand = new RelayCommand<OrderPreparationDto>(async dto => await MarkReadyAsync(dto), dto => dto?.Status == OrderStatus.EmPreparacao);
         CancelCommand = new RelayCommand<OrderPreparationDto>(async dto => await CancelAsync(dto), dto => dto?.Status != OrderStatus.Cancelado);
         ViewDetailCommand = new RelayCommand<OrderPreparationDto>(async dto => await ViewDetailAsync(dto));
@@ -85,25 +83,6 @@ public sealed class OrderPreparationListViewModel : ListViewModelBase<OrderPrepa
     private void OnOrderChanged(object? sender, EventArgs e)
     {
         _ = LoadAsync();
-    }
-
-    private async Task StartPreparationAsync(OrderPreparationDto? orderDto)
-    {
-        if (orderDto is null) return;
-
-        await ExecuteWithLoadingAsync(async () =>
-        {
-            var result = await Service.StartPreparationAsync(orderDto.Id);
-            if (result is not null)
-            {
-                _toastService.ShowSuccess($"Pedido #{orderDto.Id} iniciado preparação");
-                await LoadItemsAsync();
-            }
-            else
-            {
-                _toastService.ShowError("Pedido não encontrado");
-            }
-        });
     }
 
     private async Task MarkReadyAsync(OrderPreparationDto? orderDto)

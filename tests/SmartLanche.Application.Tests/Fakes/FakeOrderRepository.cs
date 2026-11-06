@@ -81,7 +81,7 @@ public sealed class FakeOrderRepository : FakeRepositoryBase<Order>, IOrderRepos
 
     public Task<Order?> GetOpenOrderAsync(int? customerId = null, CancellationToken cancellationToken = default)
     {
-        var query = _entities.Values.Where(o => o.Status == OrderStatus.Pendente);
+        var query = _entities.Values.Where(o => o.Status == OrderStatus.EmPreparacao);
 
         if (customerId.HasValue)
             query = query.Where(o => o.CustomerId == customerId.Value);
@@ -96,7 +96,7 @@ public sealed class FakeOrderRepository : FakeRepositoryBase<Order>, IOrderRepos
 
     public Task<bool> ExistsOpenOrderForCustomerAsync(int customerId, CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(_entities.Values.Any(o => o.CustomerId == customerId && o.Status == OrderStatus.Pendente));
+        return Task.FromResult(_entities.Values.Any(o => o.CustomerId == customerId && o.Status == OrderStatus.EmPreparacao));
     }
 
     public Task<IReadOnlyList<OrderItem>> GetItemsByOrderAsync(int orderId, CancellationToken cancellationToken = default)

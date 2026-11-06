@@ -124,7 +124,7 @@ public class OrderRepository : IOrderRepository
     public async Task<Order?> GetOpenOrderAsync(int? customerId = null, CancellationToken cancellationToken = default)
     {
         IQueryable<Order> query = _context.Orders
-            .Where(order => order.Status == OrderStatus.Pendente);
+            .Where(order => order.Status == OrderStatus.EmPreparacao);
 
         if (customerId.HasValue)
         {
@@ -137,7 +137,7 @@ public class OrderRepository : IOrderRepository
     public async Task<bool> ExistsOpenOrderForCustomerAsync(int customerId, CancellationToken cancellationToken = default)
     {
         return await _context.Orders
-            .AnyAsync(order => order.CustomerId == customerId && order.Status == OrderStatus.Pendente, cancellationToken);
+            .AnyAsync(order => order.CustomerId == customerId && order.Status == OrderStatus.EmPreparacao, cancellationToken);
     }
 
     public async Task<IReadOnlyList<OrderItem>> GetItemsByOrderAsync(int orderId, CancellationToken cancellationToken = default)

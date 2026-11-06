@@ -61,8 +61,8 @@ public sealed class HomeViewModel : INotifyPropertyChanged
             // Get all orders to compute metrics
             var orders = await _orderService.GetAllAsync(null);
 
-            // Open orders count (Pendente + EmPreparacao + Pronto)
-            OpenOrdersCount = orders.Count(o => o.Status == OrderStatus.Pendente || o.Status == OrderStatus.EmPreparacao || o.Status == OrderStatus.Pronto);
+            // Open orders count (EmPreparacao + Pronto)
+            OpenOrdersCount = orders.Count(o => o.Status == OrderStatus.EmPreparacao || o.Status == OrderStatus.Pronto);
 
             // Today's revenue (finalized orders today)
             var today = DateTime.Today;

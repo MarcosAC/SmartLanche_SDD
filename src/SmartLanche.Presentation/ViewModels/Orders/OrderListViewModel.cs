@@ -18,7 +18,6 @@ public sealed class OrderListViewModel : ListViewModelBase<OrderDto, IOrderServi
 
     public ICommand CloseOrderCommand { get; }
     public ICommand CancelOrderCommand { get; }
-    public ICommand StartPreparationCommand { get; }
     public ICommand MarkAsReadyCommand { get; }
     public ICommand FinalizeOrderCommand { get; }
 
@@ -69,10 +68,7 @@ public sealed class OrderListViewModel : ListViewModelBase<OrderDto, IOrderServi
         RequestEditItem += (order) => RequestViewOrder?.Invoke(order);
 
         CloseOrderCommand = new RelayCommand(async _ => await CloseOrderAsync(),
-            _ => SelectedItem?.Status == OrderStatus.Pendente && !IsLoading);
-
-        StartPreparationCommand = new RelayCommand(async _ => await StartPreparationAsync(),
-            _ => SelectedItem?.Status == OrderStatus.Pendente && !IsLoading);
+            _ => SelectedItem?.Status == OrderStatus.EmPreparacao && !IsLoading);
 
         MarkAsReadyCommand = new RelayCommand(async _ => await MarkAsReadyAsync(),
             _ => SelectedItem?.Status == OrderStatus.EmPreparacao && !IsLoading);
@@ -156,18 +152,6 @@ public sealed class OrderListViewModel : ListViewModelBase<OrderDto, IOrderServi
             await Service.CancelAsync(request);
 
             SuccessMessage = "Pedido cancelado com sucesso.";
-            await LoadItemsAsync();
-        });
-    }
-
-    private async Task StartPreparationAsync()
-    {
-        if (SelectedItem is null || IsLoading) return;
-
-        await ExecuteWithLoadingAsync(async () =>
-        {
-            await Service.StartPreparationAsync(SelectedItem.Id);
-            SuccessMessage = "Preparação iniciada.";
             await LoadItemsAsync();
         });
     }

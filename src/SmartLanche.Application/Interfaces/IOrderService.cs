@@ -18,8 +18,6 @@ public interface IOrderService
 
     Task<OrderDto> CloseAsync(CloseOrderRequest request, CancellationToken cancellationToken = default);
 
-    Task<OrderDto> StartPreparationAsync(int orderId, CancellationToken cancellationToken = default);
-
     Task<OrderDto> MarkAsReadyAsync(int orderId, CancellationToken cancellationToken = default);
 
     Task<OrderDto> FinalizeAsync(int orderId, CancellationToken cancellationToken = default);

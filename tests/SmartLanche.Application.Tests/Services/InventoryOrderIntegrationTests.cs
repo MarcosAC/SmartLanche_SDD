@@ -91,7 +91,6 @@ public class InventoryOrderIntegrationTests : IDisposable
 
     private async Task AdvanceOrderToReadyAsync(int orderId)
     {
-        await _orderService.StartPreparationAsync(orderId);
         await _orderService.MarkAsReadyAsync(orderId);
     }
 
@@ -589,10 +588,10 @@ public class InventoryOrderIntegrationTests : IDisposable
         }
 
         public Task<Order?> GetOpenOrderAsync(int? customerId = null, CancellationToken cancellationToken = default)
-            => Task.FromResult<Order?>(_orders.Where(o => o.Status == OrderStatus.Pendente && (!customerId.HasValue || o.CustomerId == customerId)).OrderByDescending(o => o.OrderDate).FirstOrDefault());
+            => Task.FromResult<Order?>(_orders.Where(o => o.Status == OrderStatus.EmPreparacao && (!customerId.HasValue || o.CustomerId == customerId)).OrderByDescending(o => o.OrderDate).FirstOrDefault());
 
         public Task<bool> ExistsOpenOrderForCustomerAsync(int customerId, CancellationToken cancellationToken = default)
-            => Task.FromResult(_orders.Any(o => o.CustomerId == customerId && o.Status == OrderStatus.Pendente));
+            => Task.FromResult(_orders.Any(o => o.CustomerId == customerId && o.Status == OrderStatus.EmPreparacao));
 
         public Task<IReadOnlyList<OrderItem>> GetItemsByOrderAsync(int orderId, CancellationToken cancellationToken = default)
         {
@@ -639,7 +638,7 @@ public class InventoryOrderIntegrationTests : IDisposable
 
         public Task<OrderDto> CreateAsync(CreateOrderRequest request, CancellationToken cancellationToken = default)
         {
-            var order = new Order { CustomerId = request.CustomerId, OrderDate = DateTime.Now, Status = OrderStatus.Pendente, TotalAmount = 0, Notes = string.Empty };
+            var order = new Order { CustomerId = request.CustomerId, OrderDate = DateTime.Now, Status = OrderStatus.EmPreparacao, TotalAmount = 0, Notes = string.Empty };
             _orderRepository.AddAsync(order, cancellationToken).Wait();
             return Task.FromResult(MapToDto(order));
         }
@@ -692,16 +691,6 @@ public class InventoryOrderIntegrationTests : IDisposable
 
         public Task<IReadOnlyList<PromotionDto>> GetEligiblePromotionsAsync(int orderId, DateTime date, CancellationToken cancellationToken = default)
             => throw new NotImplementedException();
-
-        public Task<OrderDto> StartPreparationAsync(int orderId, CancellationToken cancellationToken = default)
-        {
-            var order = _orderRepository.GetByIdAsync(orderId, cancellationToken).Result;
-            if (order == null) throw new InvalidOperationException("Order not found");
-            if (order.Status != OrderStatus.Pendente) throw new InvalidOperationException("Only pending orders can start preparation");
-            order.StartPreparation();
-            _orderRepository.UpdateAsync(order, cancellationToken).Wait();
-            return Task.FromResult(MapToDto(order));
-        }
 
         public Task<OrderDto> MarkAsReadyAsync(int orderId, CancellationToken cancellationToken = default)
         {
