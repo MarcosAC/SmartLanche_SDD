@@ -27,8 +27,9 @@ public class OrderStatusToVisibilityConverter : IValueConverter
             "status_pronto" => status == OrderStatus.Pronto,
             "status_finalizado" => status == OrderStatus.Finalizado,
             "status_cancelado" => status == OrderStatus.Cancelado,
-            "status_cancelable" => status == OrderStatus.Aberto || status == OrderStatus.EmPreparacao || status == OrderStatus.Pronto || status == OrderStatus.Finalizado,
+            "status_cancelable" => status == OrderStatus.Aberto || status == OrderStatus.EmPreparacao || status == OrderStatus.Pronto,
             "status_actionable" => status == OrderStatus.EmPreparacao || status == OrderStatus.Pronto,
+            "status_closable" => status == OrderStatus.EmPreparacao || status == OrderStatus.Pronto,
             _ => false
         };
 

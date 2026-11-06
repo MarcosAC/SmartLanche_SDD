@@ -200,11 +200,6 @@
                             Command="{Binding MarkAsReadyCommand}"
                             Visibility="{Binding CanMarkAsReady, Converter={StaticResource BoolToVisibilityConverter}}"
                             ToolTip="Marcar pedido como pronto (Em Preparo → Pronto)"/>
-                    <Button Content="Finalizar Pedido"
-                            Style="{StaticResource PrimaryButtonStyle}"
-                            Command="{Binding FinalizeOrderCommand}"
-                            Visibility="{Binding CanFinalizeOrder, Converter={StaticResource BoolToVisibilityConverter}}"
-                            ToolTip="Finalizar pedido (Pronto → Finalizado)"/>
                     <Button Content="Cancelar Pedido"
                             Style="{StaticResource DangerButtonStyle}"
                             Command="{Binding CancelOrderCommand}"
@@ -547,127 +542,8 @@
                     </Grid>
                 </Border>
 
-                <!-- Pagamento -->
+                <!-- Total e status -->
                 <Border Grid.Row="3"
-                        Background="#F0F9FF"
-                        BorderBrush="#0EA5E9"
-                        BorderThickness="1"
-                        CornerRadius="6"
-                        Padding="16"
-                        Margin="0,0,0,16"
-                        Visibility="{Binding CanAddItems, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <StackPanel>
-                        <TextBlock Text="Pagamento"
-                                   FontSize="14"
-                                   FontWeight="SemiBold"
-                                   Foreground="#0369A1"
-                                   Margin="0,0,0,12"/>
-
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-
-                            <!-- Forma de Pagamento -->
-                            <StackPanel Grid.Column="0" Margin="0,0,16,0">
-                                <TextBlock Text="Forma de Pagamento"
-                                           Style="{StaticResource FormLabelStyle}"/>
-                                <ComboBox ItemsSource="{Binding FormasPagamento}"
-                                          SelectedItem="{Binding SelectedFormaPagamento, UpdateSourceTrigger=PropertyChanged}"
-                                          Style="{StaticResource FormComboBoxStyle}"
-                                          Width="180">
-                                    <ComboBox.ItemTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding Converter={StaticResource EnumToDescriptionConverter}}"/>
-                                        </DataTemplate>
-                                    </ComboBox.ItemTemplate>
-                                </ComboBox>
-                            </StackPanel>
-
-                            <!-- Valor Pago -->
-                            <StackPanel Grid.Column="1" Margin="0,0,16,0">
-                                <TextBlock Text="Valor Pago (R$)"
-                                           Style="{StaticResource FormLabelStyle}"/>
-                                <TextBox Text="{Binding ValorPago, UpdateSourceTrigger=LostFocus, StringFormat='C2', ConverterCulture='pt-BR'}"
-                                         Style="{StaticResource FormTextBoxStyle}"
-                                         Width="150"
-                                         ToolTip="Informe o valor recebido"/>
-                            </StackPanel>
-
-                            <!-- Parcelas (visível para Cartão) -->
-                            <StackPanel Grid.Column="2" Margin="0,0,16,0"
-                                        Visibility="{Binding ShowParcelas, Converter={StaticResource BoolToVisibilityConverter}}">
-                                <TextBlock Text="Parcelas"
-                                           Style="{StaticResource FormLabelStyle}"/>
-                                <TextBox Text="{Binding Parcelas, UpdateSourceTrigger=PropertyChanged}"
-                                         Style="{StaticResource FormTextBoxStyle}"
-                                         Width="80"
-                                         ToolTip="Número de parcelas (1-12)"/>
-                            </StackPanel>
-
-                            <!-- Troco (visível para Dinheiro) -->
-                            <StackPanel Grid.Column="3" Margin="0,0,16,0"
-                                        Visibility="{Binding ShowTroco, Converter={StaticResource BoolToVisibilityConverter}}">
-                                <TextBlock Text="Troco (R$)"
-                                           Style="{StaticResource FormLabelStyle}"/>
-                                <TextBlock Text="{Binding Troco, StringFormat='C2', ConverterCulture='pt-BR', FallbackValue='R$ 0,00'}"
-                                           FontSize="16"
-                                           FontWeight="Bold"
-                                           Foreground="#166534"
-                                           VerticalAlignment="Center"
-                                           Margin="10,8,0,0"/>
-                            </StackPanel>
-
-                            <!-- Cliente (visível para Fiado) -->
-                            <StackPanel Grid.Column="4" Margin="0,0,16,0"
-                                        Visibility="{Binding ShowCustomerSelection, Converter={StaticResource BoolToVisibilityConverter}}">
-                                <TextBlock Text="Cliente (Obrigatório para Fiado)"
-                                           Style="{StaticResource FormLabelStyle}"/>
-                                <ComboBox ItemsSource="{Binding Customers}"
-                                          DisplayMemberPath="Name"
-                                          SelectedValuePath="Id"
-                                          SelectedValue="{Binding SelectedCustomerId, UpdateSourceTrigger=PropertyChanged}"
-                                          Style="{StaticResource FormComboBoxStyle}"
-                                          Width="220"
-                                          ToolTip="Selecione o cliente para pagamento a prazo"/>
-                            </StackPanel>
-
-                            <!-- Valor Parcela -->
-                            <StackPanel Grid.Column="5" Margin="0,0,0,0"
-                                        Visibility="{Binding ShowParcelas, Converter={StaticResource BoolToVisibilityConverter}}">
-                                <TextBlock Text="Valor Parcela (R$)"
-                                           Style="{StaticResource FormLabelStyle}"/>
-                                <TextBlock Text="{Binding ValorParcela, StringFormat='C2', ConverterCulture='pt-BR', FallbackValue='R$ 0,00'}"
-                                           FontSize="16"
-                                           FontWeight="Bold"
-                                           Foreground="#0369A1"
-                                           VerticalAlignment="Center"
-                                           Margin="10,8,0,0"/>
-                            </StackPanel>
-                        </Grid>
-
-                        <!-- Observações de Pagamento -->
-                        <StackPanel Margin="0,12,0,0">
-                            <TextBlock Text="Observações"
-                                       Style="{StaticResource FormLabelStyle}"/>
-                            <TextBox Text="{Binding PaymentObservacoes, UpdateSourceTrigger=PropertyChanged}"
-                                     Style="{StaticResource FormTextBoxStyle}"
-                                     Height="60"
-                                     AcceptsReturn="True"
-                                     TextWrapping="Wrap"
-                                     VerticalScrollBarVisibility="Auto"
-                                     ToolTip="Observações sobre o pagamento (opcional)"/>
-                        </StackPanel>
-                    </StackPanel>
-                </Border>
-
-                <!-- Total e ações -->
-                <Border Grid.Row="4"
                         Background="#F9FAFB"
                         CornerRadius="6"
                         Padding="16"
@@ -697,10 +573,6 @@
                         </StackPanel>
 
                         <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
-                            <Button Content="Fechar Pedido"
-                                    Style="{StaticResource SuccessButtonStyle}"
-                                    Command="{Binding CloseOrderCommand}"
-                                    Visibility="{Binding CanCloseOrder, Converter={StaticResource BoolToVisibilityConverter}}"/>
                             <Button Content="Cancelar Pedido"
                                     Style="{StaticResource DangerButtonStyle}"
                                     Command="{Binding CancelOrderCommand}"
