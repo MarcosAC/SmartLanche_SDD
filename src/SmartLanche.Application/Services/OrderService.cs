@@ -97,7 +97,7 @@ public class OrderService : BaseService, IOrderService
         {
             CustomerId = request.CustomerId,
             OrderDate = DateTime.Now,
-            Status = OrderStatus.EmPreparacao,
+            Status = OrderStatus.Aberto,
             TotalAmount = 0,
             Notes = string.Empty
         };
@@ -116,9 +116,9 @@ public class OrderService : BaseService, IOrderService
             throw new InvalidOperationException("O pedido informado não existe.");
         }
 
-        if (order.Status != OrderStatus.EmPreparacao)
+        if (order.Status != OrderStatus.Aberto && order.Status != OrderStatus.EmPreparacao)
         {
-            throw new InvalidOperationException("Apenas pedidos em preparação podem ser alterados.");
+            throw new InvalidOperationException("Apenas pedidos abertos ou em preparação podem ser alterados.");
         }
 
         var product = await _productRepository.GetByIdAsync(request.ProductId, cancellationToken);
@@ -178,9 +178,9 @@ public class OrderService : BaseService, IOrderService
             throw new InvalidOperationException("O pedido informado não existe.");
         }
 
-        if (order.Status != OrderStatus.EmPreparacao)
+        if (order.Status != OrderStatus.Aberto && order.Status != OrderStatus.EmPreparacao)
         {
-            throw new InvalidOperationException("Apenas pedidos em preparação podem ser alterados.");
+            throw new InvalidOperationException("Apenas pedidos abertos ou em preparação podem ser alterados.");
         }
 
         var item = order.OrderItems.FirstOrDefault(i => i.Id == orderItemId);
@@ -207,9 +207,9 @@ public class OrderService : BaseService, IOrderService
             throw new InvalidOperationException("O pedido informado não existe.");
         }
 
-        if (order.Status != OrderStatus.EmPreparacao)
+        if (order.Status != OrderStatus.Aberto && order.Status != OrderStatus.EmPreparacao)
         {
-            throw new InvalidOperationException("Apenas pedidos em preparação podem ser alterados.");
+            throw new InvalidOperationException("Apenas pedidos abertos ou em preparação podem ser alterados.");
         }
 
         var item = order.OrderItems.FirstOrDefault(i => i.Id == request.OrderItemId);
@@ -410,6 +410,27 @@ public class OrderService : BaseService, IOrderService
 
         // Trigger automatic stock deduction
         await _inventoryService.BaixaAutomaticaPedidoAsync(order.Id, order.OrderItems.ToList(), cancellationToken);
+
+        return MapToDto(order);
+    }
+
+    public async Task<OrderDto> StartPreparationAsync(int orderId, CancellationToken cancellationToken = default)
+    {
+        var order = await _orderRepository.GetByIdTrackedAsync(orderId, cancellationToken);
+
+        if (order is null)
+        {
+            throw new InvalidOperationException("O pedido informado não existe.");
+        }
+
+        if (order.Status != OrderStatus.Aberto)
+        {
+            throw new InvalidOperationException("Apenas pedidos abertos podem iniciar preparação.");
+        }
+
+        order.StartPreparation();
+
+        await _orderRepository.UpdateAsync(order, cancellationToken);
 
         return MapToDto(order);
     }

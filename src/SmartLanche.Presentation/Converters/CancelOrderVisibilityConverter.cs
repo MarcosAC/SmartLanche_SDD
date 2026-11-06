@@ -12,8 +12,10 @@ public class CancelOrderVisibilityConverter : IValueConverter
     {
         if (value is OrderStatus status)
         {
-            // Show Cancel button for all statuses except Cancelado
-            return status != OrderStatus.Cancelado ? Visibility.Visible : Visibility.Collapsed;
+            // Show Cancel button for all statuses except Cancelado and Finalizado
+            return status != OrderStatus.Cancelado && status != OrderStatus.Finalizado
+                ? Visibility.Visible
+                : Visibility.Collapsed;
         }
         return Visibility.Collapsed;
     }

@@ -190,6 +190,11 @@
                             HorizontalAlignment="Right"
                             VerticalAlignment="Bottom"
                             Margin="0,0,0,8">
+                    <Button Content="Iniciar Preparação"
+                            Style="{StaticResource SuccessButtonStyle}"
+                            Command="{Binding StartPreparationCommand}"
+                            Visibility="{Binding CanStartPreparation, Converter={StaticResource BoolToVisibilityConverter}}"
+                            ToolTip="Iniciar preparação do pedido (Aberto → Em Preparo)"/>
                     <Button Content="Marcar como Pronto"
                             Style="{StaticResource SuccessButtonStyle}"
                             Command="{Binding MarkAsReadyCommand}"

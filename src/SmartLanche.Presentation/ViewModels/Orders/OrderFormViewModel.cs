@@ -73,6 +73,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
         DecreaseQuantityCommand = new RelayCommand(p => DecreaseQuantity(p as ProductDto));
         IncreaseOrderItemQuantityCommand = new RelayCommand(async p => await IncreaseOrderItemQuantityAsync(p as OrderItemDto), _ => CanAddItems && !IsLoading);
         DecreaseOrderItemQuantityCommand = new RelayCommand(async p => await DecreaseOrderItemQuantityAsync(p as OrderItemDto), _ => CanAddItems && !IsLoading);
+        StartPreparationCommand = new RelayCommand(async _ => await StartPreparationAsync(), _ => CanStartPreparation && !IsLoading);
     }
 
     public ICommand LoadCommand { get; }
@@ -89,6 +90,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
     public ICommand DecreaseQuantityCommand { get; }
     public ICommand IncreaseOrderItemQuantityCommand { get; }
     public ICommand DecreaseOrderItemQuantityCommand { get; }
+    public ICommand StartPreparationCommand { get; }
 
     public ObservableCollection<OrderItemDto> OrderItems { get; } = [];
     public ObservableCollection<CustomerDto> Customers { get; } = [];
@@ -250,7 +252,9 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
 
     public string Status => _order?.Status.ToString() ?? "Novo";
 
-    public bool CanAddItems => (_order is null || _order.Status == OrderStatus.EmPreparacao) && !IsLoading;
+    public bool CanAddItems => (_order is null || _order.Status == OrderStatus.Aberto || _order.Status == OrderStatus.EmPreparacao) && !IsLoading;
+
+    public bool CanStartPreparation => _order is not null && _order.Status == OrderStatus.Aberto;
 
     public bool CanMarkAsReady => _order is not null && _order.Status == OrderStatus.EmPreparacao;
 
@@ -258,13 +262,13 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
 
     public bool CanCloseOrder => _order is not null && _order.Status == OrderStatus.EmPreparacao;
 
-    public bool CanCancelOrder => _order is not null && _order.Status != OrderStatus.Cancelado;
+    public bool CanCancelOrder => _order is not null && _order.Status != OrderStatus.Cancelado && _order.Status != OrderStatus.Finalizado;
 
-    public bool ShowParcelas => _order is not null && _order.Status == OrderStatus.EmPreparacao && SelectedFormaPagamento == FormaPagamento.Cartao;
+    public bool ShowParcelas => _order is not null && (_order.Status == OrderStatus.Aberto || _order.Status == OrderStatus.EmPreparacao) && SelectedFormaPagamento == FormaPagamento.Cartao;
 
-    public bool ShowTroco => _order is not null && _order.Status == OrderStatus.EmPreparacao && SelectedFormaPagamento == FormaPagamento.Dinheiro;
+    public bool ShowTroco => _order is not null && (_order.Status == OrderStatus.Aberto || _order.Status == OrderStatus.EmPreparacao) && SelectedFormaPagamento == FormaPagamento.Dinheiro;
 
-    public bool ShowCustomerSelection => _order is not null && _order.Status == OrderStatus.EmPreparacao && SelectedFormaPagamento == FormaPagamento.Fiado;
+    public bool ShowCustomerSelection => _order is not null && (_order.Status == OrderStatus.Aberto || _order.Status == OrderStatus.EmPreparacao) && SelectedFormaPagamento == FormaPagamento.Fiado;
 
     public decimal Troco => ShowTroco ? Math.Max(0, ValorPago - TotalAmount) : 0;
 
@@ -334,6 +338,37 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
         UpdateCommandStates();
     }
 
+    private async Task StartPreparationAsync()
+    {
+        if (_order is null || _order.Status != OrderStatus.Aberto || IsLoading) return;
+
+        try
+        {
+            IsLoading = true;
+            ClearMessages();
+
+            _order = await _orderService.StartPreparationAsync(_order.Id);
+
+            OnPropertyChanged(nameof(TotalAmount));
+            OnPropertyChanged(nameof(Status));
+            OnPropertyChanged(nameof(CanAddItems));
+            UpdateCommandStates();
+            UpdatePaymentVisibility();
+
+            _toastService.ShowSuccess("Preparação iniciada.");
+            WasSaved = true;
+            RequestClose?.Invoke();
+        }
+        catch (Exception ex)
+        {
+            _toastService.ShowError(ex.Message);
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
     private async Task LoadAsync()
     {
         // Called from LoadCommand - if order exists, reload it
@@ -384,7 +419,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
 
     private async Task AddItemAsync(object? parameter)
     {
-        if (_order is not null && _order.Status != OrderStatus.EmPreparacao) return;
+        if (_order is not null && _order.Status != OrderStatus.Aberto && _order.Status != OrderStatus.EmPreparacao) return;
         if (IsLoading) return;
 
         var product = parameter as ProductDto ?? SelectedProduct;
@@ -458,7 +493,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
 
     private async Task IncreaseOrderItemQuantityAsync(OrderItemDto? item)
     {
-        if (_order is null || _order.Status != OrderStatus.EmPreparacao || IsLoading || item is null) return;
+        if (_order is null || (_order.Status != OrderStatus.Aberto && _order.Status != OrderStatus.EmPreparacao) || IsLoading || item is null) return;
         if (item.Quantity >= 99) return;
 
         try
@@ -492,7 +527,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
 
     private async Task DecreaseOrderItemQuantityAsync(OrderItemDto? item)
     {
-        if (_order is null || _order.Status != OrderStatus.EmPreparacao || IsLoading || item is null) return;
+        if (_order is null || (_order.Status != OrderStatus.Aberto && _order.Status != OrderStatus.EmPreparacao) || IsLoading || item is null) return;
         if (item.Quantity <= 1) return;
 
         try
@@ -526,7 +561,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
 
     private async Task RemoveItemAsync(object? parameter)
     {
-        if (_order is null || _order.Status != OrderStatus.EmPreparacao || IsLoading) return;
+        if (_order is null || (_order.Status != OrderStatus.Aberto && _order.Status != OrderStatus.EmPreparacao) || IsLoading) return;
 
         var item = parameter as OrderItemDto ?? SelectedOrderItem;
         if (item is null) return;
@@ -563,7 +598,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
 
     private async Task AddComboAsync(object? parameter)
     {
-        if (_order is not null && _order.Status != OrderStatus.EmPreparacao) return;
+        if (_order is not null && _order.Status != OrderStatus.Aberto && _order.Status != OrderStatus.EmPreparacao) return;
         if (IsLoading) return;
 
         if (parameter is not int comboId) return;
@@ -619,7 +654,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
 
     private async Task RecalculateAsync()
     {
-        if (_order is null || _order.Status != OrderStatus.EmPreparacao || IsLoading) return;
+        if (_order is null || (_order.Status != OrderStatus.Aberto && _order.Status != OrderStatus.EmPreparacao) || IsLoading) return;
 
         try
         {
@@ -845,6 +880,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
     private void UpdateCommandStates()
     {
         OnPropertyChanged(nameof(CanAddItems));
+        OnPropertyChanged(nameof(CanStartPreparation));
         OnPropertyChanged(nameof(CanMarkAsReady));
         OnPropertyChanged(nameof(CanFinalizeOrder));
         OnPropertyChanged(nameof(CanCloseOrder));

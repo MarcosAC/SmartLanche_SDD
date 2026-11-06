@@ -11,4 +11,6 @@ public interface IOrderPreparationService
     Task<OrderDto?> MarkAsReadyAsync(int orderId, CancellationToken cancellationToken = default);
 
     Task<OrderDto?> CancelOrderAsync(int orderId, CancellationToken cancellationToken = default);
+
+    Task<OrderDto?> StartPreparationAsync(int orderId, CancellationToken cancellationToken = default);
 }

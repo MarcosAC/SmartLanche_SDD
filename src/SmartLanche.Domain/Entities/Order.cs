@@ -44,9 +44,10 @@ public class Order
 
         var validTransitions = new Dictionary<OrderStatus, OrderStatus[]>
         {
+            [OrderStatus.Aberto] = [OrderStatus.EmPreparacao, OrderStatus.Cancelado],
             [OrderStatus.EmPreparacao] = [OrderStatus.Pronto, OrderStatus.Finalizado, OrderStatus.Cancelado],
             [OrderStatus.Pronto] = [OrderStatus.Finalizado, OrderStatus.Cancelado],
-            [OrderStatus.Finalizado] = [OrderStatus.Cancelado],
+            [OrderStatus.Finalizado] = [],
             [OrderStatus.Cancelado] = [],
         };
 
@@ -54,6 +55,13 @@ public class Order
         {
             throw new InvalidOperationException($"Transição de status inválida: {Status} → {newStatus}");
         }
+    }
+
+    public void StartPreparation()
+    {
+        ValidateStatusTransition(OrderStatus.EmPreparacao);
+        Status = OrderStatus.EmPreparacao;
+        PreparationStartedAt = DateTime.Now;
     }
 
     public void MarkAsReady()

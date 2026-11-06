@@ -27,9 +27,9 @@ public class OrderPromotionService : BaseService, IOrderPromotionService
             throw new InvalidOperationException("O pedido informado não existe.");
         }
 
-        if (order.Status != OrderStatus.EmPreparacao)
+        if (order.Status != OrderStatus.Aberto && order.Status != OrderStatus.EmPreparacao)
         {
-            throw new InvalidOperationException("Apenas pedidos em preparação podem ser recalculados.");
+            throw new InvalidOperationException("Apenas pedidos abertos ou em preparação podem ser recalculados.");
         }
 
         var eligiblePromotions = await _promotionService.GetEligiblePromotionsAsync(orderId, DateTime.Now, cancellationToken);

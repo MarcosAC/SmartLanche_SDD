@@ -601,6 +601,7 @@ public class ComboServiceTests
             var order = await CreateOrderAsync(ctx.OrderService);
             // Add an item first so the order can be closed
             await ctx.OrderService.AddItemAsync(new AddOrderItemRequest { OrderId = order.Id, ProductId = product1.Id, Quantity = 1 });
+            await ctx.OrderService.StartPreparationAsync(order.Id);
             await ctx.OrderService.MarkAsReadyAsync(order.Id);
             await ctx.OrderService.CloseAsync(new CloseOrderRequest { OrderId = order.Id });
 
@@ -1012,7 +1013,7 @@ public class ComboServiceTests
             {
                 CustomerId = request.CustomerId,
                 OrderDate = DateTime.Now,
-                Status = OrderStatus.EmPreparacao,
+                Status = OrderStatus.Aberto,
                 TotalAmount = 0,
                 Notes = string.Empty
             };
@@ -1033,9 +1034,9 @@ public class ComboServiceTests
                 throw new InvalidOperationException("O pedido informado não existe.");
             }
 
-            if (order.Status != OrderStatus.EmPreparacao)
+            if (order.Status != OrderStatus.Aberto && order.Status != OrderStatus.EmPreparacao)
             {
-                throw new InvalidOperationException("Apenas pedidos em preparação podem ser alterados.");
+                throw new InvalidOperationException("Apenas pedidos abertos ou em preparação podem ser alterados.");
             }
 
             var product = _productRepository.GetByIdAsync(request.ProductId, cancellationToken).Result;
@@ -1084,9 +1085,9 @@ public class ComboServiceTests
                 throw new InvalidOperationException("O pedido informado não existe.");
             }
 
-            if (order.Status != OrderStatus.EmPreparacao)
+            if (order.Status != OrderStatus.Aberto && order.Status != OrderStatus.EmPreparacao)
             {
-                throw new InvalidOperationException("Apenas pedidos em preparação podem ser alterados.");
+                throw new InvalidOperationException("Apenas pedidos abertos ou em preparação podem ser alterados.");
             }
 
             var item = order.OrderItems.FirstOrDefault(i => i.Id == orderItemId);
@@ -1115,9 +1116,9 @@ public class ComboServiceTests
                 throw new InvalidOperationException("O pedido informado não existe.");
             }
 
-            if (order.Status != OrderStatus.EmPreparacao)
+            if (order.Status != OrderStatus.Aberto && order.Status != OrderStatus.EmPreparacao)
             {
-                throw new InvalidOperationException("Apenas pedidos em preparação podem ser alterados.");
+                throw new InvalidOperationException("Apenas pedidos abertos ou em preparação podem ser alterados.");
             }
 
             var item = order.OrderItems.FirstOrDefault(i => i.Id == request.OrderItemId);
@@ -1153,9 +1154,17 @@ public class ComboServiceTests
                 throw new InvalidOperationException("O pedido informado não existe.");
             }
 
-            if (order.Status != OrderStatus.Pronto)
+            // Allow closing both EmPreparacao and Pronto orders when payment is provided
+            var hasPaymentInfo = request.FormaPagamento.HasValue;
+            var validStatusForClose = hasPaymentInfo
+                ? (order.Status == OrderStatus.EmPreparacao || order.Status == OrderStatus.Pronto)
+                : order.Status == OrderStatus.Pronto;
+
+            if (!validStatusForClose)
             {
-                throw new InvalidOperationException("Apenas pedidos prontos podem ser finalizados.");
+                throw new InvalidOperationException(hasPaymentInfo
+                    ? "Apenas pedidos em preparação ou prontos podem ser fechados com pagamento."
+                    : "Apenas pedidos prontos podem ser finalizados.");
             }
 
             if (!order.OrderItems.Any())
@@ -1221,6 +1230,17 @@ public class ComboServiceTests
             if (order is null) throw new InvalidOperationException("O pedido informado não existe.");
             if (order.Status != OrderStatus.EmPreparacao) throw new InvalidOperationException("Apenas pedidos em preparo podem ser marcados como prontos.");
             order.MarkAsReady();
+            _orderRepository.UpdateAsync(order, cancellationToken).Wait();
+            OrderChanged?.Invoke(this, EventArgs.Empty);
+            return Task.FromResult(MapToDto(order));
+        }
+
+        public Task<OrderDto> StartPreparationAsync(int orderId, CancellationToken cancellationToken = default)
+        {
+            var order = _orderRepository.GetByIdAsync(orderId, cancellationToken).Result;
+            if (order is null) throw new InvalidOperationException("O pedido informado não existe.");
+            if (order.Status != OrderStatus.Aberto) throw new InvalidOperationException("Apenas pedidos abertos podem iniciar preparação.");
+            order.StartPreparation();
             _orderRepository.UpdateAsync(order, cancellationToken).Wait();
             OrderChanged?.Invoke(this, EventArgs.Empty);
             return Task.FromResult(MapToDto(order));

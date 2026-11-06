@@ -55,7 +55,8 @@ public class OrderServiceTests : IDisposable
 
     private async Task<OrderDto> AdvanceOrderToReadyAsync(int orderId)
     {
-        // Order starts as EmPreparacao -> Pronto
+        // Order starts as Aberto -> EmPreparacao -> Pronto
+        await _service.StartPreparationAsync(orderId);
         return await _service.MarkAsReadyAsync(orderId);
     }
 
@@ -66,7 +67,7 @@ public class OrderServiceTests : IDisposable
 
         Assert.True(result.Id > 0);
         Assert.Null(result.CustomerId);
-        Assert.Equal(OrderStatus.EmPreparacao, result.Status);
+        Assert.Equal(OrderStatus.Aberto, result.Status);
         Assert.Equal(0m, result.TotalAmount);
         Assert.Empty(result.Items);
     }
@@ -81,7 +82,7 @@ public class OrderServiceTests : IDisposable
         Assert.True(result.Id > 0);
         Assert.Equal(customer.Id, result.CustomerId);
         Assert.Equal(customer.Name, result.CustomerName);
-        Assert.Equal(OrderStatus.EmPreparacao, result.Status);
+        Assert.Equal(OrderStatus.Aberto, result.Status);
         Assert.Equal(0m, result.TotalAmount);
     }
 
@@ -115,7 +116,7 @@ public class OrderServiceTests : IDisposable
                 Quantity = 2
             });
 
-        Assert.Equal(OrderStatus.EmPreparacao, result.Status);
+        Assert.Equal(OrderStatus.Aberto, result.Status);
         Assert.Equal(51.00m, result.TotalAmount);
         Assert.Single(result.Items);
         Assert.Equal(product.Id, result.Items[0].ProductId);
@@ -474,7 +475,7 @@ public class OrderServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task CancelAsync_FinalizedOrder_CancelsAndRestoresStock()
+    public async Task CancelAsync_FinalizedOrder_ThrowsInvalidOperationException()
     {
         var order = await _service.CreateAsync(new CreateOrderRequest());
         var product = await CreateProductAsync();
@@ -482,11 +483,9 @@ public class OrderServiceTests : IDisposable
         await AdvanceOrderToReadyAsync(order.Id);
         await _service.CloseAsync(new CloseOrderRequest { OrderId = order.Id });
 
-        // Act - Cancel finalized order (should work now for stock restoration)
-        var result = await _service.CancelAsync(new CancelOrderRequest { OrderId = order.Id });
-
-        // Assert - Order cancelled successfully
-        Assert.Equal(OrderStatus.Cancelado, result.Status);
+        // Act & Assert - Cancel finalized order should throw exception
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => _service.CancelAsync(new CancelOrderRequest { OrderId = order.Id }));
     }
 
     [Fact]

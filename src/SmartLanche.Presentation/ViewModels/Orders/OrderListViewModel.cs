@@ -77,7 +77,10 @@ public sealed class OrderListViewModel : ListViewModelBase<OrderDto, IOrderServi
             _ => SelectedItem?.Status == OrderStatus.Pronto && !IsLoading);
 
         CancelOrderCommand = new RelayCommand(async _ => await CancelOrderAsync(),
-            _ => SelectedItem?.Status != OrderStatus.Cancelado && !IsLoading);
+            _ => SelectedItem is not null &&
+                 SelectedItem.Status != OrderStatus.Cancelado &&
+                 SelectedItem.Status != OrderStatus.Finalizado &&
+                 !IsLoading);
     }
 
     protected override async Task<IReadOnlyList<OrderDto>> GetItemsAsync()

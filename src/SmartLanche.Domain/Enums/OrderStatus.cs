@@ -4,15 +4,18 @@ namespace SmartLanche.Domain.Enums;
 
 public enum OrderStatus
 {
+    [Description("Aberto")]
+    Aberto = 1,
+
     [Description("Em Preparo")]
-    EmPreparacao = 1,
+    EmPreparacao = 2,
 
     [Description("Pronto")]
-    Pronto = 2,
+    Pronto = 3,
 
     [Description("Finalizado")]
-    Finalizado = 3,
+    Finalizado = 4,
 
     [Description("Cancelado")]
-    Cancelado = 4
+    Cancelado = 5
 }

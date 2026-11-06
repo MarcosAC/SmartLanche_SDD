@@ -94,26 +94,31 @@
         <Style x:Key="StatusCellWithTriggersStyle"
                TargetType="TextBlock"
                BasedOn="{StaticResource StatusCellStyle}">
-            <Setter Property="Text" Value="Cancelado"/>
+            <Setter Property="Text" Value="Aberto"/>
             <Setter Property="Foreground" Value="#6B7280"/>
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Status}"
                              Value="1">
+                    <Setter Property="Text" Value="Aberto"/>
+                    <Setter Property="Foreground" Value="#6B7280"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Status}"
+                             Value="2">
                     <Setter Property="Text" Value="Em Preparo"/>
                     <Setter Property="Foreground" Value="#2563EB"/>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding Status}"
-                             Value="2">
+                             Value="3">
                     <Setter Property="Text" Value="Pronto"/>
                     <Setter Property="Foreground" Value="#F59E0B"/>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding Status}"
-                             Value="3">
+                             Value="4">
                     <Setter Property="Text" Value="Finalizado"/>
                     <Setter Property="Foreground" Value="#16A34A"/>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding Status}"
-                             Value="4">
+                             Value="5">
                     <Setter Property="Text" Value="Cancelado"/>
                     <Setter Property="Foreground" Value="#6B7280"/>
                 </DataTrigger>
@@ -199,10 +204,11 @@
                           SelectedValuePath="Tag"
                           SelectedValue="{Binding SelectedStatus, UpdateSourceTrigger=PropertyChanged}">
                     <ComboBoxItem Content="Todos" Tag="{x:Null}"/>
-                    <ComboBoxItem Content="Em Preparo" Tag="1"/>
-                    <ComboBoxItem Content="Pronto" Tag="2"/>
-                    <ComboBoxItem Content="Finalizado" Tag="3"/>
-                    <ComboBoxItem Content="Cancelado" Tag="4"/>
+                    <ComboBoxItem Content="Aberto" Tag="1"/>
+                    <ComboBoxItem Content="Em Preparo" Tag="2"/>
+                    <ComboBoxItem Content="Pronto" Tag="3"/>
+                    <ComboBoxItem Content="Finalizado" Tag="4"/>
+                    <ComboBoxItem Content="Cancelado" Tag="5"/>
                 </ComboBox>
 
                 <TextBlock Grid.Column="4"
@@ -301,14 +307,14 @@
                                                 MinWidth="70"
                                                 Command="{Binding DataContext.MarkAsReadyCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                 CommandParameter="{Binding}"
-                                                Visibility="{Binding Status, Converter={StaticResource StatusToVisibilityConverter}, ConverterParameter=1}"/>
+                                                Visibility="{Binding Status, Converter={StaticResource StatusToVisibilityConverter}, ConverterParameter=2}"/>
                                         <Button Content="Finalizar"
                                                 Style="{StaticResource PrimaryButtonStyle}"
                                                 Padding="8,4"
                                                 MinWidth="70"
                                                 Command="{Binding DataContext.FinalizeOrderCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                 CommandParameter="{Binding}"
-                                                Visibility="{Binding Status, Converter={StaticResource StatusToVisibilityConverter}, ConverterParameter=2}"/>
+                                                Visibility="{Binding Status, Converter={StaticResource StatusToVisibilityConverter}, ConverterParameter=3}"/>
                                         <Button Content="Cancelar"
                                                 Style="{StaticResource DangerButtonStyle}"
                                                 Padding="8,4"
@@ -372,12 +378,12 @@
                     <Button Content="Marcar como Pronto"
                             Style="{StaticResource SuccessButtonStyle}"
                             Command="{Binding MarkAsReadyCommand}"
-                            Visibility="{Binding SelectedItem.Status, Converter={StaticResource StatusToVisibilityConverter}, ConverterParameter=1}"/>
+                            Visibility="{Binding SelectedItem.Status, Converter={StaticResource StatusToVisibilityConverter}, ConverterParameter=2}"/>
 
                     <Button Content="Finalizar Pedido"
                             Style="{StaticResource PrimaryButtonStyle}"
                             Command="{Binding FinalizeOrderCommand}"
-                            Visibility="{Binding SelectedItem.Status, Converter={StaticResource StatusToVisibilityConverter}, ConverterParameter=2}"/>
+                            Visibility="{Binding SelectedItem.Status, Converter={StaticResource StatusToVisibilityConverter}, ConverterParameter=3}"/>
 
                     <Button Content="Cancelar Pedido"
                             Style="{StaticResource DangerButtonStyle}"

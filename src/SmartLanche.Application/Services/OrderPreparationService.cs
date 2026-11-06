@@ -66,6 +66,29 @@ public class OrderPreparationService : IOrderPreparationService
         return MapToDto(order);
     }
 
+    public async Task<OrderDto?> StartPreparationAsync(int orderId, CancellationToken cancellationToken = default)
+    {
+        var order = await _orderRepository.GetByIdTrackedAsync(orderId, cancellationToken);
+
+        if (order is null)
+        {
+            return null;
+        }
+
+        if (order.Status != OrderStatus.Aberto)
+        {
+            return null;
+        }
+
+        order.StartPreparation();
+
+        await _orderRepository.UpdateAsync(order, cancellationToken);
+
+        OnOrderChanged();
+
+        return MapToDto(order);
+    }
+
     private static OrderPreparationDto MapToPreparationDto(Order order)
     {
         var elapsedTime = order.PreparationStartedAt.HasValue
