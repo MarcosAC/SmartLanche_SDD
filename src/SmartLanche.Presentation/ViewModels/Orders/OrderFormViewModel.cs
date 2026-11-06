@@ -262,8 +262,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
 
     public bool CanCloseOrder => _order is not null && _order.Status == OrderStatus.Pronto;
 
-    public bool CanCancelOrder => _order is not null &&
-        (_order.Status == OrderStatus.Pendente || _order.Status == OrderStatus.EmPreparacao || _order.Status == OrderStatus.Pronto);
+    public bool CanCancelOrder => _order is not null && _order.Status != OrderStatus.Cancelado;
 
     public bool ShowParcelas => _order is not null && _order.Status == OrderStatus.Pendente && SelectedFormaPagamento == FormaPagamento.Cartao;
 
@@ -823,7 +822,8 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
             IsLoading = true;
             ClearMessages();
 
-            var request = new CancelOrderRequest { OrderId = _order.Id };
+            // DeleteIfPendente = true: delete Pendente orders from DB (form behavior)
+            var request = new CancelOrderRequest { OrderId = _order.Id, DeleteIfPendente = true };
             _order = await _orderService.CancelAsync(request);
 
             OnPropertyChanged(nameof(TotalAmount));

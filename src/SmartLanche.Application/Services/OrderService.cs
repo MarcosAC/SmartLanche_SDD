@@ -336,15 +336,15 @@ public class OrderService : BaseService, IOrderService
             throw new InvalidOperationException("Pedido já foi cancelado.");
         }
 
-        // If order is Pendente, mark as Cancelado then delete completely (no audit trail needed)
-        if (order.Status == OrderStatus.Pendente)
+        // If order is Pendente and DeleteIfPendente is true, delete completely (used by OrderFormViewModel)
+        if (order.Status == OrderStatus.Pendente && request.DeleteIfPendente)
         {
             order.Cancel();
             await _orderRepository.DeleteAsync(order, cancellationToken);
             return MapToDto(order);
         }
 
-        // For other statuses, set to Cancelado and restore stock if needed
+        // For other statuses, or Pendente with DeleteIfPendente=false, mark as Cancelado and keep in database
         var wasDelivered = order.Status == OrderStatus.Finalizado || order.Status == OrderStatus.Pronto;
 
         order.Cancel();

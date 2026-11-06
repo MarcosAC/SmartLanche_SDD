@@ -81,7 +81,7 @@ public sealed class OrderListViewModel : ListViewModelBase<OrderDto, IOrderServi
             _ => SelectedItem?.Status == OrderStatus.Pronto && !IsLoading);
 
         CancelOrderCommand = new RelayCommand(async _ => await CancelOrderAsync(),
-            _ => (SelectedItem?.Status == OrderStatus.Pendente || SelectedItem?.Status == OrderStatus.EmPreparacao || SelectedItem?.Status == OrderStatus.Pronto) && !IsLoading);
+            _ => SelectedItem?.Status != OrderStatus.Cancelado && !IsLoading);
     }
 
     protected override async Task<IReadOnlyList<OrderDto>> GetItemsAsync()
@@ -150,7 +150,8 @@ public sealed class OrderListViewModel : ListViewModelBase<OrderDto, IOrderServi
 
         await ExecuteWithLoadingAsync(async () =>
         {
-            var request = new CancelOrderRequest { OrderId = SelectedItem.Id };
+            // DeleteIfPendente = false: mark as Cancelado but keep in DB (list behavior)
+            var request = new CancelOrderRequest { OrderId = SelectedItem.Id, DeleteIfPendente = false };
             await Service.CancelAsync(request);
 
             SuccessMessage = "Pedido cancelado com sucesso.";

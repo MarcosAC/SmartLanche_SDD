@@ -6,6 +6,7 @@
 
     <UserControl.Resources>
         <converters:StatusToVisibilityConverter x:Key="StatusToVisibilityConverter"/>
+        <converters:CancelOrderVisibilityConverter x:Key="CancelOrderVisibilityConverter"/>
 
         <Style x:Key="ActionButtonStyle"
                TargetType="Button">
@@ -327,7 +328,7 @@
                                                 MinWidth="60"
                                                 Command="{Binding DataContext.CancelOrderCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                 CommandParameter="{Binding}"
-                                                Visibility="{Binding Status, Converter={StaticResource StatusToVisibilityConverter}, ConverterParameter=1}"/>
+                                                Visibility="{Binding Status, Converter={StaticResource CancelOrderVisibilityConverter}}"/>
                                     </StackPanel>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
@@ -399,7 +400,7 @@
                     <Button Content="Cancelar Pedido"
                             Style="{StaticResource DangerButtonStyle}"
                             Command="{Binding CancelOrderCommand}"
-                            Visibility="{Binding SelectedItem.Status, Converter={StaticResource StatusToVisibilityConverter}, ConverterParameter=1}"/>
+                            Visibility="{Binding SelectedItem.Status, Converter={StaticResource CancelOrderVisibilityConverter}}"/>
                 </StackPanel>
             </DockPanel>
         </Border>

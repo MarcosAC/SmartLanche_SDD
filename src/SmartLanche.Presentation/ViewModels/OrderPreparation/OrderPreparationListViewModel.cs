@@ -42,7 +42,7 @@ public sealed class OrderPreparationListViewModel : ListViewModelBase<OrderPrepa
         RefreshCommand = new RelayCommand(async _ => await LoadAsync());
         StartPreparationCommand = new RelayCommand<OrderPreparationDto>(async dto => await StartPreparationAsync(dto), dto => dto?.Status == OrderStatus.Pendente);
         MarkReadyCommand = new RelayCommand<OrderPreparationDto>(async dto => await MarkReadyAsync(dto), dto => dto?.Status == OrderStatus.EmPreparacao);
-        CancelCommand = new RelayCommand<OrderPreparationDto>(async dto => await CancelAsync(dto), dto => dto?.Status == OrderStatus.Pendente || dto?.Status == OrderStatus.EmPreparacao);
+        CancelCommand = new RelayCommand<OrderPreparationDto>(async dto => await CancelAsync(dto), dto => dto?.Status != OrderStatus.Cancelado);
         ViewDetailCommand = new RelayCommand<OrderPreparationDto>(async dto => await ViewDetailAsync(dto));
 
         Service.OrderChanged += OnOrderChanged;
