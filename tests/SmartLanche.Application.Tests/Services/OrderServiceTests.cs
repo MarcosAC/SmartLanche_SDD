@@ -44,14 +44,8 @@ public class OrderServiceTests : IDisposable
 
         var paymentService = new PaymentService(new FakePaymentRepository(), _orderRepository);
         var pendingPaymentService = new PendingPaymentService(new FakePendingPaymentRepository(_customerRepository), _orderRepository, _customerRepository);
-        var orderPaymentService = new OrderPaymentService(
-            _orderRepository,
-            _customerRepository,
-            paymentService,
-            pendingPaymentService,
-            _inventoryService);
 
-        _service = new OrderService(_orderRepository, _customerRepository, _productRepository, _inventoryService, orderPromotionService, orderPaymentService);
+        _service = new OrderService(_orderRepository, _customerRepository, _productRepository, _inventoryService, orderPromotionService, paymentService, pendingPaymentService);
     }
 
     public void Dispose()

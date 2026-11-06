@@ -12,7 +12,8 @@ public class OrderService : BaseService, IOrderService
     private readonly IProductRepository _productRepository;
     private readonly IInventoryService _inventoryService;
     private readonly IOrderPromotionService _orderPromotionService;
-    private readonly IOrderPaymentService _orderPaymentService;
+    private readonly IPaymentService _paymentService;
+    private readonly IPendingPaymentService _pendingPaymentService;
 
     public OrderService(
         IOrderRepository orderRepository,
@@ -20,14 +21,16 @@ public class OrderService : BaseService, IOrderService
         IProductRepository productRepository,
         IInventoryService inventoryService,
         IOrderPromotionService orderPromotionService,
-        IOrderPaymentService orderPaymentService)
+        IPaymentService paymentService,
+        IPendingPaymentService pendingPaymentService)
     {
         _orderRepository = orderRepository;
         _customerRepository = customerRepository;
         _productRepository = productRepository;
         _inventoryService = inventoryService;
         _orderPromotionService = orderPromotionService;
-        _orderPaymentService = orderPaymentService;
+        _paymentService = paymentService;
+        _pendingPaymentService = pendingPaymentService;
     }
 
     public async Task<IReadOnlyList<ProductSalesDto>> GetTopProductsAsync(int topCount = 5, int days = 7, CancellationToken cancellationToken = default)
@@ -239,23 +242,81 @@ public class OrderService : BaseService, IOrderService
             throw new InvalidOperationException("O pedido informado não existe.");
         }
 
-        if (order.Status != OrderStatus.Pronto)
+        // Allow closing both Pendente and Pronto orders when payment is provided
+        var hasPaymentInfo = request.FormaPagamento.HasValue;
+        var validStatusForClose = hasPaymentInfo
+            ? (order.Status == OrderStatus.Pendente || order.Status == OrderStatus.Pronto)
+            : order.Status == OrderStatus.Pronto;
+
+        if (!validStatusForClose)
         {
-            throw new InvalidOperationException("Apenas pedidos prontos podem ser finalizados.");
+            throw new InvalidOperationException(hasPaymentInfo
+                ? "Apenas pedidos pendentes ou prontos podem ser fechados com pagamento."
+                : "Apenas pedidos prontos podem ser finalizados.");
         }
 
         if (!order.OrderItems.Any())
         {
-            throw new InvalidOperationException("Pedido não pode ser finalizado sem itens.");
+            throw new InvalidOperationException("Pedido não pode ser fechado sem itens.");
+        }
+
+        // Process payment if payment info is provided
+        if (hasPaymentInfo)
+        {
+            var paymentRequest = new ProcessPaymentRequest(
+                request.OrderId,
+                request.FormaPagamento.Value,
+                request.ValorPago ?? 0,
+                request.Parcelas ?? 1,
+                request.Observacoes);
+
+            var paymentResult = await _paymentService.ProcessPaymentAsync(paymentRequest, cancellationToken);
+
+            if (!paymentResult.Success)
+            {
+                throw new InvalidOperationException(paymentResult.ErrorMessage);
+            }
+
+            // If payment is Fiado, validate credit limit before closing
+            if (request.FormaPagamento == FormaPagamento.Fiado && request.CustomerId.HasValue)
+            {
+                var customer = await _customerRepository.GetByIdAsync(request.CustomerId.Value, cancellationToken);
+                if (customer is not null)
+                {
+                    var saldoDevedor = await _pendingPaymentService.GetSaldoDevedorAsync(request.CustomerId.Value, cancellationToken);
+                    var novoSaldo = saldoDevedor + order.TotalAmount;
+
+                    if (customer.CreditLimit > 0 && novoSaldo > customer.CreditLimit)
+                    {
+                        throw new InvalidOperationException(
+                            $"Limite de crédito excedido. Saldo devedor atual: R$ {saldoDevedor:N2}, Novo pedido: R$ {order.TotalAmount:N2}, Limite: R$ {customer.CreditLimit:N2}.");
+                    }
+
+                    if (!customer.IsActive)
+                    {
+                        throw new InvalidOperationException("Cliente inativo não pode fazer pedidos fiados.");
+                    }
+                }
+            }
         }
 
         order.Finalize();
 
         await _orderRepository.UpdateAsync(order, cancellationToken);
 
-        // Trigger automatic stock deduction within a transaction scope
-        // This ensures order close and inventory deduction are atomic
+        // Trigger automatic stock deduction
         await _inventoryService.BaixaAutomaticaPedidoAsync(order.Id, order.OrderItems.ToList(), cancellationToken);
+
+        // If payment is Fiado, create a pending payment
+        if (hasPaymentInfo && request.FormaPagamento == FormaPagamento.Fiado && request.CustomerId.HasValue)
+        {
+            await _pendingPaymentService.CreateForOrderAsync(
+                request.OrderId,
+                request.CustomerId.Value,
+                order.TotalAmount,
+                request.Observacoes,
+                cancellationToken);
+        }
 
         return MapToDto(order);
     }
@@ -358,11 +419,6 @@ public class OrderService : BaseService, IOrderService
         await _inventoryService.BaixaAutomaticaPedidoAsync(order.Id, order.OrderItems.ToList(), cancellationToken);
 
         return MapToDto(order);
-    }
-
-    public async Task<CloseOrderWithPaymentResult> CloseWithPaymentAsync(CloseOrderWithPaymentRequest request, CancellationToken cancellationToken = default)
-    {
-        return await _orderPaymentService.CloseWithPaymentAsync(request, cancellationToken);
     }
 
     public async Task<OrderDto> RecalculateWithPromotionsAsync(int orderId, CancellationToken cancellationToken = default)

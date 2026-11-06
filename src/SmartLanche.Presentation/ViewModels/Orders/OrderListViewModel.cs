@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System.Windows.Input;
 using SmartLanche.Application.DTOs;
 using SmartLanche.Application.Interfaces;
@@ -10,17 +9,12 @@ namespace SmartLanche.Presentation.ViewModels.Orders;
 
 public sealed class OrderListViewModel : ListViewModelBase<OrderDto, IOrderService>
 {
-    private readonly ICustomerService _customerService;
-
     private int? _selectedStatus;
-    private int? _selectedCustomerId;
     private DateTime? _dateFrom;
     private DateTime? _dateTo;
 
     public event Action? RequestNewOrder;
     public event Action<OrderDto>? RequestViewOrder;
-
-    public ObservableCollection<CustomerDto> Customers { get; } = [];
 
     public ICommand CloseOrderCommand { get; }
     public ICommand CancelOrderCommand { get; }
@@ -28,24 +22,14 @@ public sealed class OrderListViewModel : ListViewModelBase<OrderDto, IOrderServi
     public ICommand MarkAsReadyCommand { get; }
     public ICommand FinalizeOrderCommand { get; }
 
+    public ICommand ViewOrderCommand => EditItemCommand;
+
     public int? SelectedStatus
     {
         get => _selectedStatus;
         set
         {
             if (SetProperty(ref _selectedStatus, value))
-            {
-                _ = LoadAsync();
-            }
-        }
-    }
-
-    public int? SelectedCustomerId
-    {
-        get => _selectedCustomerId;
-        set
-        {
-            if (SetProperty(ref _selectedCustomerId, value))
             {
                 _ = LoadAsync();
             }
@@ -76,11 +60,9 @@ public sealed class OrderListViewModel : ListViewModelBase<OrderDto, IOrderServi
         }
     }
 
-    public OrderListViewModel(IOrderService orderService, ICustomerService customerService)
+    public OrderListViewModel(IOrderService orderService)
         : base(orderService)
     {
-        _customerService = customerService ?? throw new ArgumentNullException(nameof(customerService));
-
         // NewItemCommand and EditItemCommand are already initialized in base class
         // Just need to hook up the events
         RequestNewItem += () => RequestNewOrder?.Invoke();
@@ -104,19 +86,10 @@ public sealed class OrderListViewModel : ListViewModelBase<OrderDto, IOrderServi
 
     protected override async Task<IReadOnlyList<OrderDto>> GetItemsAsync()
     {
-        // Load customers for filter dropdown
-        var customers = await _customerService.GetAllAsync(true);
-        Customers.Clear();
-        foreach (var customer in customers)
-        {
-            Customers.Add(customer);
-        }
-
         var filter = new OrderFilterRequest
         {
             SearchTerm = string.IsNullOrWhiteSpace(SearchText) ? null : SearchText,
             Status = SelectedStatus,
-            CustomerId = SelectedCustomerId,
             DateFrom = DateFrom,
             DateTo = DateTo,
             SortBy = SortColumn,
@@ -166,7 +139,7 @@ public sealed class OrderListViewModel : ListViewModelBase<OrderDto, IOrderServi
             await Service.CloseAsync(request);
 
             SuccessMessage = "Pedido fechado com sucesso.";
-            await LoadAsync();
+            await LoadItemsAsync();
         });
     }
 
@@ -180,7 +153,7 @@ public sealed class OrderListViewModel : ListViewModelBase<OrderDto, IOrderServi
             await Service.CancelAsync(request);
 
             SuccessMessage = "Pedido cancelado com sucesso.";
-            await LoadAsync();
+            await LoadItemsAsync();
         });
     }
 
@@ -192,7 +165,7 @@ public sealed class OrderListViewModel : ListViewModelBase<OrderDto, IOrderServi
         {
             await Service.StartPreparationAsync(SelectedItem.Id);
             SuccessMessage = "Preparação iniciada.";
-            await LoadAsync();
+            await LoadItemsAsync();
         });
     }
 
@@ -204,7 +177,7 @@ public sealed class OrderListViewModel : ListViewModelBase<OrderDto, IOrderServi
         {
             await Service.MarkAsReadyAsync(SelectedItem.Id);
             SuccessMessage = "Pedido marcado como pronto.";
-            await LoadAsync();
+            await LoadItemsAsync();
         });
     }
 
@@ -216,7 +189,7 @@ public sealed class OrderListViewModel : ListViewModelBase<OrderDto, IOrderServi
         {
             await Service.FinalizeAsync(SelectedItem.Id);
             SuccessMessage = "Pedido finalizado com sucesso.";
-            await LoadAsync();
+            await LoadItemsAsync();
         });
     }
 }

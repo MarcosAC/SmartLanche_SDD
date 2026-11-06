@@ -52,9 +52,9 @@ public sealed class OrderDetailViewModel : INotifyPropertyChanged
             IsLoading = true;
             ErrorMessage = null;
 
-            _order = await _orderService.GetByIdAsync(orderId);
+            Order = await _orderService.GetByIdAsync(orderId);
 
-            if (_order is null)
+            if (Order is null)
             {
                 ErrorMessage = "Pedido não encontrado.";
             }

@@ -172,8 +172,6 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="160"/>
                     <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="180"/>
-                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="160"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="160"/>
@@ -213,40 +211,26 @@
                 </ComboBox>
 
                 <TextBlock Grid.Column="4"
-                           Text="Cliente:"
+                           Text="Data Início:"
                            VerticalAlignment="Center"
                            Margin="16,0,8,0"
                            Foreground="#374151"/>
 
-                <ComboBox Grid.Column="5"
-                          Height="34"
-                          VerticalContentAlignment="Center"
-                          DisplayMemberPath="Name"
-                          SelectedValuePath="Id"
-                          SelectedValue="{Binding SelectedCustomerId, UpdateSourceTrigger=PropertyChanged}"
-                          ItemsSource="{Binding Customers}"/>
+                <DatePicker Grid.Column="5"
+                            Height="34"
+                            SelectedDate="{Binding DateFrom, UpdateSourceTrigger=PropertyChanged}"/>
 
                 <TextBlock Grid.Column="6"
-                           Text="Data Início:"
+                           Text="Data Fim:"
                            VerticalAlignment="Center"
                            Margin="16,0,8,0"
                            Foreground="#374151"/>
 
                 <DatePicker Grid.Column="7"
                             Height="34"
-                            SelectedDate="{Binding DateFrom, UpdateSourceTrigger=PropertyChanged}"/>
-
-                <TextBlock Grid.Column="8"
-                           Text="Data Fim:"
-                           VerticalAlignment="Center"
-                           Margin="16,0,8,0"
-                           Foreground="#374151"/>
-
-                <DatePicker Grid.Column="9"
-                            Height="34"
                             SelectedDate="{Binding DateTo, UpdateSourceTrigger=PropertyChanged}"/>
 
-                <Button Grid.Column="11"
+                <Button Grid.Column="9"
                         Content="Atualizar"
                         Style="{StaticResource SecondaryButtonStyle}"
                         Command="{Binding LoadCommand}"/>

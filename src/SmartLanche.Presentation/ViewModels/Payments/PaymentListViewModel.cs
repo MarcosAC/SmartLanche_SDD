@@ -161,7 +161,7 @@ public sealed class PaymentListViewModel : ListViewModelBase<PaymentDto, IPaymen
             if (estornoResult.Success)
             {
                 _toastService.ShowSuccess("Pagamento estornado com sucesso!");
-                await LoadAsync();
+                await LoadItemsAsync();
             }
             else
             {

@@ -90,7 +90,6 @@ public partial class App : System.Windows.Application
                     services.AddScoped<IInventoryService, InventoryService>();
                     services.AddScoped<IInventoryMovementService, InventoryMovementService>();
                     services.AddScoped<IOrderPromotionService, OrderPromotionService>();
-                    services.AddScoped<IOrderPaymentService, OrderPaymentService>();
 
                     // ViewModels
                     services.AddTransient<MainViewModel>();

@@ -111,26 +111,31 @@ public abstract class ListViewModelBase<TDto, TService> : ViewModelBase
         if (IsLoading)
             return;
 
-        await ExecuteWithLoadingAsync(async () =>
+        await ExecuteWithLoadingAsync(LoadItemsAsync);
+    }
+
+    /// <summary>
+    /// Loads items without the ExecuteWithLoadingAsync wrapper (for nested calls).
+    /// </summary>
+    protected virtual async Task LoadItemsAsync()
+    {
+        var items = await GetItemsAsync();
+
+        // Apply search filter (client-side by default)
+        if (!string.IsNullOrWhiteSpace(SearchText))
         {
-            var items = await GetItemsAsync();
+            var searchTerm = SearchText.ToLowerInvariant();
+            items = ApplySearchFilter(items, searchTerm);
+        }
 
-            // Apply search filter (client-side by default)
-            if (!string.IsNullOrWhiteSpace(SearchText))
-            {
-                var searchTerm = SearchText.ToLowerInvariant();
-                items = ApplySearchFilter(items, searchTerm);
-            }
+        // Apply sorting
+        items = ApplySort(items);
 
-            // Apply sorting
-            items = ApplySort(items);
-
-            Items.Clear();
-            foreach (var item in items)
-            {
-                Items.Add(item);
-            }
-        });
+        Items.Clear();
+        foreach (var item in items)
+        {
+            Items.Add(item);
+        }
     }
 
     /// <summary>
@@ -266,7 +271,7 @@ public abstract class CrudListViewModelBase<TDto, TService> : ListViewModelBase<
     /// <summary>
     /// Loads items without the ExecuteWithLoadingAsync wrapper (for nested calls).
     /// </summary>
-    protected async Task LoadItemsAsync()
+    protected override async Task LoadItemsAsync()
     {
         var items = await GetItemsAsync();
 

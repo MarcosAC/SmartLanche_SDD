@@ -1184,34 +1184,6 @@ public class ComboServiceTests
             return Task.FromResult(MapToDto(order));
         }
 
-        public Task<CloseOrderWithPaymentResult> CloseWithPaymentAsync(CloseOrderWithPaymentRequest request, CancellationToken cancellationToken = default)
-        {
-            var order = _orderRepository.GetByIdAsync(request.OrderId, cancellationToken).Result;
-
-            if (order is null)
-            {
-                return Task.FromResult(new CloseOrderWithPaymentResult(false, null, null, null, "O pedido informado não existe."));
-            }
-
-            if (order.Status != OrderStatus.Pendente)
-            {
-                return Task.FromResult(new CloseOrderWithPaymentResult(false, null, null, null, "Apenas pedidos abertos podem ser fechados."));
-            }
-
-            if (!order.OrderItems.Any())
-            {
-                return Task.FromResult(new CloseOrderWithPaymentResult(false, null, null, null, "Pedido não pode ser fechado sem itens."));
-            }
-
-            order.Finalize();
-
-            _orderRepository.UpdateAsync(order, cancellationToken).Wait();
-
-            OrderChanged?.Invoke(this, EventArgs.Empty);
-
-            return Task.FromResult(new CloseOrderWithPaymentResult(true, order.Id, null, null, null));
-        }
-
         public Task<IReadOnlyList<ProductSalesDto>> GetTopProductsAsync(int topCount = 5, int days = 7, CancellationToken cancellationToken = default)
         {
             return Task.FromResult<IReadOnlyList<ProductSalesDto>>(Array.Empty<ProductSalesDto>());

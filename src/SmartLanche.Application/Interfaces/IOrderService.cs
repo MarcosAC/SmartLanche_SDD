@@ -26,8 +26,6 @@ public interface IOrderService
 
     Task<OrderDto> CancelAsync(CancelOrderRequest request, CancellationToken cancellationToken = default);
 
-    Task<CloseOrderWithPaymentResult> CloseWithPaymentAsync(CloseOrderWithPaymentRequest request, CancellationToken cancellationToken = default);
-
     Task<OrderDto> RecalculateWithPromotionsAsync(int orderId, CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<PromotionDto>> GetAppliedPromotionsAsync(int orderId, CancellationToken cancellationToken = default);

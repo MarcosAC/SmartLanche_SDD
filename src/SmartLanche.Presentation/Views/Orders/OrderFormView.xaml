@@ -596,11 +596,7 @@
                                 <TextBox Text="{Binding ValorPago, UpdateSourceTrigger=LostFocus, StringFormat='C2', ConverterCulture='pt-BR'}"
                                          Style="{StaticResource FormTextBoxStyle}"
                                          Width="150"
-                                         ToolTip="Informe o valor recebido">
-                                    <TextBox.InputBindings>
-                                        <KeyBinding Key="Enter" Command="{Binding CloseWithPaymentCommand}"/>
-                                    </TextBox.InputBindings>
-                                </TextBox>
+                                         ToolTip="Informe o valor recebido"/>
                             </StackPanel>
 
                             <!-- Parcelas (visível para Cartão) -->
@@ -611,11 +607,7 @@
                                 <TextBox Text="{Binding Parcelas, UpdateSourceTrigger=PropertyChanged}"
                                          Style="{StaticResource FormTextBoxStyle}"
                                          Width="80"
-                                         ToolTip="Número de parcelas (1-12)">
-                                    <TextBox.InputBindings>
-                                        <KeyBinding Key="Enter" Command="{Binding CloseWithPaymentCommand}"/>
-                                    </TextBox.InputBindings>
-                                </TextBox>
+                                         ToolTip="Número de parcelas (1-12)"/>
                             </StackPanel>
 
                             <!-- Troco (visível para Dinheiro) -->
@@ -671,17 +663,6 @@
                                      VerticalScrollBarVisibility="Auto"
                                      ToolTip="Observações sobre o pagamento (opcional)"/>
                         </StackPanel>
-
-                        <!-- Botão Fechar com Pagamento -->
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
-                            <Button Content="Fechar com Pagamento"
-                                    Style="{StaticResource SuccessButtonStyle}"
-                                    Command="{Binding CloseWithPaymentCommand}"
-                                    MinWidth="160"
-                                    Padding="16,10"
-                                    FontSize="14"
-                                    FontWeight="SemiBold"/>
-                        </StackPanel>
                     </StackPanel>
                 </Border>
 
@@ -719,11 +700,11 @@
                             <Button Content="Fechar Pedido"
                                     Style="{StaticResource SuccessButtonStyle}"
                                     Command="{Binding CloseOrderCommand}"
-                                    Visibility="{Binding CanAddItems, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                    Visibility="{Binding CanCloseOrder, Converter={StaticResource BoolToVisibilityConverter}}"/>
                             <Button Content="Cancelar Pedido"
                                     Style="{StaticResource DangerButtonStyle}"
                                     Command="{Binding CancelOrderCommand}"
-                                    Visibility="{Binding CanAddItems, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                    Visibility="{Binding CanCancelOrder, Converter={StaticResource BoolToVisibilityConverter}}"/>
                         </StackPanel>
                     </Grid>
                 </Border>

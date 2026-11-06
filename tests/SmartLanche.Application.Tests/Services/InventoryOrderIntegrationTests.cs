@@ -64,8 +64,7 @@ public class InventoryOrderIntegrationTests : IDisposable
         var paymentService = new PaymentService(_paymentRepository, _orderRepository);
         var pendingPaymentService = new PendingPaymentService(_pendingPaymentRepository, _orderRepository, _customerRepository);
         var orderPromotionService = new OrderPromotionService(_orderRepository, _promotionService);
-        var orderPaymentService = new OrderPaymentService(_orderRepository, _customerRepository, paymentService, pendingPaymentService, inventoryService);
-        _orderService = new OrderService(_orderRepository, _customerRepository, _productRepository, inventoryService, orderPromotionService, orderPaymentService);
+        _orderService = new OrderService(_orderRepository, _customerRepository, _productRepository, inventoryService, orderPromotionService, paymentService, pendingPaymentService);
 
         _productService = new ProductService(scopeFactory, inventoryService);
         _comboService = new ComboService(scopeFactory, _productRepository, _orderRepository, _orderService, NullLogger<ComboService>.Instance);
@@ -235,54 +234,6 @@ public class InventoryOrderIntegrationTests : IDisposable
             Assert.Equal(order.Id, movement.OrderId);
             Assert.Equal(combo.Id, movement.ComboId);
         }
-    }
-
-    [Fact]
-    public async Task FullFlow_OrderClosedFiado_StockDeductedAndPendingPaymentCreated()
-    {
-        // Arrange
-        var category = await CreateCategoryAsync("Lanches");
-        var customer = await CreateCustomerAsync(creditLimit: 500m);
-
-        var product = await _productService.CreateAsync(new CreateProductRequest
-        {
-            Name = "X-Burguer",
-            CategoryId = category.Id,
-            Price = 25m,
-            InventoryRequest = new CreateInventoryItemRequest(null, "X-Burguer", 20, 5, 8m, "UN", null)
-        });
-
-        // Act - Create order with customer
-        var order = await _orderService.CreateAsync(new CreateOrderRequest { CustomerId = customer.Id });
-        await _orderService.AddItemAsync(new AddOrderItemRequest
-        {
-            OrderId = order.Id,
-            ProductId = product.Id,
-            Quantity = 1
-        });
-        await AdvanceOrderToReadyAsync(order.Id);
-
-        // Close with fiado payment
-        var result = await _orderService.CloseWithPaymentAsync(new CloseOrderWithPaymentRequest(
-            order.Id,
-            FormaPagamento.Fiado,
-            25m,
-            1,
-            "Fiado",
-            customer.Id
-        ));
-
-        // Assert
-        Assert.True(result.Success);
-        Assert.NotNull(result.PendingPayment);
-
-        var item = await _inventoryRepository.GetByProductIdAsync(product.Id, default);
-        Assert.Equal(19, item!.QuantidadeAtual); // 20 - 1 = 19
-
-        // Verify inventory movement
-        var movements = await _inventoryMovementRepository.GetByOrderAsync(order.Id, default);
-        Assert.Single(movements);
-        Assert.Equal(InventoryMovementReason.Venda, movements[0].Motivo);
     }
 
     [Fact]
@@ -712,9 +663,6 @@ public class InventoryOrderIntegrationTests : IDisposable
             _orderRepository.UpdateAsync(order, cancellationToken).Wait();
             return Task.FromResult(MapToDto(order));
         }
-
-        public Task<CloseOrderWithPaymentResult> CloseWithPaymentAsync(CloseOrderWithPaymentRequest request, CancellationToken cancellationToken = default)
-            => throw new NotImplementedException();
 
         public Task<OrderDto> CancelAsync(CancelOrderRequest request, CancellationToken cancellationToken = default)
         {

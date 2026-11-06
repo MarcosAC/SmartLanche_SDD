@@ -97,7 +97,7 @@ public sealed class OrderPreparationListViewModel : ListViewModelBase<OrderPrepa
             if (result is not null)
             {
                 _toastService.ShowSuccess($"Pedido #{orderDto.Id} iniciado preparação");
-                await LoadAsync();
+                await LoadItemsAsync();
             }
             else
             {
@@ -116,7 +116,7 @@ public sealed class OrderPreparationListViewModel : ListViewModelBase<OrderPrepa
             if (result is not null)
             {
                 _toastService.ShowSuccess($"Pedido #{orderDto.Id} marcado como pronto");
-                await LoadAsync();
+                await LoadItemsAsync();
             }
             else
             {
@@ -135,7 +135,7 @@ public sealed class OrderPreparationListViewModel : ListViewModelBase<OrderPrepa
             if (result is not null)
             {
                 _toastService.ShowSuccess($"Pedido #{orderDto.Id} cancelado");
-                await LoadAsync();
+                await LoadItemsAsync();
             }
             else
             {

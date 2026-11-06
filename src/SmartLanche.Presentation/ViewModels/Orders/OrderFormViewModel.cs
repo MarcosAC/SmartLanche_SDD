@@ -8,6 +8,7 @@ using SmartLanche.Application.DTOs;
 using SmartLanche.Application.Interfaces;
 using SmartLanche.Domain.Enums;
 using SmartLanche.Presentation.Commands;
+using SmartLanche.Presentation.Services;
 
 namespace SmartLanche.Presentation.ViewModels.Orders;
 
@@ -19,6 +20,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
     private readonly ICategoryService _categoryService;
     private readonly IComboService _comboService;
     private readonly IServiceProvider _services;
+    private readonly IToastNotificationService _toastService;
 
     private OrderDto? _order;
     private ProductDto? _selectedProduct;
@@ -45,7 +47,8 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
         ICustomerService customerService,
         ICategoryService categoryService,
         IComboService comboService,
-        IServiceProvider services)
+        IServiceProvider services,
+        IToastNotificationService toastService)
     {
         _orderService = orderService ?? throw new ArgumentNullException(nameof(orderService));
         _productService = productService ?? throw new ArgumentNullException(nameof(productService));
@@ -53,6 +56,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
         _categoryService = categoryService ?? throw new ArgumentNullException(nameof(categoryService));
         _comboService = comboService ?? throw new ArgumentNullException(nameof(comboService));
         _services = services ?? throw new ArgumentNullException(nameof(services));
+        _toastService = toastService ?? throw new ArgumentNullException(nameof(toastService));
 
         // Initialize commands
         LoadCommand = new RelayCommand(async _ => await LoadAsync());
@@ -63,9 +67,8 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
         StartPreparationCommand = new RelayCommand(async _ => await StartPreparationAsync(), _ => CanStartPreparation && !IsLoading);
         MarkAsReadyCommand = new RelayCommand(async _ => await MarkAsReadyAsync(), _ => CanMarkAsReady && !IsLoading);
         FinalizeOrderCommand = new RelayCommand(async _ => await FinalizeOrderAsync(), _ => CanFinalizeOrder && !IsLoading);
-        CloseOrderCommand = new RelayCommand(async _ => await CloseOrderAsync(), _ => CanAddItems && !IsLoading);
+        CloseOrderCommand = new RelayCommand(async _ => await CloseOrderAsync(), _ => CanCloseOrder && !IsLoading);
         CancelOrderCommand = new RelayCommand(async _ => await CancelOrderAsync(), _ => CanCancelOrder && !IsLoading);
-        CloseWithPaymentCommand = new RelayCommand(async _ => await CloseWithPaymentAsync(), _ => CanCloseWithPayment && !IsLoading);
         ClearFormCommand = new RelayCommand(_ => ClearForm());
         IncreaseQuantityCommand = new RelayCommand(p => IncreaseQuantity(p as ProductDto));
         DecreaseQuantityCommand = new RelayCommand(p => DecreaseQuantity(p as ProductDto));
@@ -83,7 +86,6 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
     public ICommand FinalizeOrderCommand { get; }
     public ICommand CloseOrderCommand { get; }
     public ICommand CancelOrderCommand { get; }
-    public ICommand CloseWithPaymentCommand { get; }
     public ICommand ClearFormCommand { get; }
     public ICommand IncreaseQuantityCommand { get; }
     public ICommand DecreaseQuantityCommand { get; }
@@ -224,8 +226,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
             {
                 CommandManager.InvalidateRequerySuggested();
                 OnPropertyChanged(nameof(CanAddItems));
-                OnPropertyChanged(nameof(CanCloseWithPayment));
-            }
+                            }
         }
     }
 
@@ -259,6 +260,8 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
 
     public bool CanFinalizeOrder => _order is not null && _order.Status == OrderStatus.Pronto;
 
+    public bool CanCloseOrder => _order is not null && _order.Status == OrderStatus.Pronto;
+
     public bool CanCancelOrder => _order is not null &&
         (_order.Status == OrderStatus.Pendente || _order.Status == OrderStatus.EmPreparacao || _order.Status == OrderStatus.Pronto);
 
@@ -271,12 +274,6 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
     public decimal Troco => ShowTroco ? Math.Max(0, ValorPago - TotalAmount) : 0;
 
     public decimal ValorParcela => ShowParcelas && Parcelas > 0 ? Math.Round(TotalAmount / Parcelas, 2) : 0;
-
-    public bool CanCloseWithPayment =>
-        _order is not null &&
-        _order.Status == OrderStatus.Pendente &&
-        OrderItems.Count > 0 &&
-        ((ShowCustomerSelection && SelectedCustomer is not null) || !ShowCustomerSelection);
 
     public async Task InitializeAsync(OrderDto? existingOrder)
     {
@@ -366,7 +363,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
         }
         catch
         {
-            ErrorMessage = "Não foi possível carregar os produtos.";
+            _toastService.ShowError("Não foi possível carregar os produtos.");
         }
     }
 
@@ -423,8 +420,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(TotalAmount));
             OnPropertyChanged(nameof(Status));
             OnPropertyChanged(nameof(CanAddItems));
-            OnPropertyChanged(nameof(CanCloseWithPayment));
-            UpdateCommandStates();
+                                    UpdateCommandStates();
             UpdatePaymentVisibility();
 
             // Check for suggested combos after adding item
@@ -435,11 +431,11 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(FilteredProducts));
             SelectedProduct = null;
 
-            SuccessMessage = "Item adicionado ao pedido.";
+            _toastService.ShowSuccess("Item adicionado ao pedido.");
         }
         catch (Exception ex)
         {
-            ErrorMessage = ex.Message;
+            _toastService.ShowError(ex.Message);
         }
         finally
         {
@@ -485,14 +481,13 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
             }
 
             OnPropertyChanged(nameof(TotalAmount));
-            OnPropertyChanged(nameof(CanCloseWithPayment));
-            UpdateCommandStates();
+                        UpdateCommandStates();
 
-            SuccessMessage = "Quantidade atualizada.";
+            _toastService.ShowSuccess("Quantidade atualizada.");
         }
         catch (Exception ex)
         {
-            ErrorMessage = ex.Message;
+            _toastService.ShowError(ex.Message);
         }
         finally
         {
@@ -520,14 +515,13 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
             }
 
             OnPropertyChanged(nameof(TotalAmount));
-            OnPropertyChanged(nameof(CanCloseWithPayment));
-            UpdateCommandStates();
+                        UpdateCommandStates();
 
-            SuccessMessage = "Quantidade atualizada.";
+            _toastService.ShowSuccess("Quantidade atualizada.");
         }
         catch (Exception ex)
         {
-            ErrorMessage = ex.Message;
+            _toastService.ShowError(ex.Message);
         }
         finally
         {
@@ -558,14 +552,13 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(TotalAmount));
             OnPropertyChanged(nameof(Status));
             OnPropertyChanged(nameof(CanAddItems));
-            OnPropertyChanged(nameof(CanCloseWithPayment));
-            UpdateCommandStates();
+                                    UpdateCommandStates();
 
-            SuccessMessage = "Item removido do pedido.";
+            _toastService.ShowSuccess("Item removido do pedido.");
         }
         catch (Exception ex)
         {
-            ErrorMessage = ex.Message;
+            _toastService.ShowError(ex.Message);
         }
         finally
         {
@@ -588,7 +581,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
             var combo = await _comboService.GetByIdAsync(comboId);
             if (combo is null)
             {
-                ErrorMessage = "Combo não encontrado.";
+                _toastService.ShowError("Combo não encontrado.");
                 return;
             }
 
@@ -614,15 +607,14 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(TotalAmount));
             OnPropertyChanged(nameof(Status));
             OnPropertyChanged(nameof(CanAddItems));
-            OnPropertyChanged(nameof(CanCloseWithPayment));
-            UpdateCommandStates();
+                                    UpdateCommandStates();
             UpdatePaymentVisibility();
 
-            SuccessMessage = $"Combo '{combo.Name}' adicionado ao pedido.";
+            _toastService.ShowSuccess($"Combo '{combo.Name}' adicionado ao pedido.");
         }
         catch (Exception ex)
         {
-            ErrorMessage = ex.Message;
+            _toastService.ShowError(ex.Message);
         }
         finally
         {
@@ -657,10 +649,12 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(TotalAmount));
             OnPropertyChanged(nameof(ValorParcela));
             OnPropertyChanged(nameof(Troco));
+
+            _toastService.ShowSuccess("Total recalculado com promoções.");
         }
         catch (Exception ex)
         {
-            ErrorMessage = ex.Message;
+            _toastService.ShowError(ex.Message);
         }
         finally
         {
@@ -682,16 +676,15 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(TotalAmount));
             OnPropertyChanged(nameof(Status));
             OnPropertyChanged(nameof(CanAddItems));
-            OnPropertyChanged(nameof(CanCloseWithPayment));
-            UpdateCommandStates();
+                                    UpdateCommandStates();
 
-            SuccessMessage = "Preparação iniciada.";
+            _toastService.ShowSuccess("Preparação iniciada.");
             WasSaved = true;
             RequestClose?.Invoke();
         }
         catch (Exception ex)
         {
-            ErrorMessage = ex.Message;
+            _toastService.ShowError(ex.Message);
         }
         finally
         {
@@ -713,16 +706,15 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(TotalAmount));
             OnPropertyChanged(nameof(Status));
             OnPropertyChanged(nameof(CanAddItems));
-            OnPropertyChanged(nameof(CanCloseWithPayment));
-            UpdateCommandStates();
+                                    UpdateCommandStates();
 
-            SuccessMessage = "Pedido marcado como pronto.";
+            _toastService.ShowSuccess("Pedido marcado como pronto.");
             WasSaved = true;
             RequestClose?.Invoke();
         }
         catch (Exception ex)
         {
-            ErrorMessage = ex.Message;
+            _toastService.ShowError(ex.Message);
         }
         finally
         {
@@ -744,16 +736,15 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(TotalAmount));
             OnPropertyChanged(nameof(Status));
             OnPropertyChanged(nameof(CanAddItems));
-            OnPropertyChanged(nameof(CanCloseWithPayment));
-            UpdateCommandStates();
+                                    UpdateCommandStates();
 
-            SuccessMessage = "Pedido finalizado com sucesso.";
+            _toastService.ShowSuccess("Pedido finalizado com sucesso.");
             WasSaved = true;
             RequestClose?.Invoke();
         }
         catch (Exception ex)
         {
-            ErrorMessage = ex.Message;
+            _toastService.ShowError(ex.Message);
         }
         finally
         {
@@ -765,27 +756,49 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
     {
         if (_order is null || _order.Status != OrderStatus.Pendente || IsLoading) return;
 
+        // Validate Fiado payment requires customer
+        if (SelectedFormaPagamento == FormaPagamento.Fiado && SelectedCustomer is null)
+        {
+            _toastService.ShowError("Selecione um cliente para pagamento a prazo (Fiado).");
+            return;
+        }
+
         try
         {
             IsLoading = true;
             ClearMessages();
 
-            var request = new CloseOrderRequest { OrderId = _order.Id };
+            var request = new CloseOrderRequest
+            {
+                OrderId = _order.Id,
+                FormaPagamento = SelectedFormaPagamento,
+                ValorPago = ValorPago,
+                Parcelas = Parcelas,
+                Observacoes = PaymentObservacoes,
+                CustomerId = SelectedCustomer?.Id
+            };
             _order = await _orderService.CloseAsync(request);
 
             OnPropertyChanged(nameof(TotalAmount));
             OnPropertyChanged(nameof(Status));
             OnPropertyChanged(nameof(CanAddItems));
-            OnPropertyChanged(nameof(CanCloseWithPayment));
             UpdateCommandStates();
 
-            SuccessMessage = "Pedido fechado com sucesso.";
+            if (SelectedFormaPagamento == FormaPagamento.Fiado)
+            {
+                _toastService.ShowSuccess("Pedido fechado! Pendência (Fiado) criada.");
+            }
+            else
+            {
+                _toastService.ShowSuccess("Pedido fechado e pago com sucesso.");
+            }
+
             WasSaved = true;
             RequestClose?.Invoke();
         }
         catch (Exception ex)
         {
-            ErrorMessage = ex.Message;
+            _toastService.ShowError(ex.Message);
         }
         finally
         {
@@ -816,88 +829,15 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(TotalAmount));
             OnPropertyChanged(nameof(Status));
             OnPropertyChanged(nameof(CanAddItems));
-            OnPropertyChanged(nameof(CanCloseWithPayment));
             UpdateCommandStates();
 
-            SuccessMessage = "Pedido cancelado.";
+            _toastService.ShowSuccess("Pedido cancelado.");
             WasSaved = true;
             RequestClose?.Invoke();
         }
         catch (Exception ex)
         {
-            ErrorMessage = ex.Message;
-        }
-        finally
-        {
-            IsLoading = false;
-        }
-    }
-
-    private async Task CloseWithPaymentAsync()
-    {
-        if (_order is null || _order.Status != OrderStatus.Pendente || IsLoading) return;
-
-        if (ShowCustomerSelection && SelectedCustomer is null)
-        {
-            ErrorMessage = "Selecione um cliente para pagamento a prazo (Fiado).";
-            return;
-        }
-
-        if (ValorPago < TotalAmount && SelectedFormaPagamento != FormaPagamento.Fiado)
-        {
-            var result = MessageBox.Show(
-                $"Valor pago (R$ {ValorPago:N2}) é menor que o total (R$ {TotalAmount:N2}). Deseja continuar?",
-                "Valor insuficiente",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
-
-            if (result != MessageBoxResult.Yes) return;
-        }
-
-        try
-        {
-            IsLoading = true;
-            ClearMessages();
-
-            var request = new CloseOrderWithPaymentRequest(
-                _order.Id,
-                SelectedFormaPagamento,
-                ValorPago,
-                Parcelas,
-                PaymentObservacoes,
-                ShowCustomerSelection ? SelectedCustomer!.Id : null);
-
-            var result = await _orderService.CloseWithPaymentAsync(request);
-
-            if (!result.Success)
-            {
-                ErrorMessage = result.ErrorMessage ?? "Erro ao fechar pedido com pagamento.";
-                return;
-            }
-
-            _order = await _orderService.GetByIdAsync(_order.Id);
-
-            OnPropertyChanged(nameof(TotalAmount));
-            OnPropertyChanged(nameof(Status));
-            OnPropertyChanged(nameof(CanAddItems));
-            OnPropertyChanged(nameof(CanCloseWithPayment));
-            UpdateCommandStates();
-
-            if (result.PendingPayment is not null)
-            {
-                SuccessMessage = $"Pedido fechado! Pendência (Fiado) criada: R$ {result.PendingPayment.SaldoPendente:N2}";
-            }
-            else
-            {
-                SuccessMessage = "Pedido fechado e pago com sucesso.";
-            }
-
-            WasSaved = true;
-            RequestClose?.Invoke();
-        }
-        catch (Exception ex)
-        {
-            ErrorMessage = ex.Message;
+            _toastService.ShowError(ex.Message);
         }
         finally
         {
@@ -929,14 +869,12 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(ShowCustomerSelection));
         OnPropertyChanged(nameof(Troco));
         OnPropertyChanged(nameof(ValorParcela));
-        OnPropertyChanged(nameof(CanCloseWithPayment));
     }
 
     private void UpdateTrocoAndParcela()
     {
         OnPropertyChanged(nameof(Troco));
         OnPropertyChanged(nameof(ValorParcela));
-        OnPropertyChanged(nameof(CanCloseWithPayment));
     }
 
     private void UpdateCommandStates()
@@ -945,6 +883,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(CanStartPreparation));
         OnPropertyChanged(nameof(CanMarkAsReady));
         OnPropertyChanged(nameof(CanFinalizeOrder));
+        OnPropertyChanged(nameof(CanCloseOrder));
         OnPropertyChanged(nameof(CanCancelOrder));
     }
 
