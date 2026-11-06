@@ -1008,7 +1008,7 @@ public class OrderServiceTests : IDisposable
             _productRepository = productRepository;
         }
 
-        public Task<IReadOnlyList<Order>> GetAllAsync(int? status = null, int? customerId = null, DateTime? dateFrom = null, DateTime? dateTo = null, string? searchTerm = null, string? sortBy = null, bool sortDescending = true, CancellationToken cancellationToken = default)
+        public Task<IReadOnlyList<Order>> GetAllAsync(int? status = null, int? customerId = null, DateTime? dateFrom = null, DateTime? dateTo = null, string? searchTerm = null, string? sortBy = null, bool sortDescending = true, bool excludeCancelled = true, CancellationToken cancellationToken = default)
         {
             IEnumerable<Order> query = _orders;
 
@@ -1031,6 +1031,11 @@ public class OrderServiceTests : IDisposable
                     o.Id.ToString().Contains(term) ||
                     (o.Customer != null && o.Customer.Name.ToLower().Contains(term)) ||
                     o.Status.ToString().ToLower().Contains(term));
+            }
+
+            if (excludeCancelled)
+            {
+                query = query.Where(o => o.Status != OrderStatus.Cancelado);
             }
 
             // Apply sorting
@@ -1130,6 +1135,12 @@ public class OrderServiceTests : IDisposable
             }
 
             return Task.FromResult((IReadOnlyList<OrderItem>)order.OrderItems.ToList().AsReadOnly());
+        }
+
+        public Task DeleteAsync(Order order, CancellationToken cancellationToken = default)
+        {
+            _orders.RemoveAll(o => o.Id == order.Id);
+            return Task.CompletedTask;
         }
 
         private void LoadNavigationProperties(Order order)

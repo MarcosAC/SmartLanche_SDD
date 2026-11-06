@@ -854,6 +854,7 @@ public class ComboServiceTests
             string? searchTerm = null,
             string? sortBy = null,
             bool sortDescending = true,
+            bool excludeCancelled = true,
             CancellationToken cancellationToken = default)
         {
             IEnumerable<Order> query = _orders;
@@ -885,6 +886,11 @@ public class ComboServiceTests
                     o.Id.ToString().Contains(term) ||
                     (o.Customer != null && o.Customer.Name.ToLower().Contains(term)) ||
                     o.Status.ToString().ToLower().Contains(term));
+            }
+
+            if (excludeCancelled)
+            {
+                query = query.Where(o => o.Status != OrderStatus.Cancelado);
             }
 
             query = (sortBy?.ToLowerInvariant()) switch
@@ -969,6 +975,12 @@ public class ComboServiceTests
 
             return Task.FromResult((IReadOnlyList<OrderItem>)order.OrderItems.ToList());
         }
+
+        public Task DeleteAsync(Order order, CancellationToken cancellationToken = default)
+        {
+            _orders.RemoveAll(o => o.Id == order.Id);
+            return Task.CompletedTask;
+        }
     }
 
     private sealed class FakeOrderService : IOrderService
@@ -985,7 +997,7 @@ public class ComboServiceTests
 
         public Task<IReadOnlyList<OrderDto>> GetAllAsync(OrderFilterRequest? filter = null, CancellationToken cancellationToken = default)
         {
-            var orders = _orderRepository.GetAllAsync(filter?.Status, filter?.CustomerId, filter?.DateFrom, filter?.DateTo, filter?.SearchTerm, filter?.SortBy, filter?.SortDescending ?? true, cancellationToken).Result;
+            var orders = _orderRepository.GetAllAsync(filter?.Status, filter?.CustomerId, filter?.DateFrom, filter?.DateTo, filter?.SearchTerm, filter?.SortBy, filter?.SortDescending ?? true, filter?.ExcludeCancelled ?? true, cancellationToken).Result;
             return Task.FromResult<IReadOnlyList<OrderDto>>(orders.Select(MapToDto).ToList());
         }
 
@@ -1236,6 +1248,15 @@ public class ComboServiceTests
             _orderRepository.UpdateAsync(order, cancellationToken).Wait();
             OrderChanged?.Invoke(this, EventArgs.Empty);
             return Task.FromResult(MapToDto(order));
+        }
+
+        public Task DeleteAsync(int orderId, CancellationToken cancellationToken = default)
+        {
+            var order = _orderRepository.GetByIdAsync(orderId, cancellationToken).Result;
+            if (order is null) throw new InvalidOperationException("O pedido informado não existe.");
+            _orderRepository.DeleteAsync(order, cancellationToken).Wait();
+            OrderChanged?.Invoke(this, EventArgs.Empty);
+            return Task.CompletedTask;
         }
 
         private static OrderDto MapToDto(Order order)

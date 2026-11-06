@@ -580,6 +580,7 @@ public class PromotionServiceTests : IDisposable
             string? searchTerm = null,
             string? sortBy = null,
             bool sortDescending = true,
+            bool excludeCancelled = true,
             CancellationToken cancellationToken = default)
         {
             IEnumerable<Order> query = _orders;
@@ -598,6 +599,9 @@ public class PromotionServiceTests : IDisposable
                 query = query.Where(o => o.Id.ToString().Contains(term)
                     || (o.Customer != null && o.Customer.Name.ToLower().Contains(term)));
             }
+
+            if (excludeCancelled)
+                query = query.Where(o => o.Status != OrderStatus.Cancelado);
 
             query = sortDescending ? query.OrderByDescending(o => o.OrderDate) : query.OrderBy(o => o.OrderDate);
 
@@ -639,6 +643,12 @@ public class PromotionServiceTests : IDisposable
             var order = _orders.FirstOrDefault(o => o.Id == orderId);
             if (order == null) return Task.FromResult<IReadOnlyList<OrderItem>>([]);
             return Task.FromResult<IReadOnlyList<OrderItem>>(order.OrderItems.ToList());
+        }
+
+        public Task DeleteAsync(Order order, CancellationToken cancellationToken = default)
+        {
+            _orders.RemoveAll(o => o.Id == order.Id);
+            return Task.CompletedTask;
         }
     }
 }

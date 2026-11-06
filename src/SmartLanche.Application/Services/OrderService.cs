@@ -35,7 +35,7 @@ public class OrderService : BaseService, IOrderService
 
     public async Task<IReadOnlyList<ProductSalesDto>> GetTopProductsAsync(int topCount = 5, int days = 7, CancellationToken cancellationToken = default)
     {
-        var orders = await _orderRepository.GetAllAsync(null, null, DateTime.Now.AddDays(-days), null, null, null, true, cancellationToken);
+        var orders = await _orderRepository.GetAllAsync(null, null, DateTime.Now.AddDays(-days), null, null, null, true, false, cancellationToken);
 
         var productSales = orders
             .Where(o => o.Status == OrderStatus.Finalizado)
@@ -63,6 +63,7 @@ public class OrderService : BaseService, IOrderService
             filter?.SearchTerm,
             filter?.SortBy,
             filter?.SortDescending ?? true,
+            filter?.ExcludeCancelled ?? true,
             cancellationToken);
 
         return orders.Select(MapToDto).ToList();
@@ -330,12 +331,21 @@ public class OrderService : BaseService, IOrderService
             throw new InvalidOperationException("O pedido informado não existe.");
         }
 
-        var wasDelivered = order.Status == OrderStatus.Finalizado || order.Status == OrderStatus.Pronto;
-
         if (order.Status == OrderStatus.Cancelado)
         {
             throw new InvalidOperationException("Pedido já foi cancelado.");
         }
+
+        // If order is Pendente, mark as Cancelado then delete completely (no audit trail needed)
+        if (order.Status == OrderStatus.Pendente)
+        {
+            order.Cancel();
+            await _orderRepository.DeleteAsync(order, cancellationToken);
+            return MapToDto(order);
+        }
+
+        // For other statuses, set to Cancelado and restore stock if needed
+        var wasDelivered = order.Status == OrderStatus.Finalizado || order.Status == OrderStatus.Pronto;
 
         order.Cancel();
 
@@ -348,6 +358,18 @@ public class OrderService : BaseService, IOrderService
         }
 
         return MapToDto(order);
+    }
+
+    public async Task DeleteAsync(int orderId, CancellationToken cancellationToken = default)
+    {
+        var order = await _orderRepository.GetByIdTrackedAsync(orderId, cancellationToken);
+
+        if (order is null)
+        {
+            throw new InvalidOperationException("O pedido informado não existe.");
+        }
+
+        await _orderRepository.DeleteAsync(order, cancellationToken);
     }
 
     public async Task<OrderDto> StartPreparationAsync(int orderId, CancellationToken cancellationToken = default)

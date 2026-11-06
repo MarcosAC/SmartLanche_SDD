@@ -93,7 +93,8 @@ public sealed class OrderListViewModel : ListViewModelBase<OrderDto, IOrderServi
             DateFrom = DateFrom,
             DateTo = DateTo,
             SortBy = SortColumn,
-            SortDescending = SortDescending
+            SortDescending = SortDescending,
+            ExcludeCancelled = true // Exclude cancelled orders by default
         };
 
         return await Service.GetAllAsync(filter);

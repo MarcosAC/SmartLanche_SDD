@@ -550,7 +550,7 @@ public class InventoryOrderIntegrationTests : IDisposable
             _productRepository = productRepository;
         }
 
-        public Task<IReadOnlyList<Order>> GetAllAsync(int? status = null, int? customerId = null, DateTime? dateFrom = null, DateTime? dateTo = null, string? searchTerm = null, string? sortBy = null, bool sortDescending = true, CancellationToken cancellationToken = default)
+        public Task<IReadOnlyList<Order>> GetAllAsync(int? status = null, int? customerId = null, DateTime? dateFrom = null, DateTime? dateTo = null, string? searchTerm = null, string? sortBy = null, bool sortDescending = true, bool excludeCancelled = true, CancellationToken cancellationToken = default)
         {
             IEnumerable<Order> query = _orders;
             if (status.HasValue)
@@ -561,6 +561,8 @@ public class InventoryOrderIntegrationTests : IDisposable
                 query = query.Where(o => o.OrderDate >= dateFrom.Value);
             if (dateTo.HasValue)
                 query = query.Where(o => o.OrderDate <= dateTo.Value);
+            if (excludeCancelled)
+                query = query.Where(o => o.Status != OrderStatus.Cancelado);
 
             var result = sortDescending ? query.OrderByDescending(o => o.OrderDate) : query.OrderBy(o => o.OrderDate);
             return Task.FromResult<IReadOnlyList<Order>>(result.ToList());
@@ -604,6 +606,12 @@ public class InventoryOrderIntegrationTests : IDisposable
 
             return Task.FromResult((IReadOnlyList<OrderItem>)order.OrderItems.ToList().AsReadOnly());
         }
+
+        public Task DeleteAsync(Order order, CancellationToken cancellationToken = default)
+        {
+            _orders.RemoveAll(o => o.Id == order.Id);
+            return Task.CompletedTask;
+        }
     }
 
     private sealed class FakeOrderService : IOrderService
@@ -619,7 +627,7 @@ public class InventoryOrderIntegrationTests : IDisposable
 
         public Task<IReadOnlyList<OrderDto>> GetAllAsync(OrderFilterRequest? filter = null, CancellationToken cancellationToken = default)
         {
-            var orders = _orderRepository.GetAllAsync(filter?.Status, filter?.CustomerId, filter?.DateFrom, filter?.DateTo, filter?.SearchTerm, filter?.SortBy, filter?.SortDescending ?? true, cancellationToken).Result;
+            var orders = _orderRepository.GetAllAsync(filter?.Status, filter?.CustomerId, filter?.DateFrom, filter?.DateTo, filter?.SearchTerm, filter?.SortBy, filter?.SortDescending ?? true, filter?.ExcludeCancelled ?? true, cancellationToken).Result;
             return Task.FromResult<IReadOnlyList<OrderDto>>(orders.Select(MapToDto).ToList());
         }
 
@@ -714,6 +722,14 @@ public class InventoryOrderIntegrationTests : IDisposable
             order.Finalize();
             _orderRepository.UpdateAsync(order, cancellationToken).Wait();
             return Task.FromResult(MapToDto(order));
+        }
+
+        public Task DeleteAsync(int orderId, CancellationToken cancellationToken = default)
+        {
+            var order = _orderRepository.GetByIdAsync(orderId, cancellationToken).Result;
+            if (order == null) throw new InvalidOperationException("Order not found");
+            _orderRepository.DeleteAsync(order, cancellationToken).Wait();
+            return Task.CompletedTask;
         }
 
         public event EventHandler? OrderChanged;

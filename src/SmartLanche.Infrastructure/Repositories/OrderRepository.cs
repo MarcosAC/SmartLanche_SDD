@@ -23,6 +23,7 @@ public class OrderRepository : IOrderRepository
         string? searchTerm = null,
         string? sortBy = null,
         bool sortDescending = true,
+        bool excludeCancelled = true,
         CancellationToken cancellationToken = default)
     {
         IQueryable<Order> query = _context.Orders
@@ -58,6 +59,11 @@ public class OrderRepository : IOrderRepository
                 order.Id.ToString().Contains(term) ||
                 (order.Customer != null && order.Customer.Name.ToLower().Contains(term)) ||
                 order.Status.ToString().ToLower().Contains(term));
+        }
+
+        if (excludeCancelled)
+        {
+            query = query.Where(order => order.Status != OrderStatus.Cancelado);
         }
 
         // Apply sorting
@@ -141,5 +147,11 @@ public class OrderRepository : IOrderRepository
             .Include(item => item.Product)
             .Where(item => item.OrderId == orderId)
             .ToListAsync(cancellationToken);
+    }
+
+    public async Task DeleteAsync(Order order, CancellationToken cancellationToken = default)
+    {
+        _context.Orders.Remove(order);
+        await _context.SaveChangesAsync(cancellationToken);
     }
 }

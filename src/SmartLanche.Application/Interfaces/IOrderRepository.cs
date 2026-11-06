@@ -12,6 +12,7 @@ public interface IOrderRepository
         string? searchTerm = null,
         string? sortBy = null,
         bool sortDescending = true,
+        bool excludeCancelled = true,
         CancellationToken cancellationToken = default);
 
     Task<Order?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
@@ -27,4 +28,6 @@ public interface IOrderRepository
     Task<bool> ExistsOpenOrderForCustomerAsync(int customerId, CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<OrderItem>> GetItemsByOrderAsync(int orderId, CancellationToken cancellationToken = default);
+
+    Task DeleteAsync(Order order, CancellationToken cancellationToken = default);
 }

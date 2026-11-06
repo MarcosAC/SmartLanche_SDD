@@ -697,7 +697,7 @@ public class PendingPaymentServiceTests
         private readonly List<Order> _orders = [];
         private int _nextId = 1;
 
-        public Task<IReadOnlyList<Order>> GetAllAsync(int? status = null, int? customerId = null, DateTime? dateFrom = null, DateTime? dateTo = null, string? searchTerm = null, string? sortBy = null, bool sortDescending = true, CancellationToken cancellationToken = default)
+        public Task<IReadOnlyList<Order>> GetAllAsync(int? status = null, int? customerId = null, DateTime? dateFrom = null, DateTime? dateTo = null, string? searchTerm = null, string? sortBy = null, bool sortDescending = true, bool excludeCancelled = true, CancellationToken cancellationToken = default)
         {
             IEnumerable<Order> query = _orders;
 
@@ -709,6 +709,9 @@ public class PendingPaymentServiceTests
                 query = query.Where(o => o.OrderDate >= dateFrom.Value);
             if (dateTo.HasValue)
                 query = query.Where(o => o.OrderDate <= dateTo.Value);
+
+            if (excludeCancelled)
+                query = query.Where(o => o.Status != OrderStatus.Cancelado);
 
             return Task.FromResult<IReadOnlyList<Order>>(query.OrderByDescending(o => o.OrderDate).ToList());
         }
@@ -742,6 +745,12 @@ public class PendingPaymentServiceTests
 
         public Task<IReadOnlyList<OrderItem>> GetItemsByOrderAsync(int orderId, CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<OrderItem>>([]);
+
+        public Task DeleteAsync(Order order, CancellationToken cancellationToken = default)
+        {
+            _orders.RemoveAll(o => o.Id == order.Id);
+            return Task.CompletedTask;
+        }
     }
 
     private sealed class FakeCustomerRepository : ICustomerRepository
