@@ -22,7 +22,7 @@ public sealed class OrderDetailViewModel : INotifyPropertyChanged
     private string? _errorMessage;
 
     private FormaPagamento? _selectedFormaPagamento;
-    private decimal? _valorPago;
+    private decimal? _valorPago = 0m;
     private int? _parcelas;
     private string? _paymentObservacoes;
     private int? _selectedCustomerId;

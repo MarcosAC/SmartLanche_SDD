@@ -1,6 +1,8 @@
 <UserControl x:Class="SmartLanche.Presentation.Views.Orders.OrderDetailView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:behaviors="clr-namespace:SmartLanche.Presentation.Behaviors"
              xmlns:converters="clr-namespace:SmartLanche.Presentation.Converters"
              xmlns:domain="clr-namespace:SmartLanche.Domain.Enums;assembly=SmartLanche.Domain"
              Background="#F5F6FA">
@@ -270,10 +272,13 @@
                             <StackPanel Grid.Column="1" Margin="0,0,16,0">
                                 <TextBlock Text="Valor Pago (R$)"
                                            Style="{StaticResource FormLabelStyle}"/>
-                                <TextBox Text="{Binding ValorPago, UpdateSourceTrigger=LostFocus, StringFormat='C2', ConverterCulture='pt-BR'}"
+                                <TextBox ToolTip="Informe o valor recebido"
                                          Style="{StaticResource FormTextBoxStyle}"
-                                         Width="150"
-                                         ToolTip="Informe o valor recebido"/>
+                                         Width="150">
+                                    <i:Interaction.Behaviors>
+                                        <behaviors:CurrencyTextBoxBehavior Value="{Binding ValorPago, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    </i:Interaction.Behaviors>
+                                </TextBox>
                             </StackPanel>
 
                             <!-- Parcelas (visível para Cartão) -->
