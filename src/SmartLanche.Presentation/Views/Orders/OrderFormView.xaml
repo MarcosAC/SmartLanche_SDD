@@ -265,7 +265,6 @@
                                                   ItemsSource="{Binding FilteredCustomers}"
                                                   SelectedItem="{Binding SelectedCustomer, Mode=TwoWay}"
                                                   Text="{Binding CustomerSearchText, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
-                                                  DisplayMemberPath="Name"
                                                   StaysOpenOnEdit="True"
                                                   ToolTip="Digite nome, telefone ou observações para buscar cliente">
                                             <ComboBox.ItemTemplate>
