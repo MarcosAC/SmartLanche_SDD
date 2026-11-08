@@ -20,6 +20,7 @@
         <converters:StatusToVisibilityConverter x:Key="StatusToVisibilityConverter"/>
         <converters:BoolToComboConverter x:Key="BoolToComboConverter"/>
         <converters:EnumToDescriptionConverter x:Key="EnumToDescriptionConverter"/>
+        <converters:StringIsNullOrEmptyToVisibilityConverter x:Key="StringIsNullOrEmptyToVisibilityConverter"/>
 
         <Style x:Key="PickerButtonStyle" TargetType="Button">
             <Setter Property="Padding" Value="16,8"/>
@@ -243,41 +244,59 @@
                                     <RowDefinition Height="*"/>     <!-- Produtos -->
                                 </Grid.RowDefinitions>
 
-                                <!-- Busca de Cliente (ComboBox editável com autocomplete) -->
-                                <Border Grid.Row="0" Margin="0,0,0,12">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
+                                <!-- Pesquisa de Cliente -->
+                                <StackPanel Grid.Row="0" Margin="0,0,0,12">
+                                    <TextBlock Text="Cliente:" Style="{StaticResource FormLabelStyle}" Margin="0,0,0,6"/>
 
-                                        <TextBlock Grid.Column="0" Text="Cliente:"
-                                                   Style="{StaticResource FormLabelStyle}"
-                                                   VerticalAlignment="Center"
-                                                   Margin="0,0,12,0"/>
+                                    <!-- Campo de busca com ícone de lupa -->
+                                    <TextBox Height="38"
+                                             HorizontalAlignment="Stretch"
+                                             VerticalContentAlignment="Center"
+                                             Text="{Binding CustomerSearchText, UpdateSourceTrigger=PropertyChanged, Delay=300, Mode=TwoWay}"
+                                             BorderBrush="#D1D5DB" BorderThickness="1"
+                                             ToolTip="Digite nome, telefone ou observações para buscar cliente">
+                                        <TextBox.Template>
+                                            <ControlTemplate TargetType="TextBox">
+                                                <Border x:Name="Border" Background="White" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Padding="8,4">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBlock Grid.Column="0" Text="🔍" VerticalAlignment="Center" Foreground="#94A3B8" Margin="8,0,8,0"
+                                                                   Visibility="{Binding Text, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource StringIsNullOrEmptyToVisibilityConverter}}"/>
+                                                        <ScrollViewer x:Name="PART_ContentHost" Grid.Column="1" VerticalAlignment="Center" Margin="0"/>
+                                                    </Grid>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsFocused" Value="True">
+                                                        <Setter TargetName="Border" Property="BorderBrush" Value="#2563EB"/>
+                                                        <Setter TargetName="Border" Property="BorderThickness" Value="2"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </TextBox.Template>
+                                    </TextBox>
 
-                                        <ComboBox Grid.Column="1"
-                                                  Height="38"
-                                                  VerticalContentAlignment="Center"
-                                                  Style="{StaticResource FormComboBoxStyle}"
-                                                  IsEditable="True"
-                                                  IsTextSearchEnabled="False"
-                                                  ItemsSource="{Binding FilteredCustomers}"
-                                                  SelectedItem="{Binding SelectedCustomer, Mode=TwoWay}"
-                                                  Text="{Binding CustomerSearchText, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
-                                                  StaysOpenOnEdit="True"
-                                                  ToolTip="Digite nome, telefone ou observações para buscar cliente">
-                                            <ComboBox.ItemTemplate>
-                                                <DataTemplate>
-                                                    <TextBlock Text="{Binding Name}"
-                                                               FontSize="14"
-                                                               Padding="8,6"
-                                                               Foreground="#1F2937"/>
-                                                </DataTemplate>
-                                            </ComboBox.ItemTemplate>
-                                        </ComboBox>
-                                    </Grid>
-                                </Border>
+                                    <!-- Resultados da busca -->
+                                    <ListBox ItemsSource="{Binding FilteredCustomers}"
+                                             SelectedItem="{Binding SelectedCustomer, Mode=TwoWay}"
+                                             BorderBrush="#D1D5DB"
+                                             BorderThickness="1"
+                                             Background="White"
+                                             MaxHeight="200"
+                                             Margin="0,4,0,0"
+                                             Visibility="{Binding ShowCustomerSearchResults, Converter={StaticResource BoolToVisibilityConverter}}">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Name}"
+                                                           FontSize="14"
+                                                           Padding="12,8"
+                                                           Foreground="#1F2937"/>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </StackPanel>
 
                                 <!-- Filtro de categoria -->
                                 <StackPanel Grid.Row="1"

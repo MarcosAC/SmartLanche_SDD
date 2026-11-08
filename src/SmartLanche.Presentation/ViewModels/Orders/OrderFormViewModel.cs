@@ -64,6 +64,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
         CancelOrderCommand = new RelayCommand(async _ => await CancelOrderAsync(), _ => CanCancelOrder && !IsLoading);
         ClearFormCommand = new RelayCommand(_ => ClearForm());
         SelectCustomerCommand = new RelayCommand(c => SelectCustomer(c as CustomerDto));
+        ClearCustomerSearchCommand = new RelayCommand(_ => ClearCustomerSearch());
         IncreaseQuantityCommand = new RelayCommand(p => IncreaseQuantity(p as ProductDto));
         DecreaseQuantityCommand = new RelayCommand(p => DecreaseQuantity(p as ProductDto));
         IncreaseOrderItemQuantityCommand = new RelayCommand(async p => await IncreaseOrderItemQuantityAsync(p as OrderItemDto), _ => CanAddItems && !IsLoading);
@@ -116,7 +117,20 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
     public CustomerDto? SelectedCustomer
     {
         get => _selectedCustomer;
-        set => SetProperty(ref _selectedCustomer, value);
+        set
+        {
+            if (SetProperty(ref _selectedCustomer, value))
+            {
+                // Update search text to show selected customer name
+                if (value is not null)
+                {
+                    _customerSearchText = value.Name ?? string.Empty;
+                    OnPropertyChanged(nameof(CustomerSearchText));
+                }
+                OnPropertyChanged(nameof(ShowCustomerSearchResults));
+                OnPropertyChanged(nameof(SelectedCustomerId));
+            }
+        }
     }
 
     private string _customerSearchText = string.Empty;
@@ -130,6 +144,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
             {
                 OnPropertyChanged(nameof(FilteredCustomers));
                 OnPropertyChanged(nameof(ShowCustomerDropdown));
+                OnPropertyChanged(nameof(ShowCustomerSearchResults));
             }
         }
     }
@@ -150,6 +165,10 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
     }
 
     public bool ShowCustomerDropdown => !string.IsNullOrWhiteSpace(_customerSearchText) && FilteredCustomers.Any();
+
+    public bool ShowCustomerSearchResults => !string.IsNullOrWhiteSpace(_customerSearchText) && FilteredCustomers.Any() && SelectedCustomer is null;
+
+    public ICommand ClearCustomerSearchCommand { get; }
 
     public int? SelectedCustomerId
     {
@@ -730,11 +749,18 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
         ClearMessages();
     }
 
+    private void ClearCustomerSearch()
+    {
+        SelectedCustomer = null;
+        CustomerSearchText = string.Empty;
+    }
+
     private void SelectCustomer(CustomerDto? customer)
     {
         if (customer is null) return;
         SelectedCustomer = customer;
         CustomerSearchText = customer.Name ?? string.Empty;
+        OnPropertyChanged(nameof(ShowCustomerSearchResults));
     }
 
     private void ClearMessages()
