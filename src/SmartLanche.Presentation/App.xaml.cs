@@ -108,6 +108,7 @@ public partial class App : System.Windows.Application
                     services.AddTransient<OrderListViewModel>();
                     services.AddTransient<OrderFormViewModel>();
                     services.AddTransient<OrderDetailViewModel>();
+                    services.AddTransient<OrderCloseViewModel>();
                     services.AddTransient<ProductPickerViewModel>();
                     services.AddTransient<OrderPreparationListViewModel>();
 

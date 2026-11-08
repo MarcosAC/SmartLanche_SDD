@@ -49,46 +49,6 @@
             <Setter Property="Foreground" Value="White"/>
         </Style>
 
-        <Style x:Key="SuccessButtonStyle" TargetType="Button" BasedOn="{StaticResource ActionButtonStyle}">
-            <Setter Property="Background" Value="#16A34A"/>
-            <Setter Property="Foreground" Value="White"/>
-        </Style>
-
-        <Style x:Key="DangerButtonStyle" TargetType="Button" BasedOn="{StaticResource ActionButtonStyle}">
-            <Setter Property="Background" Value="#FEE2E2"/>
-            <Setter Property="Foreground" Value="#991B1B"/>
-        </Style>
-
-        <Style x:Key="FormLabelStyle" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="#374151"/>
-            <Setter Property="FontSize" Value="13"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Margin" Value="0,0,0,6"/>
-        </Style>
-
-        <Style x:Key="FormComboBoxStyle" TargetType="ComboBox">
-            <Setter Property="Padding" Value="10,8"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="BorderBrush" Value="#D1D5DB"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="MinHeight" Value="38"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-        </Style>
-
-        <Style x:Key="FormTextBoxStyle" TargetType="TextBox">
-            <Setter Property="Padding" Value="10,8"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="BorderBrush" Value="#D1D5DB"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-        </Style>
-
-        <!-- Converter for checking if order status allows payment (EmPreparacao or Pronto) -->
-        <converters:OrderStatusToVisibilityConverter x:Key="OrderStatusToVisibilityConverter"/>
-
-        <!-- Enum to Description converter -->
         <converters:EnumToDescriptionConverter x:Key="EnumToDescriptionConverter"/>
     </UserControl.Resources>
 
@@ -114,7 +74,6 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
@@ -225,131 +184,8 @@
                     </Grid>
                 </Border>
 
-                <!-- Pagamento - Visível apenas para pedidos EmPreparacao ou Pronto -->
-                <Border Grid.Row="3"
-                        Background="#F0F9FF"
-                        BorderBrush="#0EA5E9"
-                        BorderThickness="1"
-                        CornerRadius="6"
-                        Padding="16"
-                        Margin="0,16,0,16"
-                        Visibility="{Binding Order.Status, Converter={StaticResource OrderStatusToVisibilityConverter}, ConverterParameter=status_closable}">
-
-                    <StackPanel>
-                        <TextBlock Text="Fechar Pedido com Pagamento"
-                                   FontSize="14"
-                                   FontWeight="SemiBold"
-                                   Foreground="#0369A1"
-                                   Margin="0,0,0,12"/>
-
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-
-                            <!-- Forma de Pagamento -->
-                            <StackPanel Grid.Column="0" Margin="0,0,16,0">
-                                <TextBlock Text="Forma de Pagamento"
-                                           Style="{StaticResource FormLabelStyle}"/>
-                                <ComboBox ItemsSource="{Binding FormasPagamento}"
-                                          SelectedItem="{Binding SelectedFormaPagamento, UpdateSourceTrigger=PropertyChanged}"
-                                          Style="{StaticResource FormComboBoxStyle}"
-                                          Width="180">
-                                    <ComboBox.ItemTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding Converter={StaticResource EnumToDescriptionConverter}}"/>
-                                        </DataTemplate>
-                                    </ComboBox.ItemTemplate>
-                                </ComboBox>
-                            </StackPanel>
-
-                            <!-- Valor Pago -->
-                            <StackPanel Grid.Column="1" Margin="0,0,16,0">
-                                <TextBlock Text="Valor Pago (R$)"
-                                           Style="{StaticResource FormLabelStyle}"/>
-                                <TextBox ToolTip="Informe o valor recebido"
-                                         Style="{StaticResource FormTextBoxStyle}"
-                                         Width="150">
-                                    <i:Interaction.Behaviors>
-                                        <behaviors:CurrencyTextBoxBehavior Value="{Binding ValorPago, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                    </i:Interaction.Behaviors>
-                                </TextBox>
-                            </StackPanel>
-
-                            <!-- Parcelas (visível para Cartão) -->
-                            <StackPanel Grid.Column="2" Margin="0,0,16,0"
-                                        Visibility="{Binding ShowParcelas, Converter={StaticResource BoolToVisibilityConverter}}">
-                                <TextBlock Text="Parcelas"
-                                           Style="{StaticResource FormLabelStyle}"/>
-                                <TextBox Text="{Binding Parcelas, UpdateSourceTrigger=PropertyChanged}"
-                                         Style="{StaticResource FormTextBoxStyle}"
-                                         Width="80"
-                                         ToolTip="Número de parcelas (1-12)"/>
-                            </StackPanel>
-
-                            <!-- Troco (visível para Dinheiro) -->
-                            <StackPanel Grid.Column="3" Margin="0,0,16,0"
-                                        Visibility="{Binding ShowTroco, Converter={StaticResource BoolToVisibilityConverter}}">
-                                <TextBlock Text="Troco (R$)"
-                                           Style="{StaticResource FormLabelStyle}"/>
-                                <TextBlock Text="{Binding Troco, StringFormat='C2', ConverterCulture='pt-BR', FallbackValue='R$ 0,00'}"
-                                           FontSize="16"
-                                           FontWeight="Bold"
-                                           Foreground="#166534"
-                                           VerticalAlignment="Center"
-                                           Margin="10,8,0,0"/>
-                            </StackPanel>
-
-                            <!-- Cliente (visível para Fiado) -->
-                            <StackPanel Grid.Column="4" Margin="0,0,16,0"
-                                        Visibility="{Binding ShowCustomerSelection, Converter={StaticResource BoolToVisibilityConverter}}">
-                                <TextBlock Text="Cliente (Obrigatório para Fiado)"
-                                           Style="{StaticResource FormLabelStyle}"/>
-                                <ComboBox ItemsSource="{Binding Customers}"
-                                          DisplayMemberPath="Name"
-                                          SelectedValuePath="Id"
-                                          SelectedValue="{Binding SelectedCustomerId, UpdateSourceTrigger=PropertyChanged}"
-                                          Style="{StaticResource FormComboBoxStyle}"
-                                          Width="220"
-                                          ToolTip="Selecione o cliente para pagamento a prazo"/>
-                            </StackPanel>
-
-                            <!-- Valor Parcela -->
-                            <StackPanel Grid.Column="5" Margin="0,0,0,0"
-                                        Visibility="{Binding ShowParcelas, Converter={StaticResource BoolToVisibilityConverter}}">
-                                <TextBlock Text="Valor Parcela (R$)"
-                                           Style="{StaticResource FormLabelStyle}"/>
-                                <TextBlock Text="{Binding ValorParcela, StringFormat='C2', ConverterCulture='pt-BR', FallbackValue='R$ 0,00'}"
-                                           FontSize="16"
-                                           FontWeight="Bold"
-                                           Foreground="#0369A1"
-                                           VerticalAlignment="Center"
-                                           Margin="10,8,0,0"/>
-                            </StackPanel>
-                        </Grid>
-
-                        <!-- Observações de Pagamento -->
-                        <StackPanel Margin="0,12,0,0">
-                            <TextBlock Text="Observações"
-                                       Style="{StaticResource FormLabelStyle}"/>
-                            <TextBox Text="{Binding PaymentObservacoes, UpdateSourceTrigger=PropertyChanged}"
-                                     Style="{StaticResource FormTextBoxStyle}"
-                                     Height="60"
-                                     AcceptsReturn="True"
-                                     TextWrapping="Wrap"
-                                     VerticalScrollBarVisibility="Auto"
-                                     ToolTip="Observações sobre o pagamento (opcional)"/>
-                        </StackPanel>
-                    </StackPanel>
-                </Border>
-
                 <!-- Total -->
-                <Border Grid.Row="4" Background="#F9FAFB" CornerRadius="6" Padding="16" Margin="0,0,0,16">
+                <Border Grid.Row="3" Background="#F9FAFB" CornerRadius="6" Padding="16" Margin="0,16,0,0">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -372,17 +208,6 @@
                                        FontSize="18"
                                        FontWeight="SemiBold"
                                        Foreground="{Binding Order.Status, Converter={StaticResource StatusToColorConverter}}"/>
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
-                            <Button Content="Fechar Pedido"
-                                    Style="{StaticResource SuccessButtonStyle}"
-                                    Command="{Binding CloseOrderCommand}"
-                                    Visibility="{Binding CanCloseOrder, Converter={StaticResource BoolToVisibilityConverter}}"/>
-                            <Button Content="Cancelar Pedido"
-                                    Style="{StaticResource DangerButtonStyle}"
-                                    Command="{Binding CancelOrderCommand}"
-                                    Visibility="{Binding CanCancelOrder, Converter={StaticResource BoolToVisibilityConverter}}"/>
                         </StackPanel>
                     </Grid>
                 </Border>

@@ -15,6 +15,7 @@ public sealed class OrderListViewModel : ListViewModelBase<OrderDto, IOrderServi
 
     public event Action? RequestNewOrder;
     public event Action<OrderDto>? RequestViewOrder;
+    public event Action<OrderDto>? RequestCloseOrder;
 
     public ICommand CloseOrderCommand { get; }
     public ICommand CancelOrderCommand { get; }
@@ -73,8 +74,13 @@ public sealed class OrderListViewModel : ListViewModelBase<OrderDto, IOrderServi
         MarkAsReadyCommand = new RelayCommand(async _ => await MarkAsReadyAsync(),
             _ => SelectedItem?.Status == OrderStatus.EmPreparacao && !IsLoading);
 
-        FinalizeOrderCommand = new RelayCommand(async _ => await FinalizeOrderAsync(),
-            _ => SelectedItem?.Status == OrderStatus.Pronto && !IsLoading);
+        FinalizeOrderCommand = new RelayCommand(_ =>
+            {
+                if (SelectedItem is not null)
+                {
+                    RequestCloseOrder?.Invoke(SelectedItem);
+                }
+            }, _ => SelectedItem?.Status == OrderStatus.Pronto && !IsLoading);
 
         CancelOrderCommand = new RelayCommand(async _ => await CancelOrderAsync(),
             _ => SelectedItem is not null &&
@@ -171,15 +177,4 @@ public sealed class OrderListViewModel : ListViewModelBase<OrderDto, IOrderServi
         });
     }
 
-    private async Task FinalizeOrderAsync()
-    {
-        if (SelectedItem is null || IsLoading) return;
-
-        await ExecuteWithLoadingAsync(async () =>
-        {
-            await Service.FinalizeAsync(SelectedItem.Id);
-            SuccessMessage = "Pedido finalizado com sucesso.";
-            await LoadItemsAsync();
-        });
     }
-}
