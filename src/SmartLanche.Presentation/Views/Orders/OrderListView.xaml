@@ -1,6 +1,8 @@
 <UserControl x:Class="SmartLanche.Presentation.Views.Orders.OrderListView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:behaviors="clr-namespace:SmartLanche.Presentation.Behaviors"
              xmlns:converters="clr-namespace:SmartLanche.Presentation.Converters"
              Background="#F5F6FA">
 
@@ -217,9 +219,15 @@
                            Margin="16,0,8,0"
                            Foreground="#374151"/>
 
-                <DatePicker Grid.Column="5"
-                            Height="34"
-                            SelectedDate="{Binding DateFrom, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBox Grid.Column="5"
+                         Height="34"
+                         VerticalContentAlignment="Center"
+                         ToolTip="Formato: dd/MM/yyyy"
+                         Style="{StaticResource SearchTextBoxStyle}">
+                    <i:Interaction.Behaviors>
+                        <behaviors:DateMaskTextBoxBehavior Value="{Binding DateFrom, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    </i:Interaction.Behaviors>
+                </TextBox>
 
                 <TextBlock Grid.Column="6"
                            Text="Data Fim:"
@@ -227,9 +235,15 @@
                            Margin="16,0,8,0"
                            Foreground="#374151"/>
 
-                <DatePicker Grid.Column="7"
-                            Height="34"
-                            SelectedDate="{Binding DateTo, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBox Grid.Column="7"
+                         Height="34"
+                         VerticalContentAlignment="Center"
+                         ToolTip="Formato: dd/MM/yyyy"
+                         Style="{StaticResource SearchTextBoxStyle}">
+                    <i:Interaction.Behaviors>
+                        <behaviors:DateMaskTextBoxBehavior Value="{Binding DateTo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    </i:Interaction.Behaviors>
+                </TextBox>
 
                 <Button Grid.Column="9"
                         Content="Atualizar"
