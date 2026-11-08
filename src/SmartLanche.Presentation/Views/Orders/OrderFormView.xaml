@@ -225,37 +225,17 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <!-- Cabeçalho do pedido: Cliente + Produtos -->
+                <!-- Cabeçalho do pedido: Produtos -->
                 <Border Grid.Row="0"
                         Background="#F9FAFB"
                         CornerRadius="6"
                         Padding="16"
                         Margin="0,0,0,16">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-
-                        <StackPanel Grid.Column="0" Margin="0,0,16,0">
-                            <TextBlock Text="Cliente"
-                                       Style="{StaticResource FormLabelStyle}"/>
-                            <ComboBox ItemsSource="{Binding Customers}"
-                                      DisplayMemberPath="Name"
-                                      SelectedValuePath="Id"
-                                      SelectedValue="{Binding SelectedCustomerId, UpdateSourceTrigger=PropertyChanged}"
-                                      Style="{StaticResource FormComboBoxStyle}"
-                                      Width="280"
-                                      ToolTip="Selecione o cliente (opcional)."/>
-                        </StackPanel>
-
-                        <!-- Filtro de categoria e grid de produtos inline -->
-                        <Border Grid.Column="1"
-                                Background="White"
-                                BorderBrush="#E5E7EB"
-                                BorderThickness="1"
-                                CornerRadius="6"
-                                Padding="12">
+                    <Border Background="White"
+                            BorderBrush="#E5E7EB"
+                            BorderThickness="1"
+                            CornerRadius="6"
+                            Padding="12">
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
@@ -389,7 +369,6 @@
                                 </DataGrid>
                             </Grid>
                         </Border>
-                    </Grid>
                 </Border>
 
                 <!-- Promoções Aplicadas -->

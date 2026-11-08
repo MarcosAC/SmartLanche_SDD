@@ -270,6 +270,7 @@
                                                Style="{StaticResource FormLabelStyle}"/>
                                     <TextBox ToolTip="Informe o valor recebido"
                                              Style="{StaticResource FormTextBoxStyle}"
+                                             HorizontalAlignment="Left"
                                              Width="150">
                                         <i:Interaction.Behaviors>
                                             <behaviors:CurrencyTextBoxBehavior Value="{Binding ValorPago, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
