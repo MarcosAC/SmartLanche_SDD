@@ -219,6 +219,7 @@
 
                 <DatePicker Grid.Column="5"
                             Height="34"
+                            VerticalContentAlignment="Center"
                             SelectedDate="{Binding DateFrom, UpdateSourceTrigger=PropertyChanged}"/>
 
                 <TextBlock Grid.Column="6"
@@ -229,6 +230,7 @@
 
                 <DatePicker Grid.Column="7"
                             Height="34"
+                            VerticalContentAlignment="Center"
                             SelectedDate="{Binding DateTo, UpdateSourceTrigger=PropertyChanged}"/>
 
                 <Button Grid.Column="9"
