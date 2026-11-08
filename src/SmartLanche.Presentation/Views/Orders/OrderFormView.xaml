@@ -143,47 +143,6 @@
             <Setter Property="Padding" Value="12,8"/>
             <Setter Property="MinWidth" Value="90"/>
         </Style>
-
-        <Style x:Key="CustomerSearchItemStyle" TargetType="Button">
-            <Setter Property="Padding" Value="12,10"/>
-            <Setter Property="HorizontalAlignment" Value="Stretch"/>
-            <Setter Property="HorizontalContentAlignment" Value="Left"/>
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#1F2937"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="Border"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                Padding="{TemplateBinding Padding}"
-                                SnapsToDevicePixels="True">
-                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Border" Property="Background" Value="#F3F4F6"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="Border" Property="Background" Value="#E5E7EB"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <DropShadowEffect x:Key="DropShadowEffect"
-                          BlurRadius="8"
-                          ShadowDepth="2"
-                          Direction="270"
-                          Opacity="0.15"
-                          Color="Black"/>
     </UserControl.Resources>
 
     <Grid Margin="24">
@@ -284,7 +243,7 @@
                                     <RowDefinition Height="*"/>     <!-- Produtos -->
                                 </Grid.RowDefinitions>
 
-                                <!-- Busca de Cliente -->
+                                <!-- Busca de Cliente (ComboBox editável com autocomplete) -->
                                 <Border Grid.Row="0" Margin="0,0,0,12">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
@@ -297,55 +256,27 @@
                                                    VerticalAlignment="Center"
                                                    Margin="0,0,12,0"/>
 
-                                        <Grid Grid.Column="1">
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition Height="Auto"/>
-                                                <RowDefinition Height="Auto"/>
-                                            </Grid.RowDefinitions>
-
-                                            <!-- TextBox de busca -->
-                                            <TextBox x:Name="CustomerSearchBox"
-                                                     Grid.Row="0"
-                                                     Height="38"
-                                                     VerticalContentAlignment="Center"
-                                                     Style="{StaticResource FormTextBoxStyle}"
-                                                     Text="{Binding CustomerSearchText, UpdateSourceTrigger=PropertyChanged}"
-                                                     ToolTip="Digite nome, telefone, email ou CPF/CNPJ para buscar"/>
-
-                                            <!-- Popup com resultados -->
-                                            <Popup Grid.Row="1"
-                                                   IsOpen="{Binding ShowCustomerDropdown, Mode=OneWay}"
-                                                   PlacementTarget="{Binding ElementName=CustomerSearchBox}"
-                                                   Placement="Bottom"
-                                                   StaysOpen="False"
-                                                   AllowsTransparency="True"
-                                                   PopupAnimation="Fade">
-                                                <Border Background="White"
-                                                        BorderBrush="#D1D5DB"
-                                                        BorderThickness="1"
-                                                        CornerRadius="6"
-                                                        Padding="4"
-                                                        MaxHeight="200"
-                                                        MinWidth="300"
-                                                        Effect="{StaticResource DropShadowEffect}">
-                                                    <ListBox ItemsSource="{Binding FilteredCustomers}"
-                                                             SelectedItem="{Binding SelectedCustomer, Mode=TwoWay}"
-                                                             BorderThickness="0"
-                                                             Background="Transparent"
-                                                             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-                                                        <ListBox.ItemTemplate>
-                                                            <DataTemplate>
-                                                                <Button Content="{Binding Name}"
-                                                                        Tag="{Binding}"
-                                                                        Style="{StaticResource CustomerSearchItemStyle}"
-                                                                        Command="{Binding DataContext.SelectCustomerCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                                        CommandParameter="{Binding}"/>
-                                                            </DataTemplate>
-                                                        </ListBox.ItemTemplate>
-                                                    </ListBox>
-                                                </Border>
-                                            </Popup>
-                                        </Grid>
+                                        <ComboBox Grid.Column="1"
+                                                  Height="38"
+                                                  VerticalContentAlignment="Center"
+                                                  Style="{StaticResource FormComboBoxStyle}"
+                                                  IsEditable="True"
+                                                  IsTextSearchEnabled="False"
+                                                  ItemsSource="{Binding FilteredCustomers}"
+                                                  SelectedItem="{Binding SelectedCustomer, Mode=TwoWay}"
+                                                  Text="{Binding CustomerSearchText, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                  DisplayMemberPath="Name"
+                                                  StaysOpenOnEdit="True"
+                                                  ToolTip="Digite nome, telefone ou observações para buscar cliente">
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding Name}"
+                                                               FontSize="14"
+                                                               Padding="8,6"
+                                                               Foreground="#1F2937"/>
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
                                     </Grid>
                                 </Border>
 
