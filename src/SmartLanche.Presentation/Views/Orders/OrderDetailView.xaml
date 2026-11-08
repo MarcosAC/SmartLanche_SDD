@@ -196,18 +196,22 @@
                             <TextBlock Text="Total: "
                                        FontSize="18"
                                        FontWeight="SemiBold"
-                                       Foreground="#1F2937"/>
+                                       Foreground="#1F2937"
+                                       VerticalAlignment="Center"/>
                             <TextBlock Text="{Binding Order.TotalAmount, StringFormat='C2', ConverterCulture='pt-BR'}"
                                        FontSize="24"
                                        FontWeight="Bold"
-                                       Foreground="#166534"/>
+                                       Foreground="#166534"
+                                       VerticalAlignment="Center"/>
                             <TextBlock Text="  |  "
                                        FontSize="18"
-                                       Foreground="#6B7280"/>
+                                       Foreground="#6B7280"
+                                       VerticalAlignment="Center"/>
                             <TextBlock Text="{Binding Order.Status}"
                                        FontSize="18"
                                        FontWeight="SemiBold"
-                                       Foreground="{Binding Order.Status, Converter={StaticResource StatusToColorConverter}}"/>
+                                       Foreground="{Binding Order.Status, Converter={StaticResource StatusToColorConverter}}"
+                                       VerticalAlignment="Center"/>
                         </StackPanel>
                     </Grid>
                 </Border>

@@ -558,21 +558,25 @@
                             <TextBlock Text="Total: "
                                        FontSize="18"
                                        FontWeight="SemiBold"
-                                       Foreground="#1F2937"/>
+                                       Foreground="#1F2937"
+                                       VerticalAlignment="Center"/>
                             <TextBlock Text="{Binding TotalAmount, StringFormat='C2', ConverterCulture='pt-BR'}"
                                        FontSize="24"
                                        FontWeight="Bold"
-                                       Foreground="#166534"/>
+                                       Foreground="#166534"
+                                       VerticalAlignment="Center"/>
                             <TextBlock Text="  |  "
                                        FontSize="18"
-                                       Foreground="#6B7280"/>
+                                       Foreground="#6B7280"
+                                       VerticalAlignment="Center"/>
                             <TextBlock Text="{Binding Status}"
                                        FontSize="18"
                                        FontWeight="SemiBold"
-                                       Foreground="{Binding Status, Converter={StaticResource StatusToColorConverter}}"/>
+                                       Foreground="{Binding Status, Converter={StaticResource StatusToColorConverter}}"
+                                       VerticalAlignment="Center"/>
                         </StackPanel>
 
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
                             <Button Content="Cancelar Pedido"
                                     Style="{StaticResource DangerButtonStyle}"
                                     Command="{Binding CancelOrderCommand}"
