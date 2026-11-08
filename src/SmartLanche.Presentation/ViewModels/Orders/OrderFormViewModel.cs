@@ -63,6 +63,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
         MarkAsReadyCommand = new RelayCommand(async _ => await MarkAsReadyAsync(), _ => CanMarkAsReady && !IsLoading);
         CancelOrderCommand = new RelayCommand(async _ => await CancelOrderAsync(), _ => CanCancelOrder && !IsLoading);
         ClearFormCommand = new RelayCommand(_ => ClearForm());
+        SelectCustomerCommand = new RelayCommand(c => SelectCustomer(c as CustomerDto));
         IncreaseQuantityCommand = new RelayCommand(p => IncreaseQuantity(p as ProductDto));
         DecreaseQuantityCommand = new RelayCommand(p => DecreaseQuantity(p as ProductDto));
         IncreaseOrderItemQuantityCommand = new RelayCommand(async p => await IncreaseOrderItemQuantityAsync(p as OrderItemDto), _ => CanAddItems && !IsLoading);
@@ -78,6 +79,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
     public ICommand MarkAsReadyCommand { get; }
     public ICommand CancelOrderCommand { get; }
     public ICommand ClearFormCommand { get; }
+    public ICommand SelectCustomerCommand { get; }
     public ICommand IncreaseQuantityCommand { get; }
     public ICommand DecreaseQuantityCommand { get; }
     public ICommand IncreaseOrderItemQuantityCommand { get; }
@@ -116,6 +118,38 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
         get => _selectedCustomer;
         set => SetProperty(ref _selectedCustomer, value);
     }
+
+    private string _customerSearchText = string.Empty;
+
+    public string CustomerSearchText
+    {
+        get => _customerSearchText;
+        set
+        {
+            if (SetProperty(ref _customerSearchText, value))
+            {
+                OnPropertyChanged(nameof(FilteredCustomers));
+                OnPropertyChanged(nameof(ShowCustomerDropdown));
+            }
+        }
+    }
+
+    public IEnumerable<CustomerDto> FilteredCustomers
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(_customerSearchText))
+                return Customers;
+
+            var search = _customerSearchText.Trim().ToLower();
+            return Customers.Where(c =>
+                c.Name?.ToLower().Contains(search) == true ||
+                c.Phone?.Contains(search) == true ||
+                c.Notes?.ToLower().Contains(search) == true);
+        }
+    }
+
+    public bool ShowCustomerDropdown => !string.IsNullOrWhiteSpace(_customerSearchText) && FilteredCustomers.Any();
 
     public int? SelectedCustomerId
     {
@@ -692,7 +726,15 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
     {
         SelectedProduct = null;
         SelectedCustomer = null;
+        CustomerSearchText = string.Empty;
         ClearMessages();
+    }
+
+    private void SelectCustomer(CustomerDto? customer)
+    {
+        if (customer is null) return;
+        SelectedCustomer = customer;
+        CustomerSearchText = customer.Name ?? string.Empty;
     }
 
     private void ClearMessages()
