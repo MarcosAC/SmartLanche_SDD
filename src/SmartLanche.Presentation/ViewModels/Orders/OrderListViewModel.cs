@@ -99,8 +99,9 @@ public sealed class OrderListViewModel : ListViewModelBase<OrderDto, IOrderServi
             DateTo = DateTo,
             SortBy = SortColumn,
             SortDescending = SortDescending,
-            // Include cancelled orders when explicitly filtering for Cancelado status
-            ExcludeCancelled = SelectedStatus != (int)OrderStatus.Cancelado
+            // Exclude cancelled only when a specific non-cancelled status is selected
+            // If no status filter (Todos) or Cancelado is selected, include cancelled orders
+            ExcludeCancelled = SelectedStatus.HasValue && SelectedStatus != (int)OrderStatus.Cancelado
         };
 
         return await Service.GetAllAsync(filter);
