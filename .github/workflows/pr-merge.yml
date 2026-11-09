@@ -53,7 +53,11 @@ jobs:
           echo "Branch origem: $CURRENT_BRANCH"
           echo "Branch destino: ${{ github.event.inputs.target_branch }}"
 
-      - name: Verify source branch has commits ahead
+      - name: Fetch target branch
+        run: |
+          git fetch origin ${{ github.event.inputs.target_branch }}:${{ github.event.inputs.target_branch }}
+
+- name: Verify source branch has commits ahead
         run: |
           SOURCE="${{ steps.branch.outputs.source_branch }}"
           TARGET="${{ github.event.inputs.target_branch }}"
