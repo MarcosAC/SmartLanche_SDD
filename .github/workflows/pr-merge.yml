@@ -23,7 +23,7 @@ on:
         default: 'PR criado e mergeado automaticamente via workflow "Create PR & Merge".'
 
 permissions:
-  contents: read
+  contents: write
   pull-requests: write
 
 jobs:
