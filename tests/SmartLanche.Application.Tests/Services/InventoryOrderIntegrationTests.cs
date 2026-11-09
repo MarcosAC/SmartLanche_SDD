@@ -637,7 +637,7 @@ public class InventoryOrderIntegrationTests : IDisposable
 
         public Task<OrderDto> CreateAsync(CreateOrderRequest request, CancellationToken cancellationToken = default)
         {
-            var order = new Order { CustomerId = request.CustomerId, OrderDate = DateTime.Now, Status = OrderStatus.Aberto, TotalAmount = 0, Notes = string.Empty };
+            var order = new Order { CustomerId = request.CustomerId, OrderDate = DateTime.Now, Status = OrderStatus.Aberto, TotalAmount = 0, Observacoes = string.Empty };
             _orderRepository.AddAsync(order, cancellationToken).Wait();
             return Task.FromResult(MapToDto(order));
         }
@@ -742,7 +742,7 @@ public class InventoryOrderIntegrationTests : IDisposable
                 OrderDate = order.OrderDate,
                 Status = order.Status,
                 TotalAmount = order.TotalAmount,
-                Notes = order.Notes,
+                Observacoes = order.Observacoes,
                 Items = order.OrderItems.Select(i => new OrderItemDto
                 {
                     Id = i.Id,

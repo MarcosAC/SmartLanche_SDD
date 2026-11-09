@@ -583,7 +583,7 @@ public class PersistenceIntegrationTests
                     OrderDate = DateTime.Now,
                     Status = OrderStatus.EmPreparacao,
                     TotalAmount = 0,
-                    Notes = "Pedido de teste"
+                    Observacoes = "Pedido de teste"
                 };
 
                 await orderRepository.AddAsync(order);
@@ -600,7 +600,7 @@ public class PersistenceIntegrationTests
                 Assert.Equal(customerId, savedOrder.CustomerId);
                 Assert.Equal(OrderStatus.EmPreparacao, savedOrder.Status);
                 Assert.Equal(0, savedOrder.TotalAmount);
-                Assert.Equal("Pedido de teste", savedOrder.Notes);
+                Assert.Equal("Pedido de teste", savedOrder.Observacoes);
                 Assert.NotNull(savedOrder.Customer);
                 Assert.Equal("João Silva", savedOrder.Customer.Name);
             }
@@ -634,7 +634,7 @@ public class PersistenceIntegrationTests
                     OrderDate = DateTime.Now,
                     Status = OrderStatus.EmPreparacao,
                     TotalAmount = 0,
-                    Notes = string.Empty
+                    Observacoes = string.Empty
                 };
 
                 await orderRepository.AddAsync(order);
@@ -706,7 +706,7 @@ public class PersistenceIntegrationTests
                     OrderDate = DateTime.Now,
                     Status = OrderStatus.EmPreparacao,
                     TotalAmount = 0,
-                    Notes = string.Empty
+                    Observacoes = string.Empty
                 };
 
                 var orderItem = new OrderItem
@@ -798,7 +798,7 @@ public class PersistenceIntegrationTests
                     OrderDate = DateTime.Now,
                     Status = OrderStatus.EmPreparacao,
                     TotalAmount = 0,
-                    Notes = string.Empty
+                    Observacoes = string.Empty
                 };
 
                 var orderItem = new OrderItem
@@ -876,7 +876,7 @@ public class PersistenceIntegrationTests
                     OrderDate = DateTime.Now,
                     Status = OrderStatus.EmPreparacao,
                     TotalAmount = 0,
-                    Notes = string.Empty
+                    Observacoes = string.Empty
                 };
 
                 await orderRepository.AddAsync(order);
@@ -974,7 +974,7 @@ public class PersistenceIntegrationTests
                     OrderDate = DateTime.Now,
                     Status = OrderStatus.EmPreparacao,
                     TotalAmount = 0,
-                    Notes = string.Empty
+                    Observacoes = string.Empty
                 };
 
                 var orderItem = new OrderItem

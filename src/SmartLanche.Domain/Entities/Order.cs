@@ -16,7 +16,7 @@ public class Order
 
     public decimal TotalAmount { get; set; }
 
-    public string? Notes { get; set; }
+    public string? Observacoes { get; set; }
 
     public DateTime? PreparationStartedAt { get; set; }
 

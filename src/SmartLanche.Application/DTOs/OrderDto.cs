@@ -16,7 +16,7 @@ public class OrderDto
 
     public decimal TotalAmount { get; set; }
 
-    public string? Notes { get; set; }
+    public string? Observacoes { get; set; }
 
     public DateTime? PreparationStartedAt { get; set; }
 
@@ -25,4 +25,6 @@ public class OrderDto
     public DateTime? CancelledAt { get; set; }
 
     public IReadOnlyList<OrderItemDto> Items { get; set; } = new List<OrderItemDto>();
+
+    public IReadOnlyList<PaymentDto> Payments { get; set; } = new List<PaymentDto>();
 }
