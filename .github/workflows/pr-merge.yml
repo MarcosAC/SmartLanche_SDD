@@ -1,0 +1,146 @@
+name: Create PR & Merge
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_branch:
+        description: 'Branch de destino para o merge'
+        type: choice
+        required: true
+        options:
+          - development
+          - main
+          - release
+      pr_title:
+        description: 'Título do Pull Request'
+        type: string
+        required: false
+        default: 'Merge automático via workflow'
+      pr_body:
+        description: 'Descrição do Pull Request'
+        type: string
+        required: false
+        default: 'PR criado e mergeado automaticamente via workflow "Create PR & Merge".'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  create-pr-and-merge:
+    name: Create PR & Merge
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Get current branch
+        id: branch
+        run: |
+          # Detecta a branch atual (remove refs/heads/)
+          CURRENT_BRANCH=${GITHUB_REF#refs/heads/}
+          echo "source_branch=$CURRENT_BRANCH" >> $GITHUB_OUTPUT
+          echo "Branch origem: $CURRENT_BRANCH"
+          echo "Branch destino: ${{ github.event.inputs.target_branch }}"
+
+      - name: Verify source branch has commits ahead
+        run: |
+          SOURCE="${{ steps.branch.outputs.source_branch }}"
+          TARGET="${{ github.event.inputs.target_branch }}"
+
+          # Verifica se a branch origem tem commits à frente da destino
+          AHEAD=$(git rev-list --count ${TARGET}..${SOURCE} 2>/dev/null || echo "0")
+          if [ "$AHEAD" -eq 0 ]; then
+            echo "⚠️ Branch '$SOURCE' não tem commits à frente de '$TARGET'. Nada para mergear."
+            exit 1
+          fi
+          echo "✅ Branch '$SOURCE' tem $AHEAD commit(s) à frente de '$TARGET'."
+
+      - name: Create Pull Request
+        id: create_pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          SOURCE="${{ steps.branch.outputs.source_branch }}"
+          TARGET="${{ github.event.inputs.target_branch }}"
+          TITLE="${{ github.event.inputs.pr_title }}"
+          BODY="${{ github.event.inputs.pr_body }}"
+
+          echo "Criando PR: $SOURCE → $TARGET"
+
+          # Cria o PR
+          PR_URL=$(gh pr create \
+            --base "$TARGET" \
+            --head "$SOURCE" \
+            --title "$TITLE" \
+            --body "$BODY" \
+            --label "auto-merge")
+
+          echo "pr_url=$PR_URL" >> $GITHUB_OUTPUT
+          echo "PR criado: $PR_URL"
+
+      - name: Enable auto-merge on PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_URL="${{ steps.create_pr.outputs.pr_url }}"
+          PR_NUMBER=$(echo "$PR_URL" | grep -o '[0-9]*$')
+
+          echo "Habilitando auto-merge no PR #$PR_NUMBER..."
+
+          gh pr merge "$PR_NUMBER" \
+            --auto \
+            --merge \
+            --delete-branch=false
+
+      - name: Wait for merge completion
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_URL="${{ steps.create_pr.outputs.pr_url }}"
+          PR_NUMBER=$(echo "$PR_URL" | grep -o '[0-9]*$')
+
+          echo "Aguardando merge do PR #$PR_NUMBER..."
+
+          # Aguarda até 60 segundos pelo merge
+          for i in {1..12}; do
+            STATE=$(gh pr view "$PR_NUMBER" --json state --jq .state)
+            if [ "$STATE" = "MERGED" ]; then
+              echo "✅ PR mergeado com sucesso!"
+              exit 0
+            fi
+            if [ "$STATE" = "CLOSED" ]; then
+              echo "❌ PR foi fechado sem merge."
+              exit 1
+            fi
+            echo "   Status: $STATE (tentativa $i/12)..."
+            sleep 5
+          done
+
+          echo "⚠️ Timeout aguardando merge. Verifique manualmente: $PR_URL"
+          exit 1
+
+      - name: Summary
+        if: success()
+        run: |
+          SOURCE="${{ steps.branch.outputs.source_branch }}"
+          TARGET="${{ github.event.inputs.target_branch }}"
+          PR_URL="${{ steps.create_pr.outputs.pr_url }}"
+
+          echo "## ✅ Merge concluído com sucesso!"
+          echo ""
+          echo "- **Branch origem**: \`$SOURCE\`"
+          echo "- **Branch destino**: \`$TARGET\`"
+          echo "- **PR**: $PR_URL"
+          echo ""
+          echo "A branch \`$SOURCE\` foi mergeada em \`$TARGET\` via auto-merge."

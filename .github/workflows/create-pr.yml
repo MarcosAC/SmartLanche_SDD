@@ -1,0 +1,136 @@
+name: Criar Pull Request
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_branch:
+        type: choice
+        description: 'Branch de destino para o PR'
+        required: true
+        options:
+          - development
+          - main
+      pr_title:
+        type: string
+        description: 'Título do PR (opcional - usa branch name se vazio)'
+        required: false
+      pr_body:
+        type: string
+        description: 'Descrição do PR (opcional)'
+        required: false
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  create-pull-request:
+    name: Criar PR para ${{ github.event.inputs.target_branch }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Identificar branch atual
+        id: current-branch
+        run: |
+          # Pega o nome da branch que disparou o workflow
+          # Se for workflow_dispatch, usa a branch do ref atual
+          BRANCH_NAME="${GITHUB_REF#refs/heads/}"
+          echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+          echo "Branch atual: $BRANCH_NAME"
+
+      - name: Validar se não é branch de destino
+        run: |
+          if [ "${{ steps.current-branch.outputs.branch_name }}" = "${{ github.event.inputs.target_branch }}" ]; then
+            echo "❌ Erro: Não pode criar PR da branch '${{ github.event.inputs.target_branch }}' para ela mesma"
+            exit 1
+          fi
+
+      - name: Verificar se branch de destino existe
+        run: |
+          git fetch origin ${{ github.event.inputs.target_branch }}:${{ github.event.inputs.target_branch }}
+          echo "✅ Branch ${{ github.event.inputs.target_branch }} existe"
+
+      - name: Verificar se há commits para PR
+        id: check-commits
+        run: |
+          COMMITS=$(git rev-list --count ${{ github.event.inputs.target_branch }}..${{ steps.current-branch.outputs.branch_name }})
+          echo "commits_count=$COMMITS" >> $GITHUB_OUTPUT
+          if [ "$COMMITS" -eq 0 ]; then
+            echo "⚠️ Nenhum commit novo para criar PR"
+          else
+            echo "✅ $COMMITS commit(s) novo(s) para o PR"
+          fi
+
+      - name: Gerar título do PR
+        id: pr-title
+        run: |
+          if [ -n "${{ github.event.inputs.pr_title }}" ]; then
+            echo "title=${{ github.event.inputs.pr_title }}" >> $GITHUB_OUTPUT
+          else
+            # Usa o nome da branch como título, formatando
+            TITLE="${{ steps.current-branch.outputs.branch_name }}"
+            TITLE="${TITLE//-/ }"
+            TITLE="${TITLE//_/ }"
+            echo "title=$TITLE" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Gerar corpo do PR
+        id: pr-body
+        run: |
+          if [ -n "${{ github.event.inputs.pr_body }}" ]; then
+            echo "body<<EOF" >> $GITHUB_OUTPUT
+            echo "${{ github.event.inputs.pr_body }}" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "body<<EOF" >> $GITHUB_OUTPUT
+            echo "## Pull Request Automático" >> $GITHUB_OUTPUT
+            echo "" >> $GITHUB_OUTPUT
+            echo "**Branch origem:** \`${{ steps.current-branch.outputs.branch_name }}\`" >> $GITHUB_OUTPUT
+            echo "**Branch destino:** \`${{ github.event.inputs.target_branch }}\`" >> $GITHUB_OUTPUT
+            echo "**Criado por:** @${{ github.actor }}" >> $GITHUB_OUTPUT
+            echo "**Data:** $(date -u +'%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_OUTPUT
+            echo "" >> $GITHUB_OUTPUT
+            echo "---" >> $GITHUB_OUTPUT
+            echo "*PR criado via workflow manual \"Criar Pull Request\*" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Criar Pull Request
+        id: create-pr
+        if: steps.check-commits.outputs.commits_count > 0
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_URL=$(gh pr create \
+            --base "${{ github.event.inputs.target_branch }}" \
+            --head "${{ steps.current-branch.outputs.branch_name }}" \
+            --title "${{ steps.pr-title.outputs.title }}" \
+            --body "${{ steps.pr-body.outputs.body }}" \
+            --repo ${{ github.repository }})
+
+          echo "pr_url=$PR_URL" >> $GITHUB_OUTPUT
+          echo "✅ PR criado: $PR_URL"
+
+      - name: Resultado
+        if: steps.check-commits.outputs.commits_count > 0
+        run: |
+          echo "## ✅ Pull Request Criado com Sucesso!"
+          echo ""
+          echo "**PR:** ${{ steps.create-pr.outputs.pr_url }}"
+          echo "**De:** \`${{ steps.current-branch.outputs.branch_name }}\`"
+          echo "**Para:** \`${{ github.event.inputs.target_branch }}\`"
+          echo ""
+          echo "Agora você pode revisar e fazer o merge manualmente no GitHub."
+
+      - name: Sem alterações
+        if: steps.check-commits.outputs.commits_count == 0
+        run: |
+          echo "## ℹ️ Nenhum PR criado"
+          echo ""
+          echo "A branch \`${{ steps.current-branch.outputs.branch_name }}\` não tem commits novos em relação à \`${{ github.event.inputs.target_branch }}\`."
+          echo "Faça commits e push primeiro, depois execute o workflow novamente."
