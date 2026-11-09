@@ -74,15 +74,15 @@ jobs:
         id: create_pr
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TITLE: ${{ github.event.inputs.pr_title }}
+          BODY: ${{ github.event.inputs.pr_body }}
         run: |
           SOURCE="${{ steps.branch.outputs.source_branch }}"
           TARGET="${{ github.event.inputs.target_branch }}"
-          TITLE="${{ github.event.inputs.pr_title }}"
-          BODY="${{ github.event.inputs.pr_body }}"
 
           echo "Criando PR: $SOURCE → $TARGET"
 
-          # Cria o PR
+          # Cria o PR (usa variáveis de ambiente TITLE e BODY definidas acima)
           PR_URL=$(gh pr create \
             --base "$TARGET" \
             --head "$SOURCE" \
