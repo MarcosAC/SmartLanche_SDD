@@ -107,7 +107,7 @@
                                        Style="{StaticResource DetailValueStyle}"/>
                         </StackPanel>
 
-                        <StackPanel Grid.Column="5" VerticalAlignment="Bottom">
+                        <StackPanel Grid.Column="5">
                             <TextBlock Text="Status" Style="{StaticResource DetailLabelStyle}"/>
                             <TextBlock Text="{Binding Order.Status}"
                                        FontSize="14" FontWeight="SemiBold"
