@@ -44,10 +44,10 @@ public class Order
 
         var validTransitions = new Dictionary<OrderStatus, OrderStatus[]>
         {
-            [OrderStatus.Pendente] = [OrderStatus.EmPreparacao, OrderStatus.Cancelado],
-            [OrderStatus.EmPreparacao] = [OrderStatus.Pronto, OrderStatus.Cancelado],
+            [OrderStatus.Aberto] = [OrderStatus.EmPreparacao, OrderStatus.Cancelado],
+            [OrderStatus.EmPreparacao] = [OrderStatus.Pronto, OrderStatus.Finalizado, OrderStatus.Cancelado],
             [OrderStatus.Pronto] = [OrderStatus.Finalizado, OrderStatus.Cancelado],
-            [OrderStatus.Finalizado] = [OrderStatus.Cancelado],
+            [OrderStatus.Finalizado] = [],
             [OrderStatus.Cancelado] = [],
         };
 

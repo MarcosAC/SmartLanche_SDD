@@ -16,7 +16,7 @@ public sealed class FakeOrderRepository : FakeRepositoryBase<Order>, IOrderRepos
         _productRepository = productRepository;
     }
 
-    public Task<IReadOnlyList<Order>> GetAllAsync(int? status = null, int? customerId = null, DateTime? dateFrom = null, DateTime? dateTo = null, string? searchTerm = null, string? sortBy = null, bool sortDescending = true, CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<Order>> GetAllAsync(int? status = null, int? customerId = null, DateTime? dateFrom = null, DateTime? dateTo = null, string? searchTerm = null, string? sortBy = null, bool sortDescending = true, bool excludeCancelled = true, CancellationToken cancellationToken = default)
     {
         IEnumerable<Order> query = _entities.Values;
 
@@ -39,6 +39,11 @@ public sealed class FakeOrderRepository : FakeRepositoryBase<Order>, IOrderRepos
                 o.Id.ToString().Contains(term) ||
                 (o.Customer != null && o.Customer.Name.ToLower().Contains(term)) ||
                 o.Status.ToString().ToLower().Contains(term));
+        }
+
+        if (excludeCancelled)
+        {
+            query = query.Where(o => o.Status != OrderStatus.Cancelado);
         }
 
         // Apply sorting
@@ -68,9 +73,15 @@ public sealed class FakeOrderRepository : FakeRepositoryBase<Order>, IOrderRepos
         return Task.FromResult((IReadOnlyList<Order>)orders.AsReadOnly());
     }
 
+    public Task DeleteAsync(Order order, CancellationToken cancellationToken = default)
+    {
+        _entities.TryRemove(order.Id, out _);
+        return Task.CompletedTask;
+    }
+
     public Task<Order?> GetOpenOrderAsync(int? customerId = null, CancellationToken cancellationToken = default)
     {
-        var query = _entities.Values.Where(o => o.Status == OrderStatus.Pendente);
+        var query = _entities.Values.Where(o => o.Status == OrderStatus.EmPreparacao);
 
         if (customerId.HasValue)
             query = query.Where(o => o.CustomerId == customerId.Value);
@@ -85,7 +96,7 @@ public sealed class FakeOrderRepository : FakeRepositoryBase<Order>, IOrderRepos
 
     public Task<bool> ExistsOpenOrderForCustomerAsync(int customerId, CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(_entities.Values.Any(o => o.CustomerId == customerId && o.Status == OrderStatus.Pendente));
+        return Task.FromResult(_entities.Values.Any(o => o.CustomerId == customerId && o.Status == OrderStatus.EmPreparacao));
     }
 
     public Task<IReadOnlyList<OrderItem>> GetItemsByOrderAsync(int orderId, CancellationToken cancellationToken = default)
@@ -112,5 +123,15 @@ public sealed class FakeOrderRepository : FakeRepositoryBase<Order>, IOrderRepos
         {
             item.Product = _productRepository.GetByIdAsync(item.ProductId).Result;
         }
+    }
+
+    public Task<Order?> GetByIdTrackedAsync(int id, CancellationToken cancellationToken = default)
+    {
+        _entities.TryGetValue(id, out var order);
+        if (order != null)
+        {
+            LoadNavigationProperties(order);
+        }
+        return Task.FromResult(order);
     }
 }

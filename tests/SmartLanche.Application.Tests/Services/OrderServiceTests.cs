@@ -44,14 +44,8 @@ public class OrderServiceTests : IDisposable
 
         var paymentService = new PaymentService(new FakePaymentRepository(), _orderRepository);
         var pendingPaymentService = new PendingPaymentService(new FakePendingPaymentRepository(_customerRepository), _orderRepository, _customerRepository);
-        var orderPaymentService = new OrderPaymentService(
-            _orderRepository,
-            _customerRepository,
-            paymentService,
-            pendingPaymentService,
-            _inventoryService);
 
-        _service = new OrderService(_orderRepository, _customerRepository, _productRepository, _inventoryService, orderPromotionService, orderPaymentService);
+        _service = new OrderService(_orderRepository, _customerRepository, _productRepository, _inventoryService, orderPromotionService, paymentService, pendingPaymentService);
     }
 
     public void Dispose()
@@ -61,9 +55,8 @@ public class OrderServiceTests : IDisposable
 
     private async Task<OrderDto> AdvanceOrderToReadyAsync(int orderId)
     {
-        // Pendente -> EmPreparacao
+        // Order starts as Aberto -> EmPreparacao -> Pronto
         await _service.StartPreparationAsync(orderId);
-        // EmPreparacao -> Pronto
         return await _service.MarkAsReadyAsync(orderId);
     }
 
@@ -74,7 +67,7 @@ public class OrderServiceTests : IDisposable
 
         Assert.True(result.Id > 0);
         Assert.Null(result.CustomerId);
-        Assert.Equal(OrderStatus.Pendente, result.Status);
+        Assert.Equal(OrderStatus.Aberto, result.Status);
         Assert.Equal(0m, result.TotalAmount);
         Assert.Empty(result.Items);
     }
@@ -89,7 +82,7 @@ public class OrderServiceTests : IDisposable
         Assert.True(result.Id > 0);
         Assert.Equal(customer.Id, result.CustomerId);
         Assert.Equal(customer.Name, result.CustomerName);
-        Assert.Equal(OrderStatus.Pendente, result.Status);
+        Assert.Equal(OrderStatus.Aberto, result.Status);
         Assert.Equal(0m, result.TotalAmount);
     }
 
@@ -123,7 +116,7 @@ public class OrderServiceTests : IDisposable
                 Quantity = 2
             });
 
-        Assert.Equal(OrderStatus.Pendente, result.Status);
+        Assert.Equal(OrderStatus.Aberto, result.Status);
         Assert.Equal(51.00m, result.TotalAmount);
         Assert.Single(result.Items);
         Assert.Equal(product.Id, result.Items[0].ProductId);
@@ -482,7 +475,7 @@ public class OrderServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task CancelAsync_FinalizedOrder_CancelsAndRestoresStock()
+    public async Task CancelAsync_FinalizedOrder_ThrowsInvalidOperationException()
     {
         var order = await _service.CreateAsync(new CreateOrderRequest());
         var product = await CreateProductAsync();
@@ -490,11 +483,9 @@ public class OrderServiceTests : IDisposable
         await AdvanceOrderToReadyAsync(order.Id);
         await _service.CloseAsync(new CloseOrderRequest { OrderId = order.Id });
 
-        // Act - Cancel finalized order (should work now for stock restoration)
-        var result = await _service.CancelAsync(new CancelOrderRequest { OrderId = order.Id });
-
-        // Assert - Order cancelled successfully
-        Assert.Equal(OrderStatus.Cancelado, result.Status);
+        // Act & Assert - Cancel finalized order should throw exception
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => _service.CancelAsync(new CancelOrderRequest { OrderId = order.Id }));
     }
 
     [Fact]
@@ -516,7 +507,7 @@ public class OrderServiceTests : IDisposable
         await AdvanceOrderToReadyAsync(openOrder.Id);
         await _service.CloseAsync(new CloseOrderRequest { OrderId = openOrder.Id });
 
-        var openOrders = await _service.GetAllAsync(new OrderFilterRequest { Status = (int)OrderStatus.Pendente });
+        var openOrders = await _service.GetAllAsync(new OrderFilterRequest { Status = (int)OrderStatus.EmPreparacao });
         var closedOrders = await _service.GetAllAsync(new OrderFilterRequest { Status = (int)OrderStatus.Finalizado });
 
         Assert.Empty(openOrders);
@@ -1014,7 +1005,7 @@ public class OrderServiceTests : IDisposable
             _productRepository = productRepository;
         }
 
-        public Task<IReadOnlyList<Order>> GetAllAsync(int? status = null, int? customerId = null, DateTime? dateFrom = null, DateTime? dateTo = null, string? searchTerm = null, string? sortBy = null, bool sortDescending = true, CancellationToken cancellationToken = default)
+        public Task<IReadOnlyList<Order>> GetAllAsync(int? status = null, int? customerId = null, DateTime? dateFrom = null, DateTime? dateTo = null, string? searchTerm = null, string? sortBy = null, bool sortDescending = true, bool excludeCancelled = true, CancellationToken cancellationToken = default)
         {
             IEnumerable<Order> query = _orders;
 
@@ -1037,6 +1028,11 @@ public class OrderServiceTests : IDisposable
                     o.Id.ToString().Contains(term) ||
                     (o.Customer != null && o.Customer.Name.ToLower().Contains(term)) ||
                     o.Status.ToString().ToLower().Contains(term));
+            }
+
+            if (excludeCancelled)
+            {
+                query = query.Where(o => o.Status != OrderStatus.Cancelado);
             }
 
             // Apply sorting
@@ -1076,6 +1072,16 @@ public class OrderServiceTests : IDisposable
             return Task.FromResult(order);
         }
 
+        public Task<Order?> GetByIdTrackedAsync(int id, CancellationToken cancellationToken = default)
+        {
+            var order = _orders.FirstOrDefault(o => o.Id == id);
+            if (order != null)
+            {
+                LoadNavigationProperties(order);
+            }
+            return Task.FromResult(order);
+        }
+
         public Task AddAsync(Order order, CancellationToken cancellationToken = default)
         {
             order.Id = _nextId++;
@@ -1097,7 +1103,7 @@ public class OrderServiceTests : IDisposable
 
         public Task<Order?> GetOpenOrderAsync(int? customerId = null, CancellationToken cancellationToken = default)
         {
-            var query = _orders.Where(o => o.Status == OrderStatus.Pendente);
+            var query = _orders.Where(o => o.Status == OrderStatus.EmPreparacao);
 
             if (customerId.HasValue)
                 query = query.Where(o => o.CustomerId == customerId.Value);
@@ -1112,7 +1118,7 @@ public class OrderServiceTests : IDisposable
 
         public Task<bool> ExistsOpenOrderForCustomerAsync(int customerId, CancellationToken cancellationToken = default)
         {
-            return Task.FromResult(_orders.Any(o => o.CustomerId == customerId && o.Status == OrderStatus.Pendente));
+            return Task.FromResult(_orders.Any(o => o.CustomerId == customerId && o.Status == OrderStatus.EmPreparacao));
         }
 
         public Task<IReadOnlyList<OrderItem>> GetItemsByOrderAsync(int orderId, CancellationToken cancellationToken = default)
@@ -1126,6 +1132,12 @@ public class OrderServiceTests : IDisposable
             }
 
             return Task.FromResult((IReadOnlyList<OrderItem>)order.OrderItems.ToList().AsReadOnly());
+        }
+
+        public Task DeleteAsync(Order order, CancellationToken cancellationToken = default)
+        {
+            _orders.RemoveAll(o => o.Id == order.Id);
+            return Task.CompletedTask;
         }
 
         private void LoadNavigationProperties(Order order)

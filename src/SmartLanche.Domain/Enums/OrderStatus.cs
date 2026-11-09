@@ -4,8 +4,8 @@ namespace SmartLanche.Domain.Enums;
 
 public enum OrderStatus
 {
-    [Description("Pendente")]
-    Pendente = 1,
+    [Description("Aberto")]
+    Aberto = 1,
 
     [Description("Em Preparo")]
     EmPreparacao = 2,

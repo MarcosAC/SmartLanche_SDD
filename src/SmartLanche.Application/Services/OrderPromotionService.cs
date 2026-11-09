@@ -20,16 +20,16 @@ public class OrderPromotionService : BaseService, IOrderPromotionService
 
     public async Task<OrderDto> RecalculateWithPromotionsAsync(int orderId, CancellationToken cancellationToken = default)
     {
-        var order = await _orderRepository.GetByIdAsync(orderId, cancellationToken);
+        var order = await _orderRepository.GetByIdTrackedAsync(orderId, cancellationToken);
 
         if (order is null)
         {
             throw new InvalidOperationException("O pedido informado não existe.");
         }
 
-        if (order.Status != OrderStatus.Pendente)
+        if (order.Status != OrderStatus.Aberto && order.Status != OrderStatus.EmPreparacao)
         {
-            throw new InvalidOperationException("Apenas pedidos pendentes podem ser recalculados.");
+            throw new InvalidOperationException("Apenas pedidos abertos ou em preparação podem ser recalculados.");
         }
 
         var eligiblePromotions = await _promotionService.GetEligiblePromotionsAsync(orderId, DateTime.Now, cancellationToken);

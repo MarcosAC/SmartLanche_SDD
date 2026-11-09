@@ -603,7 +603,7 @@ public class PendingPaymentServiceTests
         var order = new Order
         {
             CustomerId = customerId,
-            Status = OrderStatus.Pendente,
+            Status = OrderStatus.EmPreparacao,
             TotalAmount = total,
             OrderDate = DateTime.Now
         };
@@ -697,7 +697,7 @@ public class PendingPaymentServiceTests
         private readonly List<Order> _orders = [];
         private int _nextId = 1;
 
-        public Task<IReadOnlyList<Order>> GetAllAsync(int? status = null, int? customerId = null, DateTime? dateFrom = null, DateTime? dateTo = null, string? searchTerm = null, string? sortBy = null, bool sortDescending = true, CancellationToken cancellationToken = default)
+        public Task<IReadOnlyList<Order>> GetAllAsync(int? status = null, int? customerId = null, DateTime? dateFrom = null, DateTime? dateTo = null, string? searchTerm = null, string? sortBy = null, bool sortDescending = true, bool excludeCancelled = true, CancellationToken cancellationToken = default)
         {
             IEnumerable<Order> query = _orders;
 
@@ -710,10 +710,16 @@ public class PendingPaymentServiceTests
             if (dateTo.HasValue)
                 query = query.Where(o => o.OrderDate <= dateTo.Value);
 
+            if (excludeCancelled)
+                query = query.Where(o => o.Status != OrderStatus.Cancelado);
+
             return Task.FromResult<IReadOnlyList<Order>>(query.OrderByDescending(o => o.OrderDate).ToList());
         }
 
         public Task<Order?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+            => Task.FromResult<Order?>(_orders.FirstOrDefault(o => o.Id == id));
+
+        public Task<Order?> GetByIdTrackedAsync(int id, CancellationToken cancellationToken = default)
             => Task.FromResult<Order?>(_orders.FirstOrDefault(o => o.Id == id));
 
         public Task AddAsync(Order order, CancellationToken cancellationToken = default)
@@ -732,13 +738,19 @@ public class PendingPaymentServiceTests
         }
 
         public Task<Order?> GetOpenOrderAsync(int? customerId = null, CancellationToken cancellationToken = default)
-            => Task.FromResult<Order?>(_orders.Where(o => o.Status == OrderStatus.Pendente && (!customerId.HasValue || o.CustomerId == customerId)).OrderByDescending(o => o.OrderDate).FirstOrDefault());
+            => Task.FromResult<Order?>(_orders.Where(o => o.Status == OrderStatus.EmPreparacao && (!customerId.HasValue || o.CustomerId == customerId)).OrderByDescending(o => o.OrderDate).FirstOrDefault());
 
         public Task<bool> ExistsOpenOrderForCustomerAsync(int customerId, CancellationToken cancellationToken = default)
-            => Task.FromResult(_orders.Any(o => o.CustomerId == customerId && o.Status == OrderStatus.Pendente));
+            => Task.FromResult(_orders.Any(o => o.CustomerId == customerId && o.Status == OrderStatus.EmPreparacao));
 
         public Task<IReadOnlyList<OrderItem>> GetItemsByOrderAsync(int orderId, CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<OrderItem>>([]);
+
+        public Task DeleteAsync(Order order, CancellationToken cancellationToken = default)
+        {
+            _orders.RemoveAll(o => o.Id == order.Id);
+            return Task.CompletedTask;
+        }
     }
 
     private sealed class FakeCustomerRepository : ICustomerRepository

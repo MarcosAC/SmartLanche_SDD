@@ -27,9 +27,9 @@ public class PaymentService : IPaymentService
             return new ProcessPaymentResult(false, null, "O pedido informado não existe.");
         }
 
-        if (order.Status != OrderStatus.Pendente && order.Status != OrderStatus.Pronto)
+        if (order.Status != OrderStatus.EmPreparacao && order.Status != OrderStatus.Pronto)
         {
-            return new ProcessPaymentResult(false, null, "Apenas pedidos pendentes ou prontos podem receber pagamento.");
+            return new ProcessPaymentResult(false, null, "Apenas pedidos em preparação ou prontos podem receber pagamento.");
         }
 
         try

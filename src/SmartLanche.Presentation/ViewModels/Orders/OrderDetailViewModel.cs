@@ -4,6 +4,7 @@ using System.Windows.Input;
 using SmartLanche.Application.DTOs;
 using SmartLanche.Application.Interfaces;
 using SmartLanche.Presentation.Commands;
+using SmartLanche.Presentation.Services;
 
 namespace SmartLanche.Presentation.ViewModels.Orders;
 
@@ -52,9 +53,9 @@ public sealed class OrderDetailViewModel : INotifyPropertyChanged
             IsLoading = true;
             ErrorMessage = null;
 
-            _order = await _orderService.GetByIdAsync(orderId);
+            Order = await _orderService.GetByIdAsync(orderId);
 
-            if (_order is null)
+            if (Order is null)
             {
                 ErrorMessage = "Pedido não encontrado.";
             }
@@ -75,5 +76,10 @@ public sealed class OrderDetailViewModel : INotifyPropertyChanged
         field = value;
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         return true;
+    }
+
+    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }
