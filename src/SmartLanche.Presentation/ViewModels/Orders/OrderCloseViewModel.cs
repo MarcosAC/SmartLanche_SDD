@@ -232,6 +232,7 @@ public sealed class OrderCloseViewModel : INotifyPropertyChanged
         {
             FormaPagamento.Dinheiro => ValorPago.HasValue && ValorPago.Value >= (Order?.TotalAmount ?? 0),
             FormaPagamento.Cartao => Parcelas.HasValue && Parcelas.Value >= 1 && Parcelas.Value <= 12,
+            FormaPagamento.Pix => ValorPago.HasValue && ValorPago.Value >= (Order?.TotalAmount ?? 0),
             FormaPagamento.Fiado => SelectedCustomerId.HasValue,
             _ => false
         };
