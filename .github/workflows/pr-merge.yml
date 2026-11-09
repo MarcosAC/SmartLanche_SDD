@@ -87,8 +87,7 @@ jobs:
             --base "$TARGET" \
             --head "$SOURCE" \
             --title "$TITLE" \
-            --body "$BODY" \
-            --label "auto-merge")
+            --body "$BODY")
 
           echo "pr_url=$PR_URL" >> $GITHUB_OUTPUT
           echo "PR criado: $PR_URL"
