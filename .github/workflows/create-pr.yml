@@ -70,8 +70,9 @@ jobs:
       - name: Gerar título do PR
         id: pr-title
         run: |
-          if [ -n "${{ github.event.inputs.pr_title }}" ]; then
-            echo "title=${{ github.event.inputs.pr_title }}" >> $GITHUB_OUTPUT
+          PR_TITLE="${{ github.event.inputs.pr_title }}"
+          if [ -n "$PR_TITLE" ]; then
+            echo "title=$PR_TITLE" >> $GITHUB_OUTPUT
           else
             # Usa o nome da branch como título, formatando
             TITLE="${{ steps.current-branch.outputs.branch_name }}"
@@ -83,22 +84,26 @@ jobs:
       - name: Gerar corpo do PR
         id: pr-body
         run: |
-          if [ -n "${{ github.event.inputs.pr_body }}" ]; then
-            echo "body<<EOF" >> $GITHUB_OUTPUT
-            echo "${{ github.event.inputs.pr_body }}" >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
+          PR_BODY="${{ github.event.inputs.pr_body }}"
+          if [ -n "$PR_BODY" ]; then
+            cat << EOF >> $GITHUB_OUTPUT
+body<<EOF
+$PR_BODY
+EOF
           else
-            echo "body<<EOF" >> $GITHUB_OUTPUT
-            echo "## Pull Request Automático" >> $GITHUB_OUTPUT
-            echo "" >> $GITHUB_OUTPUT
-            echo "**Branch origem:** \`${{ steps.current-branch.outputs.branch_name }}\`" >> $GITHUB_OUTPUT
-            echo "**Branch destino:** \`${{ github.event.inputs.target_branch }}\`" >> $GITHUB_OUTPUT
-            echo "**Criado por:** @${{ github.actor }}" >> $GITHUB_OUTPUT
-            echo "**Data:** $(date -u +'%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_OUTPUT
-            echo "" >> $GITHUB_OUTPUT
-            echo "---" >> $GITHUB_OUTPUT
-            echo "*PR criado via workflow manual \"Criar Pull Request\*" >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
+            cat << 'EOF' >> $GITHUB_OUTPUT
+body<<EOF
+## Pull Request Automático
+
+**Branch origem:** `${{ steps.current-branch.outputs.branch_name }}`
+**Branch destino:** `${{ github.event.inputs.target_branch }}`
+**Criado por:** @${{ github.actor }}
+**Data:** $(date -u +'%Y-%m-%d %H:%M:%S UTC')
+
+---
+*PR criado via workflow manual "Criar Pull Request"*
+EOF
+          fi
 
       - name: Criar Pull Request
         id: create-pr

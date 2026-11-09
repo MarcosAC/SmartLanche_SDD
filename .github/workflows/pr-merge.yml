@@ -23,7 +23,7 @@ on:
         default: 'PR criado e mergeado automaticamente via workflow "Create PR & Merge".'
 
 permissions:
-  contents: read
+  contents: write
   pull-requests: write
 
 jobs:
@@ -53,6 +53,10 @@ jobs:
           echo "Branch origem: $CURRENT_BRANCH"
           echo "Branch destino: ${{ github.event.inputs.target_branch }}"
 
+      - name: Fetch target branch
+        run: |
+          git fetch origin ${{ github.event.inputs.target_branch }}:${{ github.event.inputs.target_branch }}
+
       - name: Verify source branch has commits ahead
         run: |
           SOURCE="${{ steps.branch.outputs.source_branch }}"
@@ -70,21 +74,20 @@ jobs:
         id: create_pr
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TITLE: ${{ github.event.inputs.pr_title }}
+          BODY: ${{ github.event.inputs.pr_body }}
         run: |
           SOURCE="${{ steps.branch.outputs.source_branch }}"
           TARGET="${{ github.event.inputs.target_branch }}"
-          TITLE="${{ github.event.inputs.pr_title }}"
-          BODY="${{ github.event.inputs.pr_body }}"
 
           echo "Criando PR: $SOURCE → $TARGET"
 
-          # Cria o PR
+          # Cria o PR (usa variáveis de ambiente TITLE e BODY definidas acima)
           PR_URL=$(gh pr create \
             --base "$TARGET" \
             --head "$SOURCE" \
             --title "$TITLE" \
-            --body "$BODY" \
-            --label "auto-merge")
+            --body "$BODY")
 
           echo "pr_url=$PR_URL" >> $GITHUB_OUTPUT
           echo "PR criado: $PR_URL"
