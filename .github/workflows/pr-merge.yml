@@ -92,46 +92,21 @@ jobs:
           echo "pr_url=$PR_URL" >> $GITHUB_OUTPUT
           echo "PR criado: $PR_URL"
 
-      - name: Enable auto-merge on PR
+      - name: Merge Pull Request
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           PR_URL="${{ steps.create_pr.outputs.pr_url }}"
           PR_NUMBER=$(echo "$PR_URL" | grep -o '[0-9]*$')
 
-          echo "Habilitando auto-merge no PR #$PR_NUMBER..."
+          echo "Mergeando PR #$PR_NUMBER..."
 
+          # Merge direto (merge commit) - não requer auto-merge habilitado no repo
           gh pr merge "$PR_NUMBER" \
-            --auto \
             --merge \
             --delete-branch=false
 
-      - name: Wait for merge completion
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          PR_URL="${{ steps.create_pr.outputs.pr_url }}"
-          PR_NUMBER=$(echo "$PR_URL" | grep -o '[0-9]*$')
-
-          echo "Aguardando merge do PR #$PR_NUMBER..."
-
-          # Aguarda até 60 segundos pelo merge
-          for i in {1..12}; do
-            STATE=$(gh pr view "$PR_NUMBER" --json state --jq .state)
-            if [ "$STATE" = "MERGED" ]; then
-              echo "✅ PR mergeado com sucesso!"
-              exit 0
-            fi
-            if [ "$STATE" = "CLOSED" ]; then
-              echo "❌ PR foi fechado sem merge."
-              exit 1
-            fi
-            echo "   Status: $STATE (tentativa $i/12)..."
-            sleep 5
-          done
-
-          echo "⚠️ Timeout aguardando merge. Verifique manualmente: $PR_URL"
-          exit 1
+          echo "✅ PR mergeado com sucesso!"
 
       - name: Summary
         if: success()
