@@ -64,8 +64,7 @@ public class InventoryOrderIntegrationTests : IDisposable
         var paymentService = new PaymentService(_paymentRepository, _orderRepository);
         var pendingPaymentService = new PendingPaymentService(_pendingPaymentRepository, _orderRepository, _customerRepository);
         var orderPromotionService = new OrderPromotionService(_orderRepository, _promotionService);
-        var orderPaymentService = new OrderPaymentService(_orderRepository, _customerRepository, paymentService, pendingPaymentService, inventoryService);
-        _orderService = new OrderService(_orderRepository, _customerRepository, _productRepository, inventoryService, orderPromotionService, orderPaymentService);
+        _orderService = new OrderService(_orderRepository, _customerRepository, _productRepository, inventoryService, orderPromotionService, paymentService, pendingPaymentService);
 
         _productService = new ProductService(scopeFactory, inventoryService);
         _comboService = new ComboService(scopeFactory, _productRepository, _orderRepository, _orderService, NullLogger<ComboService>.Instance);
@@ -238,55 +237,7 @@ public class InventoryOrderIntegrationTests : IDisposable
     }
 
     [Fact]
-    public async Task FullFlow_OrderClosedFiado_StockDeductedAndPendingPaymentCreated()
-    {
-        // Arrange
-        var category = await CreateCategoryAsync("Lanches");
-        var customer = await CreateCustomerAsync(creditLimit: 500m);
-
-        var product = await _productService.CreateAsync(new CreateProductRequest
-        {
-            Name = "X-Burguer",
-            CategoryId = category.Id,
-            Price = 25m,
-            InventoryRequest = new CreateInventoryItemRequest(null, "X-Burguer", 20, 5, 8m, "UN", null)
-        });
-
-        // Act - Create order with customer
-        var order = await _orderService.CreateAsync(new CreateOrderRequest { CustomerId = customer.Id });
-        await _orderService.AddItemAsync(new AddOrderItemRequest
-        {
-            OrderId = order.Id,
-            ProductId = product.Id,
-            Quantity = 1
-        });
-        await AdvanceOrderToReadyAsync(order.Id);
-
-        // Close with fiado payment
-        var result = await _orderService.CloseWithPaymentAsync(new CloseOrderWithPaymentRequest(
-            order.Id,
-            FormaPagamento.Fiado,
-            25m,
-            1,
-            "Fiado",
-            customer.Id
-        ));
-
-        // Assert
-        Assert.True(result.Success);
-        Assert.NotNull(result.PendingPayment);
-
-        var item = await _inventoryRepository.GetByProductIdAsync(product.Id, default);
-        Assert.Equal(19, item!.QuantidadeAtual); // 20 - 1 = 19
-
-        // Verify inventory movement
-        var movements = await _inventoryMovementRepository.GetByOrderAsync(order.Id, default);
-        Assert.Single(movements);
-        Assert.Equal(InventoryMovementReason.Venda, movements[0].Motivo);
-    }
-
-    [Fact]
-    public async Task FullFlow_DeliveredOrderCancelled_StockRestored()
+    public async Task FullFlow_FinalizedOrderCannotBeCancelled()
     {
         // Arrange
         var category = await CreateCategoryAsync("Lanches");
@@ -307,7 +258,7 @@ public class InventoryOrderIntegrationTests : IDisposable
             Quantity = 3
         });
 
-        // Close order
+        // Close order (Finalizado)
         await AdvanceOrderToReadyAsync(order.Id);
         await _orderService.CloseAsync(new CloseOrderRequest { OrderId = order.Id });
 
@@ -315,20 +266,18 @@ public class InventoryOrderIntegrationTests : IDisposable
         var itemAfterClose = await _inventoryRepository.GetByProductIdAsync(product.Id, default);
         Assert.Equal(17, itemAfterClose!.QuantidadeAtual); // 20 - 3 = 17
 
-        // Act - Cancel closed order (should restore stock)
-        await _orderService.CancelAsync(new CancelOrderRequest { OrderId = order.Id });
+        // Act & Assert - Cancel finalized order should throw exception
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => _orderService.CancelAsync(new CancelOrderRequest { OrderId = order.Id }));
 
-        // Assert - Stock restored
-        var itemAfterCancel = await _inventoryRepository.GetByProductIdAsync(product.Id, default);
-        Assert.Equal(20, itemAfterCancel!.QuantidadeAtual); // Restored to 20
+        // Verify stock NOT restored (order still Finalizado)
+        var itemAfterCancelAttempt = await _inventoryRepository.GetByProductIdAsync(product.Id, default);
+        Assert.Equal(17, itemAfterCancelAttempt!.QuantidadeAtual); // Still 17, not restored
 
-        // Verify estorno movement created
+        // Verify no estorno movement created
         var movements = await _inventoryMovementRepository.GetByOrderAsync(order.Id, default);
         var estornoMovements = movements.Where(m => m.Motivo == InventoryMovementReason.EstornoVenda).ToList();
-        Assert.Single(estornoMovements);
-        Assert.Equal(3, estornoMovements[0].Quantidade);
-        Assert.Equal(InventoryMovementType.Entrada, estornoMovements[0].Tipo);
-        Assert.Equal(InventoryMovementReason.EstornoVenda, estornoMovements[0].Motivo);
+        Assert.Empty(estornoMovements);
     }
 
     [Fact]
@@ -599,7 +548,7 @@ public class InventoryOrderIntegrationTests : IDisposable
             _productRepository = productRepository;
         }
 
-        public Task<IReadOnlyList<Order>> GetAllAsync(int? status = null, int? customerId = null, DateTime? dateFrom = null, DateTime? dateTo = null, string? searchTerm = null, string? sortBy = null, bool sortDescending = true, CancellationToken cancellationToken = default)
+        public Task<IReadOnlyList<Order>> GetAllAsync(int? status = null, int? customerId = null, DateTime? dateFrom = null, DateTime? dateTo = null, string? searchTerm = null, string? sortBy = null, bool sortDescending = true, bool excludeCancelled = true, CancellationToken cancellationToken = default)
         {
             IEnumerable<Order> query = _orders;
             if (status.HasValue)
@@ -610,12 +559,17 @@ public class InventoryOrderIntegrationTests : IDisposable
                 query = query.Where(o => o.OrderDate >= dateFrom.Value);
             if (dateTo.HasValue)
                 query = query.Where(o => o.OrderDate <= dateTo.Value);
+            if (excludeCancelled)
+                query = query.Where(o => o.Status != OrderStatus.Cancelado);
 
             var result = sortDescending ? query.OrderByDescending(o => o.OrderDate) : query.OrderBy(o => o.OrderDate);
             return Task.FromResult<IReadOnlyList<Order>>(result.ToList());
         }
 
         public Task<Order?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+            => Task.FromResult<Order?>(_orders.FirstOrDefault(o => o.Id == id));
+
+        public Task<Order?> GetByIdTrackedAsync(int id, CancellationToken cancellationToken = default)
             => Task.FromResult<Order?>(_orders.FirstOrDefault(o => o.Id == id));
 
         public Task AddAsync(Order order, CancellationToken cancellationToken = default)
@@ -633,10 +587,10 @@ public class InventoryOrderIntegrationTests : IDisposable
         }
 
         public Task<Order?> GetOpenOrderAsync(int? customerId = null, CancellationToken cancellationToken = default)
-            => Task.FromResult<Order?>(_orders.Where(o => o.Status == OrderStatus.Pendente && (!customerId.HasValue || o.CustomerId == customerId)).OrderByDescending(o => o.OrderDate).FirstOrDefault());
+            => Task.FromResult<Order?>(_orders.Where(o => (o.Status == OrderStatus.Aberto || o.Status == OrderStatus.EmPreparacao) && (!customerId.HasValue || o.CustomerId == customerId)).OrderByDescending(o => o.OrderDate).FirstOrDefault());
 
         public Task<bool> ExistsOpenOrderForCustomerAsync(int customerId, CancellationToken cancellationToken = default)
-            => Task.FromResult(_orders.Any(o => o.CustomerId == customerId && o.Status == OrderStatus.Pendente));
+            => Task.FromResult(_orders.Any(o => o.CustomerId == customerId && (o.Status == OrderStatus.Aberto || o.Status == OrderStatus.EmPreparacao)));
 
         public Task<IReadOnlyList<OrderItem>> GetItemsByOrderAsync(int orderId, CancellationToken cancellationToken = default)
         {
@@ -649,6 +603,12 @@ public class InventoryOrderIntegrationTests : IDisposable
             }
 
             return Task.FromResult((IReadOnlyList<OrderItem>)order.OrderItems.ToList().AsReadOnly());
+        }
+
+        public Task DeleteAsync(Order order, CancellationToken cancellationToken = default)
+        {
+            _orders.RemoveAll(o => o.Id == order.Id);
+            return Task.CompletedTask;
         }
     }
 
@@ -665,7 +625,7 @@ public class InventoryOrderIntegrationTests : IDisposable
 
         public Task<IReadOnlyList<OrderDto>> GetAllAsync(OrderFilterRequest? filter = null, CancellationToken cancellationToken = default)
         {
-            var orders = _orderRepository.GetAllAsync(filter?.Status, filter?.CustomerId, filter?.DateFrom, filter?.DateTo, filter?.SearchTerm, filter?.SortBy, filter?.SortDescending ?? true, cancellationToken).Result;
+            var orders = _orderRepository.GetAllAsync(filter?.Status, filter?.CustomerId, filter?.DateFrom, filter?.DateTo, filter?.SearchTerm, filter?.SortBy, filter?.SortDescending ?? true, filter?.ExcludeCancelled ?? true, cancellationToken).Result;
             return Task.FromResult<IReadOnlyList<OrderDto>>(orders.Select(MapToDto).ToList());
         }
 
@@ -677,7 +637,7 @@ public class InventoryOrderIntegrationTests : IDisposable
 
         public Task<OrderDto> CreateAsync(CreateOrderRequest request, CancellationToken cancellationToken = default)
         {
-            var order = new Order { CustomerId = request.CustomerId, OrderDate = DateTime.Now, Status = OrderStatus.Pendente, TotalAmount = 0, Notes = string.Empty };
+            var order = new Order { CustomerId = request.CustomerId, OrderDate = DateTime.Now, Status = OrderStatus.Aberto, TotalAmount = 0, Notes = string.Empty };
             _orderRepository.AddAsync(order, cancellationToken).Wait();
             return Task.FromResult(MapToDto(order));
         }
@@ -710,9 +670,6 @@ public class InventoryOrderIntegrationTests : IDisposable
             return Task.FromResult(MapToDto(order));
         }
 
-        public Task<CloseOrderWithPaymentResult> CloseWithPaymentAsync(CloseOrderWithPaymentRequest request, CancellationToken cancellationToken = default)
-            => throw new NotImplementedException();
-
         public Task<OrderDto> CancelAsync(CancelOrderRequest request, CancellationToken cancellationToken = default)
         {
             var order = _orderRepository.GetByIdAsync(request.OrderId, cancellationToken).Result;
@@ -734,22 +691,22 @@ public class InventoryOrderIntegrationTests : IDisposable
         public Task<IReadOnlyList<PromotionDto>> GetEligiblePromotionsAsync(int orderId, DateTime date, CancellationToken cancellationToken = default)
             => throw new NotImplementedException();
 
-        public Task<OrderDto> StartPreparationAsync(int orderId, CancellationToken cancellationToken = default)
-        {
-            var order = _orderRepository.GetByIdAsync(orderId, cancellationToken).Result;
-            if (order == null) throw new InvalidOperationException("Order not found");
-            if (order.Status != OrderStatus.Pendente) throw new InvalidOperationException("Only pending orders can start preparation");
-            order.StartPreparation();
-            _orderRepository.UpdateAsync(order, cancellationToken).Wait();
-            return Task.FromResult(MapToDto(order));
-        }
-
         public Task<OrderDto> MarkAsReadyAsync(int orderId, CancellationToken cancellationToken = default)
         {
             var order = _orderRepository.GetByIdAsync(orderId, cancellationToken).Result;
             if (order == null) throw new InvalidOperationException("Order not found");
             if (order.Status != OrderStatus.EmPreparacao) throw new InvalidOperationException("Only preparing orders can be marked as ready");
             order.MarkAsReady();
+            _orderRepository.UpdateAsync(order, cancellationToken).Wait();
+            return Task.FromResult(MapToDto(order));
+        }
+
+        public Task<OrderDto> StartPreparationAsync(int orderId, CancellationToken cancellationToken = default)
+        {
+            var order = _orderRepository.GetByIdAsync(orderId, cancellationToken).Result;
+            if (order == null) throw new InvalidOperationException("Order not found");
+            if (order.Status != OrderStatus.Aberto) throw new InvalidOperationException("Only open orders can start preparation");
+            order.StartPreparation();
             _orderRepository.UpdateAsync(order, cancellationToken).Wait();
             return Task.FromResult(MapToDto(order));
         }
@@ -763,6 +720,14 @@ public class InventoryOrderIntegrationTests : IDisposable
             order.Finalize();
             _orderRepository.UpdateAsync(order, cancellationToken).Wait();
             return Task.FromResult(MapToDto(order));
+        }
+
+        public Task DeleteAsync(int orderId, CancellationToken cancellationToken = default)
+        {
+            var order = _orderRepository.GetByIdAsync(orderId, cancellationToken).Result;
+            if (order == null) throw new InvalidOperationException("Order not found");
+            _orderRepository.DeleteAsync(order, cancellationToken).Wait();
+            return Task.CompletedTask;
         }
 
         public event EventHandler? OrderChanged;

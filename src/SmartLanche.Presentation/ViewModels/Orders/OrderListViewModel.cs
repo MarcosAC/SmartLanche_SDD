@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System.Windows.Input;
 using SmartLanche.Application.DTOs;
 using SmartLanche.Application.Interfaces;
@@ -10,23 +9,20 @@ namespace SmartLanche.Presentation.ViewModels.Orders;
 
 public sealed class OrderListViewModel : ListViewModelBase<OrderDto, IOrderService>
 {
-    private readonly ICustomerService _customerService;
-
     private int? _selectedStatus;
-    private int? _selectedCustomerId;
     private DateTime? _dateFrom;
     private DateTime? _dateTo;
 
     public event Action? RequestNewOrder;
     public event Action<OrderDto>? RequestViewOrder;
-
-    public ObservableCollection<CustomerDto> Customers { get; } = [];
+    public event Action<OrderDto>? RequestCloseOrder;
 
     public ICommand CloseOrderCommand { get; }
     public ICommand CancelOrderCommand { get; }
-    public ICommand StartPreparationCommand { get; }
     public ICommand MarkAsReadyCommand { get; }
     public ICommand FinalizeOrderCommand { get; }
+
+    public ICommand ViewOrderCommand => EditItemCommand;
 
     public int? SelectedStatus
     {
@@ -34,18 +30,6 @@ public sealed class OrderListViewModel : ListViewModelBase<OrderDto, IOrderServi
         set
         {
             if (SetProperty(ref _selectedStatus, value))
-            {
-                _ = LoadAsync();
-            }
-        }
-    }
-
-    public int? SelectedCustomerId
-    {
-        get => _selectedCustomerId;
-        set
-        {
-            if (SetProperty(ref _selectedCustomerId, value))
             {
                 _ = LoadAsync();
             }
@@ -76,51 +60,48 @@ public sealed class OrderListViewModel : ListViewModelBase<OrderDto, IOrderServi
         }
     }
 
-    public OrderListViewModel(IOrderService orderService, ICustomerService customerService)
+    public OrderListViewModel(IOrderService orderService)
         : base(orderService)
     {
-        _customerService = customerService ?? throw new ArgumentNullException(nameof(customerService));
-
         // NewItemCommand and EditItemCommand are already initialized in base class
         // Just need to hook up the events
         RequestNewItem += () => RequestNewOrder?.Invoke();
         RequestEditItem += (order) => RequestViewOrder?.Invoke(order);
 
         CloseOrderCommand = new RelayCommand(async _ => await CloseOrderAsync(),
-            _ => SelectedItem?.Status == OrderStatus.Pendente && !IsLoading);
-
-        StartPreparationCommand = new RelayCommand(async _ => await StartPreparationAsync(),
-            _ => SelectedItem?.Status == OrderStatus.Pendente && !IsLoading);
+            _ => SelectedItem?.Status == OrderStatus.EmPreparacao && !IsLoading);
 
         MarkAsReadyCommand = new RelayCommand(async _ => await MarkAsReadyAsync(),
             _ => SelectedItem?.Status == OrderStatus.EmPreparacao && !IsLoading);
 
-        FinalizeOrderCommand = new RelayCommand(async _ => await FinalizeOrderAsync(),
-            _ => SelectedItem?.Status == OrderStatus.Pronto && !IsLoading);
+        FinalizeOrderCommand = new RelayCommand(_ =>
+            {
+                if (SelectedItem is not null)
+                {
+                    RequestCloseOrder?.Invoke(SelectedItem);
+                }
+            }, _ => SelectedItem?.Status == OrderStatus.Pronto && !IsLoading);
 
         CancelOrderCommand = new RelayCommand(async _ => await CancelOrderAsync(),
-            _ => (SelectedItem?.Status == OrderStatus.Pendente || SelectedItem?.Status == OrderStatus.EmPreparacao || SelectedItem?.Status == OrderStatus.Pronto) && !IsLoading);
+            _ => SelectedItem is not null &&
+                 SelectedItem.Status != OrderStatus.Cancelado &&
+                 SelectedItem.Status != OrderStatus.Finalizado &&
+                 !IsLoading);
     }
 
     protected override async Task<IReadOnlyList<OrderDto>> GetItemsAsync()
     {
-        // Load customers for filter dropdown
-        var customers = await _customerService.GetAllAsync(true);
-        Customers.Clear();
-        foreach (var customer in customers)
-        {
-            Customers.Add(customer);
-        }
-
         var filter = new OrderFilterRequest
         {
             SearchTerm = string.IsNullOrWhiteSpace(SearchText) ? null : SearchText,
             Status = SelectedStatus,
-            CustomerId = SelectedCustomerId,
             DateFrom = DateFrom,
             DateTo = DateTo,
             SortBy = SortColumn,
-            SortDescending = SortDescending
+            SortDescending = SortDescending,
+            // Exclude cancelled only when a specific non-cancelled status is selected
+            // If no status filter (Todos) or Cancelado is selected, include cancelled orders
+            ExcludeCancelled = SelectedStatus.HasValue && SelectedStatus != (int)OrderStatus.Cancelado
         };
 
         return await Service.GetAllAsync(filter);
@@ -166,7 +147,7 @@ public sealed class OrderListViewModel : ListViewModelBase<OrderDto, IOrderServi
             await Service.CloseAsync(request);
 
             SuccessMessage = "Pedido fechado com sucesso.";
-            await LoadAsync();
+            await LoadItemsAsync();
         });
     }
 
@@ -176,23 +157,12 @@ public sealed class OrderListViewModel : ListViewModelBase<OrderDto, IOrderServi
 
         await ExecuteWithLoadingAsync(async () =>
         {
-            var request = new CancelOrderRequest { OrderId = SelectedItem.Id };
+            // DeleteIfPendente = false: mark as Cancelado but keep in DB (list behavior)
+            var request = new CancelOrderRequest { OrderId = SelectedItem.Id, DeleteIfPendente = false };
             await Service.CancelAsync(request);
 
             SuccessMessage = "Pedido cancelado com sucesso.";
-            await LoadAsync();
-        });
-    }
-
-    private async Task StartPreparationAsync()
-    {
-        if (SelectedItem is null || IsLoading) return;
-
-        await ExecuteWithLoadingAsync(async () =>
-        {
-            await Service.StartPreparationAsync(SelectedItem.Id);
-            SuccessMessage = "Preparação iniciada.";
-            await LoadAsync();
+            await LoadItemsAsync();
         });
     }
 
@@ -204,19 +174,8 @@ public sealed class OrderListViewModel : ListViewModelBase<OrderDto, IOrderServi
         {
             await Service.MarkAsReadyAsync(SelectedItem.Id);
             SuccessMessage = "Pedido marcado como pronto.";
-            await LoadAsync();
+            await LoadItemsAsync();
         });
     }
 
-    private async Task FinalizeOrderAsync()
-    {
-        if (SelectedItem is null || IsLoading) return;
-
-        await ExecuteWithLoadingAsync(async () =>
-        {
-            await Service.FinalizeAsync(SelectedItem.Id);
-            SuccessMessage = "Pedido finalizado com sucesso.";
-            await LoadAsync();
-        });
     }
-}

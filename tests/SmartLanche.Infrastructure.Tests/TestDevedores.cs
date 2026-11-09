@@ -42,7 +42,7 @@ public class TestDevedores
                 {
                     CustomerId = customer.Id,
                     OrderDate = DateTime.Now,
-                    Status = OrderStatus.Pendente,
+                    Status = OrderStatus.EmPreparacao,
                     TotalAmount = 51.00m,
                     Notes = string.Empty
                 };

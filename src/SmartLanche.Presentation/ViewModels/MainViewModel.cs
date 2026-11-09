@@ -61,8 +61,8 @@ public sealed class HomeViewModel : INotifyPropertyChanged
             // Get all orders to compute metrics
             var orders = await _orderService.GetAllAsync(null);
 
-            // Open orders count (Pendente + EmPreparacao + Pronto)
-            OpenOrdersCount = orders.Count(o => o.Status == OrderStatus.Pendente || o.Status == OrderStatus.EmPreparacao || o.Status == OrderStatus.Pronto);
+            // Open orders count (Aberto + EmPreparacao + Pronto)
+            OpenOrdersCount = orders.Count(o => o.Status == OrderStatus.Aberto || o.Status == OrderStatus.EmPreparacao || o.Status == OrderStatus.Pronto);
 
             // Today's revenue (finalized orders today)
             var today = DateTime.Today;
@@ -231,6 +231,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
         _orderListViewModel.RequestNewOrder += OnRequestNewOrder;
 
         _orderListViewModel.RequestViewOrder += OnRequestViewOrder;
+
+        _orderListViewModel.RequestCloseOrder += OnRequestCloseOrder;
 
         _promotionListViewModel = _services.GetRequiredService<PromotionListViewModel>();
 
@@ -599,6 +601,48 @@ public sealed class MainViewModel : INotifyPropertyChanged
         if (CurrentViewModel is OrderDetailViewModel viewModel)
         {
             viewModel.RequestClose -= OnOrderDetailClose;
+            await ReturnToOrdersAsync();
+        }
+    }
+
+    private async void OnRequestCloseOrder(OrderDto order)
+    {
+        await OpenOrderCloseAsync(order);
+    }
+
+    private async Task OpenOrderCloseAsync(OrderDto order)
+    {
+        try
+        {
+            var viewModel = _services.GetRequiredService<OrderCloseViewModel>();
+
+            viewModel.RequestClose += OnOrderCloseClose;
+
+            CurrentPageTitle = "Finalizar pedido";
+            CurrentViewModel = viewModel;
+
+            await viewModel.InitializeAsync(order.Id);
+        }
+        catch (Exception ex)
+        {
+            // Log to file
+            try
+            {
+                var logPath = System.IO.Path.Combine(AppContext.BaseDirectory, "error.log");
+                var logMsg = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} - OpenOrderCloseAsync ERROR:\n{ex}\n\n";
+                System.IO.File.AppendAllText(logPath, logMsg);
+            }
+            catch { }
+
+            System.Windows.MessageBox.Show($"Erro ao abrir tela de finalizar pedido:\n{ex.Message}", "Erro", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+        }
+    }
+
+    private async void OnOrderCloseClose()
+    {
+        if (CurrentViewModel is OrderCloseViewModel viewModel)
+        {
+            viewModel.RequestClose -= OnOrderCloseClose;
             await ReturnToOrdersAsync();
         }
     }

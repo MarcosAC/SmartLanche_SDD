@@ -317,7 +317,7 @@ public class PaymentServiceTests
         var result = await _service.ProcessPaymentAsync(request);
 
         Assert.False(result.Success);
-        Assert.Contains("pendentes", result.ErrorMessage!);
+        Assert.Contains("Apenas pedidos em preparação ou prontos podem receber pagamento", result.ErrorMessage!);
     }
 
     [Fact]
@@ -338,7 +338,7 @@ public class PaymentServiceTests
         var result = await _service.ProcessPaymentAsync(request);
 
         Assert.False(result.Success);
-        Assert.Contains("pendentes", result.ErrorMessage!);
+        Assert.Contains("Apenas pedidos em preparação ou prontos podem receber pagamento", result.ErrorMessage!);
     }
 
     #endregion
@@ -518,7 +518,7 @@ public class PaymentServiceTests
         var order = new Order
         {
             CustomerId = customerId,
-            Status = OrderStatus.Pendente,
+            Status = OrderStatus.EmPreparacao,
             TotalAmount = total,
             OrderDate = date ?? DateTime.Now
         };
@@ -551,7 +551,7 @@ public class PaymentServiceTests
         private int _nextCustomerId = 1;
         public Order? LastRetrievedOrder { get; private set; }
 
-        public Task<IReadOnlyList<Order>> GetAllAsync(int? status = null, int? customerId = null, DateTime? dateFrom = null, DateTime? dateTo = null, string? searchTerm = null, string? sortBy = null, bool sortDescending = true, CancellationToken cancellationToken = default)
+        public Task<IReadOnlyList<Order>> GetAllAsync(int? status = null, int? customerId = null, DateTime? dateFrom = null, DateTime? dateTo = null, string? searchTerm = null, string? sortBy = null, bool sortDescending = true, bool excludeCancelled = true, CancellationToken cancellationToken = default)
         {
             IEnumerable<Order> query = _orders;
 
@@ -571,10 +571,19 @@ public class PaymentServiceTests
                     o.Status.ToString().ToLower().Contains(term));
             }
 
+            if (excludeCancelled)
+                query = query.Where(o => o.Status != OrderStatus.Cancelado);
+
             return Task.FromResult<IReadOnlyList<Order>>(query.OrderByDescending(o => o.OrderDate).ToList());
         }
 
         public Task<Order?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+        {
+            LastRetrievedOrder = _orders.FirstOrDefault(o => o.Id == id);
+            return Task.FromResult<Order?>(LastRetrievedOrder);
+        }
+
+        public Task<Order?> GetByIdTrackedAsync(int id, CancellationToken cancellationToken = default)
         {
             LastRetrievedOrder = _orders.FirstOrDefault(o => o.Id == id);
             return Task.FromResult<Order?>(LastRetrievedOrder);
@@ -601,17 +610,23 @@ public class PaymentServiceTests
 
         public Task<Order?> GetOpenOrderAsync(int? customerId = null, CancellationToken cancellationToken = default)
         {
-            var query = _orders.Where(o => o.Status == OrderStatus.Pendente);
+            var query = _orders.Where(o => o.Status == OrderStatus.EmPreparacao);
             if (customerId.HasValue)
                 query = query.Where(o => o.CustomerId == customerId.Value);
             return Task.FromResult<Order?>(query.OrderByDescending(o => o.OrderDate).FirstOrDefault());
         }
 
         public Task<bool> ExistsOpenOrderForCustomerAsync(int customerId, CancellationToken cancellationToken = default)
-            => Task.FromResult(_orders.Any(o => o.CustomerId == customerId && o.Status == OrderStatus.Pendente));
+            => Task.FromResult(_orders.Any(o => o.CustomerId == customerId && o.Status == OrderStatus.EmPreparacao));
 
         public Task<IReadOnlyList<OrderItem>> GetItemsByOrderAsync(int orderId, CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<OrderItem>>([]);
+
+        public Task DeleteAsync(Order order, CancellationToken cancellationToken = default)
+        {
+            _orders.RemoveAll(o => o.Id == order.Id);
+            return Task.CompletedTask;
+        }
 
         public Task AddCustomerAsync(Customer customer, CancellationToken cancellationToken = default)
         {

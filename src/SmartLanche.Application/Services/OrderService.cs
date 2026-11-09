@@ -12,7 +12,8 @@ public class OrderService : BaseService, IOrderService
     private readonly IProductRepository _productRepository;
     private readonly IInventoryService _inventoryService;
     private readonly IOrderPromotionService _orderPromotionService;
-    private readonly IOrderPaymentService _orderPaymentService;
+    private readonly IPaymentService _paymentService;
+    private readonly IPendingPaymentService _pendingPaymentService;
 
     public OrderService(
         IOrderRepository orderRepository,
@@ -20,19 +21,21 @@ public class OrderService : BaseService, IOrderService
         IProductRepository productRepository,
         IInventoryService inventoryService,
         IOrderPromotionService orderPromotionService,
-        IOrderPaymentService orderPaymentService)
+        IPaymentService paymentService,
+        IPendingPaymentService pendingPaymentService)
     {
         _orderRepository = orderRepository;
         _customerRepository = customerRepository;
         _productRepository = productRepository;
         _inventoryService = inventoryService;
         _orderPromotionService = orderPromotionService;
-        _orderPaymentService = orderPaymentService;
+        _paymentService = paymentService;
+        _pendingPaymentService = pendingPaymentService;
     }
 
     public async Task<IReadOnlyList<ProductSalesDto>> GetTopProductsAsync(int topCount = 5, int days = 7, CancellationToken cancellationToken = default)
     {
-        var orders = await _orderRepository.GetAllAsync(null, null, DateTime.Now.AddDays(-days), null, null, null, true, cancellationToken);
+        var orders = await _orderRepository.GetAllAsync(null, null, DateTime.Now.AddDays(-days), null, null, null, true, false, cancellationToken);
 
         var productSales = orders
             .Where(o => o.Status == OrderStatus.Finalizado)
@@ -60,6 +63,7 @@ public class OrderService : BaseService, IOrderService
             filter?.SearchTerm,
             filter?.SortBy,
             filter?.SortDescending ?? true,
+            filter?.ExcludeCancelled ?? true,
             cancellationToken);
 
         return orders.Select(MapToDto).ToList();
@@ -93,7 +97,7 @@ public class OrderService : BaseService, IOrderService
         {
             CustomerId = request.CustomerId,
             OrderDate = DateTime.Now,
-            Status = OrderStatus.Pendente,
+            Status = OrderStatus.Aberto,
             TotalAmount = 0,
             Notes = string.Empty
         };
@@ -105,16 +109,16 @@ public class OrderService : BaseService, IOrderService
 
     public async Task<OrderDto> AddItemAsync(AddOrderItemRequest request, CancellationToken cancellationToken = default)
     {
-        var order = await _orderRepository.GetByIdAsync(request.OrderId, cancellationToken);
+        var order = await _orderRepository.GetByIdTrackedAsync(request.OrderId, cancellationToken);
 
         if (order is null)
         {
             throw new InvalidOperationException("O pedido informado não existe.");
         }
 
-        if (order.Status != OrderStatus.Pendente)
+        if (order.Status != OrderStatus.Aberto && order.Status != OrderStatus.EmPreparacao)
         {
-            throw new InvalidOperationException("Apenas pedidos abertos podem ser alterados.");
+            throw new InvalidOperationException("Apenas pedidos abertos ou em preparação podem ser alterados.");
         }
 
         var product = await _productRepository.GetByIdAsync(request.ProductId, cancellationToken);
@@ -167,16 +171,16 @@ public class OrderService : BaseService, IOrderService
 
     public async Task<OrderDto> RemoveItemAsync(int orderId, int orderItemId, CancellationToken cancellationToken = default)
     {
-        var order = await _orderRepository.GetByIdAsync(orderId, cancellationToken);
+        var order = await _orderRepository.GetByIdTrackedAsync(orderId, cancellationToken);
 
         if (order is null)
         {
             throw new InvalidOperationException("O pedido informado não existe.");
         }
 
-        if (order.Status != OrderStatus.Pendente)
+        if (order.Status != OrderStatus.Aberto && order.Status != OrderStatus.EmPreparacao)
         {
-            throw new InvalidOperationException("Apenas pedidos abertos podem ser alterados.");
+            throw new InvalidOperationException("Apenas pedidos abertos ou em preparação podem ser alterados.");
         }
 
         var item = order.OrderItems.FirstOrDefault(i => i.Id == orderItemId);
@@ -196,16 +200,16 @@ public class OrderService : BaseService, IOrderService
 
     public async Task<OrderDto> UpdateItemQuantityAsync(UpdateOrderItemRequest request, CancellationToken cancellationToken = default)
     {
-        var order = await _orderRepository.GetByIdAsync(request.OrderId, cancellationToken);
+        var order = await _orderRepository.GetByIdTrackedAsync(request.OrderId, cancellationToken);
 
         if (order is null)
         {
             throw new InvalidOperationException("O pedido informado não existe.");
         }
 
-        if (order.Status != OrderStatus.Pendente)
+        if (order.Status != OrderStatus.Aberto && order.Status != OrderStatus.EmPreparacao)
         {
-            throw new InvalidOperationException("Apenas pedidos abertos podem ser alterados.");
+            throw new InvalidOperationException("Apenas pedidos abertos ou em preparação podem ser alterados.");
         }
 
         var item = order.OrderItems.FirstOrDefault(i => i.Id == request.OrderItemId);
@@ -232,49 +236,108 @@ public class OrderService : BaseService, IOrderService
 
     public async Task<OrderDto> CloseAsync(CloseOrderRequest request, CancellationToken cancellationToken = default)
     {
-        var order = await _orderRepository.GetByIdAsync(request.OrderId, cancellationToken);
+        var order = await _orderRepository.GetByIdTrackedAsync(request.OrderId, cancellationToken);
 
         if (order is null)
         {
             throw new InvalidOperationException("O pedido informado não existe.");
         }
 
-        if (order.Status != OrderStatus.Pronto)
+        // Allow closing both EmPreparacao and Pronto orders when payment is provided
+        var hasPaymentInfo = request.FormaPagamento.HasValue;
+        var validStatusForClose = hasPaymentInfo
+            ? (order.Status == OrderStatus.EmPreparacao || order.Status == OrderStatus.Pronto)
+            : order.Status == OrderStatus.Pronto;
+
+        if (!validStatusForClose)
         {
-            throw new InvalidOperationException("Apenas pedidos prontos podem ser finalizados.");
+            throw new InvalidOperationException(hasPaymentInfo
+                ? "Apenas pedidos em preparação ou prontos podem ser fechados com pagamento."
+                : "Apenas pedidos prontos podem ser finalizados.");
         }
 
         if (!order.OrderItems.Any())
         {
-            throw new InvalidOperationException("Pedido não pode ser finalizado sem itens.");
+            throw new InvalidOperationException("Pedido não pode ser fechado sem itens.");
+        }
+
+        // Process payment if payment info is provided
+        if (hasPaymentInfo)
+        {
+            var paymentRequest = new ProcessPaymentRequest(
+                request.OrderId,
+                request.FormaPagamento.Value,
+                request.ValorPago ?? 0,
+                request.Parcelas ?? 1,
+                request.Observacoes);
+
+            var paymentResult = await _paymentService.ProcessPaymentAsync(paymentRequest, cancellationToken);
+
+            if (!paymentResult.Success)
+            {
+                throw new InvalidOperationException(paymentResult.ErrorMessage);
+            }
+
+            // If payment is Fiado, validate credit limit before closing
+            if (request.FormaPagamento == FormaPagamento.Fiado && request.CustomerId.HasValue)
+            {
+                var customer = await _customerRepository.GetByIdAsync(request.CustomerId.Value, cancellationToken);
+                if (customer is not null)
+                {
+                    var saldoDevedor = await _pendingPaymentService.GetSaldoDevedorAsync(request.CustomerId.Value, cancellationToken);
+                    var novoSaldo = saldoDevedor + order.TotalAmount;
+
+                    if (customer.CreditLimit > 0 && novoSaldo > customer.CreditLimit)
+                    {
+                        throw new InvalidOperationException(
+                            $"Limite de crédito excedido. Saldo devedor atual: R$ {saldoDevedor:N2}, Novo pedido: R$ {order.TotalAmount:N2}, Limite: R$ {customer.CreditLimit:N2}.");
+                    }
+
+                    if (!customer.IsActive)
+                    {
+                        throw new InvalidOperationException("Cliente inativo não pode fazer pedidos fiados.");
+                    }
+                }
+            }
         }
 
         order.Finalize();
 
         await _orderRepository.UpdateAsync(order, cancellationToken);
 
-        // Trigger automatic stock deduction within a transaction scope
-        // This ensures order close and inventory deduction are atomic
+        // Trigger automatic stock deduction
         await _inventoryService.BaixaAutomaticaPedidoAsync(order.Id, order.OrderItems.ToList(), cancellationToken);
+
+        // If payment is Fiado, create a pending payment
+        if (hasPaymentInfo && request.FormaPagamento == FormaPagamento.Fiado && request.CustomerId.HasValue)
+        {
+            await _pendingPaymentService.CreateForOrderAsync(
+                request.OrderId,
+                request.CustomerId.Value,
+                order.TotalAmount,
+                request.Observacoes,
+                cancellationToken);
+        }
 
         return MapToDto(order);
     }
 
     public async Task<OrderDto> CancelAsync(CancelOrderRequest request, CancellationToken cancellationToken = default)
     {
-        var order = await _orderRepository.GetByIdAsync(request.OrderId, cancellationToken);
+        var order = await _orderRepository.GetByIdTrackedAsync(request.OrderId, cancellationToken);
 
         if (order is null)
         {
             throw new InvalidOperationException("O pedido informado não existe.");
         }
 
-        var wasDelivered = order.Status == OrderStatus.Finalizado || order.Status == OrderStatus.Pronto;
-
         if (order.Status == OrderStatus.Cancelado)
         {
             throw new InvalidOperationException("Pedido já foi cancelado.");
         }
+
+        // For all non-Cancelado statuses, mark as Cancelado and keep in database
+        var wasDelivered = order.Status == OrderStatus.Finalizado || order.Status == OrderStatus.Pronto;
 
         order.Cancel();
 
@@ -289,30 +352,21 @@ public class OrderService : BaseService, IOrderService
         return MapToDto(order);
     }
 
-    public async Task<OrderDto> StartPreparationAsync(int orderId, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(int orderId, CancellationToken cancellationToken = default)
     {
-        var order = await _orderRepository.GetByIdAsync(orderId, cancellationToken);
+        var order = await _orderRepository.GetByIdTrackedAsync(orderId, cancellationToken);
 
         if (order is null)
         {
             throw new InvalidOperationException("O pedido informado não existe.");
         }
 
-        if (order.Status != OrderStatus.Pendente)
-        {
-            throw new InvalidOperationException("Apenas pedidos pendentes podem iniciar preparação.");
-        }
-
-        order.StartPreparation();
-
-        await _orderRepository.UpdateAsync(order, cancellationToken);
-
-        return MapToDto(order);
+        await _orderRepository.DeleteAsync(order, cancellationToken);
     }
 
     public async Task<OrderDto> MarkAsReadyAsync(int orderId, CancellationToken cancellationToken = default)
     {
-        var order = await _orderRepository.GetByIdAsync(orderId, cancellationToken);
+        var order = await _orderRepository.GetByIdTrackedAsync(orderId, cancellationToken);
 
         if (order is null)
         {
@@ -333,7 +387,7 @@ public class OrderService : BaseService, IOrderService
 
     public async Task<OrderDto> FinalizeAsync(int orderId, CancellationToken cancellationToken = default)
     {
-        var order = await _orderRepository.GetByIdAsync(orderId, cancellationToken);
+        var order = await _orderRepository.GetByIdTrackedAsync(orderId, cancellationToken);
 
         if (order is null)
         {
@@ -360,9 +414,25 @@ public class OrderService : BaseService, IOrderService
         return MapToDto(order);
     }
 
-    public async Task<CloseOrderWithPaymentResult> CloseWithPaymentAsync(CloseOrderWithPaymentRequest request, CancellationToken cancellationToken = default)
+    public async Task<OrderDto> StartPreparationAsync(int orderId, CancellationToken cancellationToken = default)
     {
-        return await _orderPaymentService.CloseWithPaymentAsync(request, cancellationToken);
+        var order = await _orderRepository.GetByIdTrackedAsync(orderId, cancellationToken);
+
+        if (order is null)
+        {
+            throw new InvalidOperationException("O pedido informado não existe.");
+        }
+
+        if (order.Status != OrderStatus.Aberto)
+        {
+            throw new InvalidOperationException("Apenas pedidos abertos podem iniciar preparação.");
+        }
+
+        order.StartPreparation();
+
+        await _orderRepository.UpdateAsync(order, cancellationToken);
+
+        return MapToDto(order);
     }
 
     public async Task<OrderDto> RecalculateWithPromotionsAsync(int orderId, CancellationToken cancellationToken = default)

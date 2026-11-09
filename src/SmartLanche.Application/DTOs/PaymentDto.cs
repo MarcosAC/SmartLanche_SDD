@@ -68,23 +68,6 @@ public record RegisterPendingPaymentResult(
     string? ErrorMessage
 );
 
-public record CloseOrderWithPaymentRequest(
-    int OrderId,
-    FormaPagamento FormaPagamento,
-    decimal ValorPago,
-    int Parcelas,
-    string? Observacoes,
-    int? CustomerId
-);
-
-public record CloseOrderWithPaymentResult(
-    bool Success,
-    int? OrderId,
-    PaymentDto? Payment,
-    PendingPaymentDto? PendingPayment,
-    string? ErrorMessage
-);
-
 public record DevedorDto(
     int CustomerId,
     string CustomerName,

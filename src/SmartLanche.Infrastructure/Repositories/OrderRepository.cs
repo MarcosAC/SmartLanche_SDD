@@ -23,6 +23,7 @@ public class OrderRepository : IOrderRepository
         string? searchTerm = null,
         string? sortBy = null,
         bool sortDescending = true,
+        bool excludeCancelled = true,
         CancellationToken cancellationToken = default)
     {
         IQueryable<Order> query = _context.Orders
@@ -60,6 +61,11 @@ public class OrderRepository : IOrderRepository
                 order.Status.ToString().ToLower().Contains(term));
         }
 
+        if (excludeCancelled)
+        {
+            query = query.Where(order => order.Status != OrderStatus.Cancelado);
+        }
+
         // Apply sorting
         query = (sortBy?.ToLowerInvariant()) switch
         {
@@ -90,6 +96,15 @@ public class OrderRepository : IOrderRepository
             .FirstOrDefaultAsync(order => order.Id == id, cancellationToken);
     }
 
+    public async Task<Order?> GetByIdTrackedAsync(int id, CancellationToken cancellationToken = default)
+    {
+        return await _context.Orders
+            .Include(order => order.Customer)
+            .Include(order => order.OrderItems)
+                .ThenInclude(item => item.Product)
+            .FirstOrDefaultAsync(order => order.Id == id, cancellationToken);
+    }
+
     public async Task AddAsync(Order order, CancellationToken cancellationToken = default)
     {
         await _context.Orders.AddAsync(order, cancellationToken);
@@ -109,7 +124,7 @@ public class OrderRepository : IOrderRepository
     public async Task<Order?> GetOpenOrderAsync(int? customerId = null, CancellationToken cancellationToken = default)
     {
         IQueryable<Order> query = _context.Orders
-            .Where(order => order.Status == OrderStatus.Pendente);
+            .Where(order => order.Status == OrderStatus.Aberto || order.Status == OrderStatus.EmPreparacao);
 
         if (customerId.HasValue)
         {
@@ -122,7 +137,7 @@ public class OrderRepository : IOrderRepository
     public async Task<bool> ExistsOpenOrderForCustomerAsync(int customerId, CancellationToken cancellationToken = default)
     {
         return await _context.Orders
-            .AnyAsync(order => order.CustomerId == customerId && order.Status == OrderStatus.Pendente, cancellationToken);
+            .AnyAsync(order => order.CustomerId == customerId && (order.Status == OrderStatus.Aberto || order.Status == OrderStatus.EmPreparacao), cancellationToken);
     }
 
     public async Task<IReadOnlyList<OrderItem>> GetItemsByOrderAsync(int orderId, CancellationToken cancellationToken = default)
@@ -132,5 +147,11 @@ public class OrderRepository : IOrderRepository
             .Include(item => item.Product)
             .Where(item => item.OrderId == orderId)
             .ToListAsync(cancellationToken);
+    }
+
+    public async Task DeleteAsync(Order order, CancellationToken cancellationToken = default)
+    {
+        _context.Orders.Remove(order);
+        await _context.SaveChangesAsync(cancellationToken);
     }
 }

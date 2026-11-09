@@ -328,6 +328,13 @@
             </ScrollViewer>
         </DataTemplate>
 
+        <!-- Fechar pedido (com pagamento) -->
+        <DataTemplate DataType="{x:Type orderVm:OrderCloseViewModel}">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <viewsOrders:OrderCloseView/>
+            </ScrollViewer>
+        </DataTemplate>
+
         <!-- Listagem de promoções -->
         <DataTemplate DataType="{x:Type promotionVm:PromotionListViewModel}">
             <viewsPromotions:PromotionListView/>

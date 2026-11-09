@@ -854,6 +854,7 @@ public class ComboServiceTests
             string? searchTerm = null,
             string? sortBy = null,
             bool sortDescending = true,
+            bool excludeCancelled = true,
             CancellationToken cancellationToken = default)
         {
             IEnumerable<Order> query = _orders;
@@ -887,6 +888,11 @@ public class ComboServiceTests
                     o.Status.ToString().ToLower().Contains(term));
             }
 
+            if (excludeCancelled)
+            {
+                query = query.Where(o => o.Status != OrderStatus.Cancelado);
+            }
+
             query = (sortBy?.ToLowerInvariant()) switch
             {
                 "orderdate" or "datahora" => sortDescending
@@ -908,6 +914,11 @@ public class ComboServiceTests
         }
 
         public Task<Order?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(_orders.FirstOrDefault(o => o.Id == id));
+        }
+
+        public Task<Order?> GetByIdTrackedAsync(int id, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(_orders.FirstOrDefault(o => o.Id == id));
         }
@@ -934,7 +945,7 @@ public class ComboServiceTests
 
         public Task<Order?> GetOpenOrderAsync(int? customerId = null, CancellationToken cancellationToken = default)
         {
-            var query = _orders.Where(o => o.Status == OrderStatus.Pendente);
+            var query = _orders.Where(o => o.Status == OrderStatus.EmPreparacao);
 
             if (customerId.HasValue)
             {
@@ -946,7 +957,7 @@ public class ComboServiceTests
 
         public Task<bool> ExistsOpenOrderForCustomerAsync(int customerId, CancellationToken cancellationToken = default)
         {
-            return Task.FromResult(_orders.Any(o => o.CustomerId == customerId && o.Status == OrderStatus.Pendente));
+            return Task.FromResult(_orders.Any(o => o.CustomerId == customerId && o.Status == OrderStatus.EmPreparacao));
         }
 
         public Task<IReadOnlyList<OrderItem>> GetItemsByOrderAsync(int orderId, CancellationToken cancellationToken = default)
@@ -964,6 +975,12 @@ public class ComboServiceTests
 
             return Task.FromResult((IReadOnlyList<OrderItem>)order.OrderItems.ToList());
         }
+
+        public Task DeleteAsync(Order order, CancellationToken cancellationToken = default)
+        {
+            _orders.RemoveAll(o => o.Id == order.Id);
+            return Task.CompletedTask;
+        }
     }
 
     private sealed class FakeOrderService : IOrderService
@@ -980,7 +997,7 @@ public class ComboServiceTests
 
         public Task<IReadOnlyList<OrderDto>> GetAllAsync(OrderFilterRequest? filter = null, CancellationToken cancellationToken = default)
         {
-            var orders = _orderRepository.GetAllAsync(filter?.Status, filter?.CustomerId, filter?.DateFrom, filter?.DateTo, filter?.SearchTerm, filter?.SortBy, filter?.SortDescending ?? true, cancellationToken).Result;
+            var orders = _orderRepository.GetAllAsync(filter?.Status, filter?.CustomerId, filter?.DateFrom, filter?.DateTo, filter?.SearchTerm, filter?.SortBy, filter?.SortDescending ?? true, filter?.ExcludeCancelled ?? true, cancellationToken).Result;
             return Task.FromResult<IReadOnlyList<OrderDto>>(orders.Select(MapToDto).ToList());
         }
 
@@ -996,7 +1013,7 @@ public class ComboServiceTests
             {
                 CustomerId = request.CustomerId,
                 OrderDate = DateTime.Now,
-                Status = OrderStatus.Pendente,
+                Status = OrderStatus.Aberto,
                 TotalAmount = 0,
                 Notes = string.Empty
             };
@@ -1017,9 +1034,9 @@ public class ComboServiceTests
                 throw new InvalidOperationException("O pedido informado não existe.");
             }
 
-            if (order.Status != OrderStatus.Pendente)
+            if (order.Status != OrderStatus.Aberto && order.Status != OrderStatus.EmPreparacao)
             {
-                throw new InvalidOperationException("Apenas pedidos abertos podem ser alterados.");
+                throw new InvalidOperationException("Apenas pedidos abertos ou em preparação podem ser alterados.");
             }
 
             var product = _productRepository.GetByIdAsync(request.ProductId, cancellationToken).Result;
@@ -1068,9 +1085,9 @@ public class ComboServiceTests
                 throw new InvalidOperationException("O pedido informado não existe.");
             }
 
-            if (order.Status != OrderStatus.Pendente)
+            if (order.Status != OrderStatus.Aberto && order.Status != OrderStatus.EmPreparacao)
             {
-                throw new InvalidOperationException("Apenas pedidos abertos podem ser alterados.");
+                throw new InvalidOperationException("Apenas pedidos abertos ou em preparação podem ser alterados.");
             }
 
             var item = order.OrderItems.FirstOrDefault(i => i.Id == orderItemId);
@@ -1099,9 +1116,9 @@ public class ComboServiceTests
                 throw new InvalidOperationException("O pedido informado não existe.");
             }
 
-            if (order.Status != OrderStatus.Pendente)
+            if (order.Status != OrderStatus.Aberto && order.Status != OrderStatus.EmPreparacao)
             {
-                throw new InvalidOperationException("Apenas pedidos abertos podem ser alterados.");
+                throw new InvalidOperationException("Apenas pedidos abertos ou em preparação podem ser alterados.");
             }
 
             var item = order.OrderItems.FirstOrDefault(i => i.Id == request.OrderItemId);
@@ -1137,9 +1154,17 @@ public class ComboServiceTests
                 throw new InvalidOperationException("O pedido informado não existe.");
             }
 
-            if (order.Status != OrderStatus.Pronto)
+            // Allow closing both EmPreparacao and Pronto orders when payment is provided
+            var hasPaymentInfo = request.FormaPagamento.HasValue;
+            var validStatusForClose = hasPaymentInfo
+                ? (order.Status == OrderStatus.EmPreparacao || order.Status == OrderStatus.Pronto)
+                : order.Status == OrderStatus.Pronto;
+
+            if (!validStatusForClose)
             {
-                throw new InvalidOperationException("Apenas pedidos prontos podem ser finalizados.");
+                throw new InvalidOperationException(hasPaymentInfo
+                    ? "Apenas pedidos em preparação ou prontos podem ser fechados com pagamento."
+                    : "Apenas pedidos prontos podem ser finalizados.");
             }
 
             if (!order.OrderItems.Any())
@@ -1165,9 +1190,9 @@ public class ComboServiceTests
                 throw new InvalidOperationException("O pedido informado não existe.");
             }
 
-            if (order.Status != OrderStatus.Pendente)
+            if (order.Status == OrderStatus.Cancelado)
             {
-                throw new InvalidOperationException("Apenas pedidos abertos podem ser cancelados.");
+                throw new InvalidOperationException("O pedido já está cancelado.");
             }
 
             order.Cancel();
@@ -1177,34 +1202,6 @@ public class ComboServiceTests
             OrderChanged?.Invoke(this, EventArgs.Empty);
 
             return Task.FromResult(MapToDto(order));
-        }
-
-        public Task<CloseOrderWithPaymentResult> CloseWithPaymentAsync(CloseOrderWithPaymentRequest request, CancellationToken cancellationToken = default)
-        {
-            var order = _orderRepository.GetByIdAsync(request.OrderId, cancellationToken).Result;
-
-            if (order is null)
-            {
-                return Task.FromResult(new CloseOrderWithPaymentResult(false, null, null, null, "O pedido informado não existe."));
-            }
-
-            if (order.Status != OrderStatus.Pendente)
-            {
-                return Task.FromResult(new CloseOrderWithPaymentResult(false, null, null, null, "Apenas pedidos abertos podem ser fechados."));
-            }
-
-            if (!order.OrderItems.Any())
-            {
-                return Task.FromResult(new CloseOrderWithPaymentResult(false, null, null, null, "Pedido não pode ser fechado sem itens."));
-            }
-
-            order.Finalize();
-
-            _orderRepository.UpdateAsync(order, cancellationToken).Wait();
-
-            OrderChanged?.Invoke(this, EventArgs.Empty);
-
-            return Task.FromResult(new CloseOrderWithPaymentResult(true, order.Id, null, null, null));
         }
 
         public Task<IReadOnlyList<ProductSalesDto>> GetTopProductsAsync(int topCount = 5, int days = 7, CancellationToken cancellationToken = default)
@@ -1227,23 +1224,23 @@ public class ComboServiceTests
             return Task.FromResult<IReadOnlyList<PromotionDto>>(Array.Empty<PromotionDto>());
         }
 
-        public Task<OrderDto> StartPreparationAsync(int orderId, CancellationToken cancellationToken = default)
-        {
-            var order = _orderRepository.GetByIdAsync(orderId, cancellationToken).Result;
-            if (order is null) throw new InvalidOperationException("O pedido informado não existe.");
-            if (order.Status != OrderStatus.Pendente) throw new InvalidOperationException("Apenas pedidos pendentes podem iniciar preparação.");
-            order.StartPreparation();
-            _orderRepository.UpdateAsync(order, cancellationToken).Wait();
-            OrderChanged?.Invoke(this, EventArgs.Empty);
-            return Task.FromResult(MapToDto(order));
-        }
-
         public Task<OrderDto> MarkAsReadyAsync(int orderId, CancellationToken cancellationToken = default)
         {
             var order = _orderRepository.GetByIdAsync(orderId, cancellationToken).Result;
             if (order is null) throw new InvalidOperationException("O pedido informado não existe.");
             if (order.Status != OrderStatus.EmPreparacao) throw new InvalidOperationException("Apenas pedidos em preparo podem ser marcados como prontos.");
             order.MarkAsReady();
+            _orderRepository.UpdateAsync(order, cancellationToken).Wait();
+            OrderChanged?.Invoke(this, EventArgs.Empty);
+            return Task.FromResult(MapToDto(order));
+        }
+
+        public Task<OrderDto> StartPreparationAsync(int orderId, CancellationToken cancellationToken = default)
+        {
+            var order = _orderRepository.GetByIdAsync(orderId, cancellationToken).Result;
+            if (order is null) throw new InvalidOperationException("O pedido informado não existe.");
+            if (order.Status != OrderStatus.Aberto) throw new InvalidOperationException("Apenas pedidos abertos podem iniciar preparação.");
+            order.StartPreparation();
             _orderRepository.UpdateAsync(order, cancellationToken).Wait();
             OrderChanged?.Invoke(this, EventArgs.Empty);
             return Task.FromResult(MapToDto(order));
@@ -1259,6 +1256,15 @@ public class ComboServiceTests
             _orderRepository.UpdateAsync(order, cancellationToken).Wait();
             OrderChanged?.Invoke(this, EventArgs.Empty);
             return Task.FromResult(MapToDto(order));
+        }
+
+        public Task DeleteAsync(int orderId, CancellationToken cancellationToken = default)
+        {
+            var order = _orderRepository.GetByIdAsync(orderId, cancellationToken).Result;
+            if (order is null) throw new InvalidOperationException("O pedido informado não existe.");
+            _orderRepository.DeleteAsync(order, cancellationToken).Wait();
+            OrderChanged?.Invoke(this, EventArgs.Empty);
+            return Task.CompletedTask;
         }
 
         private static OrderDto MapToDto(Order order)

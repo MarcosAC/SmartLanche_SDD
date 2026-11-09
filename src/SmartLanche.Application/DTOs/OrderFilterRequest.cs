@@ -15,4 +15,6 @@ public class OrderFilterRequest
     public string? SortBy { get; set; }
 
     public bool SortDescending { get; set; } = true;
+
+    public bool ExcludeCancelled { get; set; } = true;
 }
