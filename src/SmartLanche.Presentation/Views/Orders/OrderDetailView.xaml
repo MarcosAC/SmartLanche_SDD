@@ -121,7 +121,7 @@
 
                 <!-- Observações do pedido -->
                 <Border Grid.Row="1" Background="#F9FAFB" CornerRadius="6" Padding="16" Margin="0,0,0,16"
-                        Visibility="{Binding Order.Observacoes, Converter={StaticResource NullToBoolConverter}, ConverterParameter=reverse}">
+                        Visibility="{Binding Order.Observacoes, Converter={StaticResource StringIsNullOrEmptyToVisibilityConverter}, ConverterParameter=reverse}">
                     <StackPanel>
                         <TextBlock Text="Observações do Pedido" Style="{StaticResource DetailLabelStyle}"/>
                         <TextBlock Text="{Binding Order.Observacoes}" Style="{StaticResource DetailValueStyle}"
@@ -137,17 +137,16 @@
                         <ItemsControl ItemsSource="{Binding Order.Payments}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Background="White" CornerRadius="4" Padding="8" Margin="0,4,0,0" BorderBrush="#FDE68A" BorderThickness="1">
+                                    <Border Background="White" CornerRadius="4" Padding="8" Margin="0,4,0,0" BorderBrush="#FDE68A" BorderThickness="1"
+                                            Visibility="{Binding Observacoes, Converter={StaticResource StringIsNullOrEmptyToVisibilityConverter}, ConverterParameter=reverse}">
                                         <StackPanel>
-                                            <StackPanel Orientation="Horizontal"
-                                                        Visibility="{Binding Observacoes, Converter={StaticResource StringIsNullOrEmptyToVisibilityConverter}, ConverterParameter=reverse}">
+                                            <StackPanel Orientation="Horizontal">
                                                 <TextBlock Text="{Binding FormaPagamento}" FontWeight="SemiBold" Foreground="#92400E"/>
                                                 <TextBlock Text=" - R$ " Foreground="#6B7280"/>
                                                 <TextBlock Text="{Binding ValorPago, StringFormat='N2'}" FontWeight="SemiBold" Foreground="#92400E"/>
                                             </StackPanel>
                                             <TextBlock Text="{Binding DataHora, StringFormat='dd/MM/yyyy HH:mm'}"
-                                                       FontSize="11" Foreground="#6B7280" Margin="0,2,0,4"
-                                                       Visibility="{Binding Observacoes, Converter={StaticResource StringIsNullOrEmptyToVisibilityConverter}, ConverterParameter=reverse}"/>
+                                                       FontSize="11" Foreground="#6B7280" Margin="0,2,0,4"/>
                                             <TextBlock Text="{Binding Observacoes}" Style="{StaticResource DetailValueStyle}" TextWrapping="Wrap" Foreground="#78350F"/>
                                         </StackPanel>
                                     </Border>
