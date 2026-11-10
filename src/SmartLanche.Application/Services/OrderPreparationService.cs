@@ -121,7 +121,7 @@ public class OrderPreparationService : IOrderPreparationService
             OrderDate = order.OrderDate,
             Status = order.Status,
             TotalAmount = order.TotalAmount,
-            Notes = order.Notes,
+            Observacoes = order.Observacoes,
             PreparationStartedAt = order.PreparationStartedAt,
             DeliveredAt = order.DeliveredAt,
             CancelledAt = order.CancelledAt,

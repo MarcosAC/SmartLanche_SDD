@@ -99,7 +99,7 @@ public class OrderService : BaseService, IOrderService
             OrderDate = DateTime.Now,
             Status = OrderStatus.Aberto,
             TotalAmount = 0,
-            Notes = string.Empty
+            Observacoes = string.IsNullOrWhiteSpace(request.Observacoes) ? null : request.Observacoes.Trim()
         };
 
         await _orderRepository.AddAsync(order, cancellationToken);

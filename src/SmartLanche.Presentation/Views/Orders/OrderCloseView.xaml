@@ -156,10 +156,10 @@
 
                     <!-- Observações -->
                     <Border Grid.Row="1" Background="#F9FAFB" CornerRadius="6" Padding="16" Margin="0,0,0,16"
-                            Visibility="{Binding Order.Notes, Converter={StaticResource NullToBoolConverter}, ConverterParameter=reverse}">
+                            Visibility="{Binding Order.Observacoes, Converter={StaticResource NullToBoolConverter}, ConverterParameter=reverse}">
                         <StackPanel>
                             <TextBlock Text="Observações" Style="{StaticResource DetailLabelStyle}"/>
-                            <TextBlock Text="{Binding Order.Notes}" Style="{StaticResource DetailValueStyle}"
+                            <TextBlock Text="{Binding Order.Observacoes}" Style="{StaticResource DetailValueStyle}"
                                        TextWrapping="Wrap"/>
                         </StackPanel>
                     </Border>

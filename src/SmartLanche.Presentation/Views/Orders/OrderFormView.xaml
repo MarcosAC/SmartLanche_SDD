@@ -240,6 +240,7 @@
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>  <!-- Cliente search -->
+                                    <RowDefinition Height="Auto"/>  <!-- Observações -->
                                     <RowDefinition Height="Auto"/>  <!-- Categoria -->
                                     <RowDefinition Height="*"/>     <!-- Produtos -->
                                 </Grid.RowDefinitions>
@@ -298,8 +299,21 @@
                                     </ListBox>
                                 </StackPanel>
 
+                                <!-- Observações -->
+                                <StackPanel Grid.Row="1" Margin="0,0,0,12">
+                                    <TextBlock Text="Observações:" Style="{StaticResource FormLabelStyle}" Margin="0,0,0,6"/>
+                                    <TextBox Height="80"
+                                             HorizontalAlignment="Stretch"
+                                             VerticalContentAlignment="Top"
+                                             Text="{Binding Observacoes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                             BorderBrush="#D1D5DB" BorderThickness="1"
+                                             AcceptsReturn="True"
+                                             TextWrapping="Wrap"
+                                             ToolTip="Observações do pedido (opcional)"/>
+                                </StackPanel>
+
                                 <!-- Filtro de categoria -->
-                                <StackPanel Grid.Row="1"
+                                <StackPanel Grid.Row="2"
                                             Orientation="Horizontal"
                                             Margin="0,0,0,12">
                                     <TextBlock Text="Categoria:"
@@ -316,7 +330,7 @@
                                 </StackPanel>
 
                                 <!-- Grid de produtos filtrados -->
-                                <DataGrid Grid.Row="1"
+                                <DataGrid Grid.Row="3"
                                           ItemsSource="{Binding FilteredProducts}"
                                           SelectedItem="{Binding SelectedProduct, Mode=TwoWay}"
                                           AutoGenerateColumns="False"

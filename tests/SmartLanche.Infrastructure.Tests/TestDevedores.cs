@@ -44,7 +44,7 @@ public class TestDevedores
                     OrderDate = DateTime.Now,
                     Status = OrderStatus.EmPreparacao,
                     TotalAmount = 51.00m,
-                    Notes = string.Empty
+                    Observacoes = string.Empty
                 };
                 var orderItem = new OrderItem
                 {

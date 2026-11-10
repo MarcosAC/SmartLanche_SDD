@@ -300,9 +300,10 @@ namespace SmartLanche.Infrastructure.Data.Migrations
                     b.Property<DateTime?>("DeliveredAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Notes")
+                    b.Property<string>("Observacoes")
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("Observacoes");
 
                     b.Property<DateTime>("OrderDate")
                         .HasColumnType("datetime2");
