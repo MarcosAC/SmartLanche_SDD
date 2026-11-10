@@ -114,7 +114,7 @@ public class InventoryOrderIntegrationTests : IDisposable
                 QuantidadeMinima: 10,
                 ValorUnitario: 8.50m,
                 UnidadeMedida: "UN",
-                Observacoes: "Estoque inicial")
+                Notes: "Estoque inicial")
         });
 
         // Verify product created with inventory

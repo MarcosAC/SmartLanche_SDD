@@ -32,7 +32,7 @@ public class PendingPaymentService : IPendingPaymentService
 
         try
         {
-            pendingPayment.RegistrarPagamento(request.Valor, request.FormaPagamento, request.Observacoes);
+            pendingPayment.RegistrarPagamento(request.Valor, request.FormaPagamento, request.Notes);
 
             await _pendingPaymentRepository.UpdateAsync(pendingPayment, cancellationToken);
 
@@ -102,7 +102,7 @@ public class PendingPaymentService : IPendingPaymentService
                 h.ValorPago,
                 h.DataHora,
                 h.FormaPagamento,
-                h.Observacoes))
+                h.Notes))
             .ToList();
     }
 
@@ -138,7 +138,7 @@ public class PendingPaymentService : IPendingPaymentService
             ValorPago = 0m,
             DataHora = DateTime.Now,
             StatusPagamento = StatusPagamentoPendente.NaoPago,
-            Observacoes = observacoes
+            Notes = observacoes
         };
 
         await _pendingPaymentRepository.AddAsync(pendingPayment, cancellationToken);
@@ -159,7 +159,7 @@ public class PendingPaymentService : IPendingPaymentService
             pp.DataHora,
             pp.StatusPagamento,
             pp.DataPagamento,
-            pp.Observacoes,
+            pp.Notes,
             pp.History
                 .OrderByDescending(h => h.DataHora)
                 .Select(h => new PendingPaymentHistoryDto(
@@ -168,7 +168,7 @@ public class PendingPaymentService : IPendingPaymentService
                     h.ValorPago,
                     h.DataHora,
                     h.FormaPagamento,
-                    h.Observacoes))
+                    h.Notes))
                 .ToList());
     }
 

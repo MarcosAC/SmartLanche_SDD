@@ -64,7 +64,7 @@ public class TestDevedores
                     ValorPago = 0m,
                     DataHora = DateTime.Now,
                     StatusPagamento = StatusPagamentoPendente.NaoPago,
-                    Observacoes = "Teste"
+                    Notes = "Teste"
                 };
                 await pendingPaymentRepository.AddAsync(pendingPayment);
             }

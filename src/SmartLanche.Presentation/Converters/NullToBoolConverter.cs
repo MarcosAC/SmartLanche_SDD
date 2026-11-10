@@ -8,7 +8,14 @@ public class NullToBoolConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        return value != null;
+        bool isNull = value == null;
+
+        if (parameter is string param && param.Equals("reverse", StringComparison.OrdinalIgnoreCase))
+        {
+            isNull = !isNull;
+        }
+
+        return isNull;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

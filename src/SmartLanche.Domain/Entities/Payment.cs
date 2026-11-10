@@ -22,7 +22,7 @@ public class Payment
 
     public DateTime DataHora { get; set; } = DateTime.Now;
 
-    public string? Observacoes { get; set; }
+    public string? Notes { get; set; }
 
     public bool Estornado { get; set; }
 

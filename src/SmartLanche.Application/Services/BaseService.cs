@@ -26,7 +26,21 @@ public abstract class BaseService
                 UnitPrice = i.UnitPrice,
                 Subtotal = i.Subtotal,
                 ComboId = i.ComboId
-            }).ToList()
+            }).ToList(),
+            Payments = order.Payments.Select(p => new PaymentDto(
+                p.Id,
+                p.OrderId,
+                p.FormaPagamento,
+                p.ValorPago,
+                p.Troco,
+                p.Parcelas,
+                p.ValorParcela,
+                p.DataHora,
+                p.Notes,
+                p.Estornado,
+                p.EstornoDataHora,
+                p.EstornoMotivo
+            )).ToList()
         };
     }
 }

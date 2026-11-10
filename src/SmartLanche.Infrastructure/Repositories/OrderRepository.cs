@@ -93,6 +93,7 @@ public class OrderRepository : IOrderRepository
             .Include(order => order.Customer)
             .Include(order => order.OrderItems)
                 .ThenInclude(item => item.Product)
+            .Include(order => order.Payments)
             .FirstOrDefaultAsync(order => order.Id == id, cancellationToken);
     }
 
@@ -102,6 +103,7 @@ public class OrderRepository : IOrderRepository
             .Include(order => order.Customer)
             .Include(order => order.OrderItems)
                 .ThenInclude(item => item.Product)
+            .Include(order => order.Payments)
             .FirstOrDefaultAsync(order => order.Id == id, cancellationToken);
     }
 

@@ -181,7 +181,7 @@ namespace SmartLanche.Infrastructure.Data.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
 
-                    b.Property<string>("Observacoes")
+                    b.Property<string>("Notes")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
@@ -248,7 +248,7 @@ namespace SmartLanche.Infrastructure.Data.Migrations
                     b.Property<int>("Motivo")
                         .HasColumnType("int");
 
-                    b.Property<string>("Observacoes")
+                    b.Property<string>("Notes")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
@@ -302,7 +302,8 @@ namespace SmartLanche.Infrastructure.Data.Migrations
 
                     b.Property<string>("Notes")
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("Notes");
 
                     b.Property<DateTime>("OrderDate")
                         .HasColumnType("datetime2");
@@ -393,7 +394,7 @@ namespace SmartLanche.Infrastructure.Data.Migrations
                     b.Property<int>("FormaPagamento")
                         .HasColumnType("int");
 
-                    b.Property<string>("Observacoes")
+                    b.Property<string>("Notes")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
@@ -435,7 +436,7 @@ namespace SmartLanche.Infrastructure.Data.Migrations
                     b.Property<DateTime?>("DataPagamento")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Observacoes")
+                    b.Property<string>("Notes")
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
@@ -479,7 +480,7 @@ namespace SmartLanche.Infrastructure.Data.Migrations
                     b.Property<int>("FormaPagamento")
                         .HasColumnType("int");
 
-                    b.Property<string>("Observacoes")
+                    b.Property<string>("Notes")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 

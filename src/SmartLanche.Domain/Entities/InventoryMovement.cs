@@ -28,5 +28,5 @@ public class InventoryMovement
 
     public string? Fornecedor { get; set; }
 
-    public string? Observacoes { get; set; }
+    public string? Notes { get; set; }
 }

@@ -26,7 +26,8 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
             .HasPrecision(18, 2);
 
         builder.Property(order => order.Notes)
-            .HasMaxLength(500);
+            .HasMaxLength(500)
+            .HasColumnName("Notes");
 
         builder.Property(order => order.PreparationStartedAt)
             .IsRequired(false);

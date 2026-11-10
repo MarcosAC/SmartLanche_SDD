@@ -38,7 +38,7 @@ public class PendingPaymentTests
         Assert.Single(pending.History);
         Assert.Equal(30m, pending.History.First().ValorPago);
         Assert.Equal(FormaPagamento.Dinheiro, pending.History.First().FormaPagamento);
-        Assert.Equal("Pagamento parcial", pending.History.First().Observacoes);
+        Assert.Equal("Pagamento parcial", pending.History.First().Notes);
     }
 
     [Fact]
@@ -153,14 +153,14 @@ public class PendingPaymentTests
             ValorOriginal = 100m,
             ValorPago = 30m,
             StatusPagamento = StatusPagamentoPendente.NaoPago,
-            Observacoes = "Original"
+            Notes = "Original"
         };
 
         pending.Cancelar("Cliente desistiu");
 
         Assert.Equal(StatusPagamentoPendente.NaoPago, pending.StatusPagamento);
-        Assert.Contains("CANCELADA: Cliente desistiu", pending.Observacoes);
-        Assert.Contains("Original", pending.Observacoes);
+        Assert.Contains("CANCELADA: Cliente desistiu", pending.Notes);
+        Assert.Contains("Original", pending.Notes);
     }
 
     [Fact]
@@ -193,6 +193,6 @@ public class PendingPaymentTests
         pending.Cancelar("Acordo cancelado");
 
         Assert.Equal(StatusPagamentoPendente.NaoPago, pending.StatusPagamento);
-        Assert.Contains("Acordo cancelado", pending.Observacoes);
+        Assert.Contains("Acordo cancelado", pending.Notes);
     }
 }

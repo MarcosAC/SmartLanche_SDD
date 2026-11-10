@@ -26,7 +26,7 @@ public class PendingPayment
 
     public DateTime? DataPagamento { get; set; }
 
-    public string? Observacoes { get; set; }
+    public string? Notes { get; set; }
 
     public ICollection<PendingPaymentHistory> History { get; set; } = new List<PendingPaymentHistory>();
 
@@ -55,7 +55,7 @@ public class PendingPayment
             ValorPago = valor,
             DataHora = DateTime.Now,
             FormaPagamento = formaPagamento,
-            Observacoes = observacoes
+            Notes = observacoes
         };
 
         History.Add(history);
@@ -75,7 +75,7 @@ public class PendingPayment
         }
 
         StatusPagamento = StatusPagamentoPendente.NaoPago;
-        Observacoes = $"CANCELADA: {motivo}. {Observacoes}".Trim();
+        Notes = $"CANCELADA: {motivo}. {Notes}".Trim();
     }
 }
 
@@ -93,5 +93,5 @@ public class PendingPaymentHistory
 
     public FormaPagamento FormaPagamento { get; set; }
 
-    public string? Observacoes { get; set; }
+    public string? Notes { get; set; }
 }

@@ -132,7 +132,7 @@ public sealed class InventoryListViewModel : ListViewModelBase<InventoryItemDto,
             item.QuantidadeMinima,
             item.ValorUnitario,
             item.UnidadeMedida,
-            item.Observacoes,
+            item.Notes,
             item.EstoqueBaixo,
             item.EstoqueZerado,
             item.ValorTotalEstoque);

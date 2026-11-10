@@ -20,7 +20,7 @@ public class InventoryItem
 
     public string UnidadeMedida { get; set; } = "UN";
 
-    public string? Observacoes { get; set; }
+    public string? Notes { get; set; }
 
     public bool EstoqueBaixo => QuantidadeAtual <= QuantidadeMinima && QuantidadeAtual > 0;
 
@@ -62,9 +62,9 @@ public class InventoryItem
             throw new ArgumentException("Unidade de medida deve ter no máximo 20 caracteres.", nameof(UnidadeMedida));
         }
 
-        if (Observacoes?.Length > 500)
+        if (Notes?.Length > 500)
         {
-            throw new ArgumentException("Observações deve ter no máximo 500 caracteres.", nameof(Observacoes));
+            throw new ArgumentException("Observações deve ter no máximo 500 caracteres.", nameof(Notes));
         }
     }
 
@@ -90,9 +90,9 @@ public class InventoryItem
             throw new ArgumentException("Unidade de medida deve ter no máximo 20 caracteres.", nameof(UnidadeMedida));
         }
 
-        if (Observacoes?.Length > 500)
+        if (Notes?.Length > 500)
         {
-            throw new ArgumentException("Observações deve ter no máximo 500 caracteres.", nameof(Observacoes));
+            throw new ArgumentException("Observações deve ter no máximo 500 caracteres.", nameof(Notes));
         }
     }
 
@@ -115,7 +115,7 @@ public class InventoryItem
             ValorUnitario = valorUnitario,
             DataHora = DateTime.UtcNow,
             Fornecedor = fornecedor,
-            Observacoes = observacoes
+            Notes = observacoes
         };
 
         Movements.Add(movement);
@@ -143,7 +143,7 @@ public class InventoryItem
             Quantidade = quantidade,
             ValorUnitario = ValorUnitario,
             DataHora = DateTime.UtcNow,
-            Observacoes = observacoes
+            Notes = observacoes
         };
 
         Movements.Add(movement);

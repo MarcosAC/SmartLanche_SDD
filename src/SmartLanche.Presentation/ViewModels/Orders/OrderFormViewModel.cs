@@ -31,6 +31,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
     private string? _errorMessage;
     private string? _successMessage;
     private bool _wasSaved;
+    private string? _observacoes;
 
     private ObservableCollection<ComboDto> _suggestedCombos = [];
 
@@ -190,6 +191,12 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
         }
     }
 
+    public string? Notes
+    {
+        get => _observacoes;
+        set => SetProperty(ref _observacoes, value);
+    }
+
     public int? SelectedCategoryId
     {
         get => _selectedCategoryId;
@@ -299,6 +306,9 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
                     OrderItems.Add(item);
                 }
 
+                // Load observacoes from existing order
+                Notes = _order.Notes;
+
                 // Load applied promotions
                 var promotions = await _orderService.GetAppliedPromotionsAsync(_order.Id);
                 foreach (var p in promotions)
@@ -314,6 +324,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
         {
             // Don't create order in DB yet - lazy creation on first item/combo
             _order = null;
+            Notes = null;
             OnPropertyChanged(nameof(Order));
             OnPropertyChanged(nameof(TotalAmount));
             OnPropertyChanged(nameof(Status));
@@ -418,7 +429,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
             if (_order is null)
             {
                 var customerId = SelectedCustomer?.Id;
-                _order = await _orderService.CreateAsync(new CreateOrderRequest { CustomerId = customerId });
+                _order = await _orderService.CreateAsync(new CreateOrderRequest { CustomerId = customerId, Notes = Notes });
             }
 
             var request = new AddOrderItemRequest { OrderId = _order.Id, ProductId = product.Id, Quantity = product.Quantity };
@@ -602,7 +613,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
             if (_order is null)
             {
                 var customerId = SelectedCustomer?.Id;
-                _order = await _orderService.CreateAsync(new CreateOrderRequest { CustomerId = customerId });
+                _order = await _orderService.CreateAsync(new CreateOrderRequest { CustomerId = customerId, Notes = Notes });
             }
 
             foreach (var comboItem in combo.Items)
@@ -746,6 +757,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
         SelectedProduct = null;
         SelectedCustomer = null;
         CustomerSearchText = string.Empty;
+        Notes = null;
         ClearMessages();
     }
 

@@ -11,7 +11,7 @@ public sealed record InventoryItemDto(
     decimal QuantidadeMinima,
     decimal ValorUnitario,
     string UnidadeMedida,
-    string? Observacoes,
+    string? Notes,
     bool EstoqueBaixo,
     bool EstoqueZerado,
     decimal ValorTotalEstoque

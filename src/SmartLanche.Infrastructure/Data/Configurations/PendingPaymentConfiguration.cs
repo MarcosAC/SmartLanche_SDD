@@ -33,7 +33,7 @@ public class PendingPaymentConfiguration : IEntityTypeConfiguration<PendingPayme
         builder.Property(pp => pp.DataPagamento)
             .IsRequired(false);
 
-        builder.Property(pp => pp.Observacoes)
+        builder.Property(pp => pp.Notes)
             .HasMaxLength(1000);
 
         builder.HasOne(pp => pp.Customer)
@@ -77,7 +77,7 @@ public class PendingPaymentHistoryConfiguration : IEntityTypeConfiguration<Pendi
             .IsRequired()
             .HasConversion<int>();
 
-        builder.Property(h => h.Observacoes)
+        builder.Property(h => h.Notes)
             .HasMaxLength(500);
 
         builder.HasOne(h => h.PendingPayment)

@@ -339,7 +339,7 @@ public class ProductServiceTests : IDisposable
                     QuantidadeMinima: 10,
                     ValorUnitario: 8.50m,
                     UnidadeMedida: "UN",
-                    Observacoes: "Estoque inicial"
+                    Notes: "Estoque inicial"
                 )
             });
 
@@ -389,7 +389,7 @@ public class ProductServiceTests : IDisposable
                         QuantidadeMinima: 10,
                         ValorUnitario: -5.00m,
                         UnidadeMedida: "UN",
-                        Observacoes: null
+                        Notes: null
                     )
                 }));
     }
@@ -413,7 +413,7 @@ public class ProductServiceTests : IDisposable
                         QuantidadeMinima: -5,
                         ValorUnitario: 8.50m,
                         UnidadeMedida: "UN",
-                        Observacoes: null
+                        Notes: null
                     )
                 }));
     }
@@ -568,7 +568,7 @@ public class ProductServiceTests : IDisposable
                 request.QuantidadeMinima,
                 request.ValorUnitario,
                 request.UnidadeMedida,
-                request.Observacoes,
+                request.Notes,
                 request.QuantidadeAtual <= request.QuantidadeMinima && request.QuantidadeAtual > 0,
                 request.QuantidadeAtual <= 0,
                 request.QuantidadeAtual * request.ValorUnitario

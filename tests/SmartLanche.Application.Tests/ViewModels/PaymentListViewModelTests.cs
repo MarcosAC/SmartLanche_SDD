@@ -76,7 +76,7 @@ public class PaymentListViewModelTests
         await _viewModel.LoadAsync();
 
         Assert.Single(_viewModel.Items);
-        Assert.Equal("Hoje", _viewModel.Items[0].Observacoes);
+        Assert.Equal("Hoje", _viewModel.Items[0].Notes);
     }
 
     [Fact]
@@ -94,11 +94,11 @@ public class PaymentListViewModelTests
         await _viewModel.LoadAsync();
 
         Assert.Single(_viewModel.Items);
-        Assert.Equal("Antigo", _viewModel.Items[0].Observacoes);
+        Assert.Equal("Antigo", _viewModel.Items[0].Notes);
     }
 
     [Fact]
-    public async Task SearchText_FiltersPaymentsByObservacoes()
+    public async Task SearchText_FiltersPaymentsByNotes()
     {
         _paymentService.AddPayment(new PaymentDto(
             1, 100, FormaPagamento.Dinheiro, 50m, 0m, 1, 50m,
@@ -118,7 +118,7 @@ public class PaymentListViewModelTests
         await Task.Delay(550); // Wait for debounce
 
         Assert.Single(_viewModel.Items);
-        Assert.Equal("Cliente João", _viewModel.Items[0].Observacoes);
+        Assert.Equal("Cliente João", _viewModel.Items[0].Notes);
     }
 
     [Fact]
@@ -243,7 +243,7 @@ public class PaymentListViewModelTests
                 {
                     var term = filter.SearchTerm.Trim().ToLower();
                     query = query.Where(p =>
-                        (p.Observacoes != null && p.Observacoes.ToLower().Contains(term)) ||
+                        (p.Notes != null && p.Notes.ToLower().Contains(term)) ||
                         p.OrderId.ToString().Contains(term));
                 }
 

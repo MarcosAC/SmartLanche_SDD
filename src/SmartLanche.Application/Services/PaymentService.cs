@@ -40,7 +40,7 @@ public class PaymentService : IPaymentService
                 FormaPagamento = request.FormaPagamento,
                 ValorPago = request.ValorPago,
                 Parcelas = request.Parcelas,
-                Observacoes = request.Observacoes
+                Notes = request.Notes
             };
 
             payment.Validate(order.TotalAmount);
@@ -123,7 +123,7 @@ public class PaymentService : IPaymentService
             payment.Parcelas,
             payment.ValorParcela,
             payment.DataHora,
-            payment.Observacoes,
+            payment.Notes,
             payment.Estornado,
             payment.EstornoDataHora,
             payment.EstornoMotivo);

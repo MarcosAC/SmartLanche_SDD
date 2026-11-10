@@ -25,4 +25,6 @@ public class OrderDto
     public DateTime? CancelledAt { get; set; }
 
     public IReadOnlyList<OrderItemDto> Items { get; set; } = new List<OrderItemDto>();
+
+    public IReadOnlyList<PaymentDto> Payments { get; set; } = new List<PaymentDto>();
 }
