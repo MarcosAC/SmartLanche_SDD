@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
 using System.Globalization;
-using System.Linq;
+using System.Windows;
 using System.Windows.Data;
 
 namespace SmartLanche.Presentation.Converters;
@@ -20,12 +20,12 @@ public class AnyPaymentHasObservacoesToVisibilityConverter : IValueConverter
                     var obsValue = observacoesProp.GetValue(item) as string;
                     if (!string.IsNullOrWhiteSpace(obsValue))
                     {
-                        return true;
+                        return Visibility.Visible;
                     }
                 }
             }
         }
-        return false;
+        return Visibility.Collapsed;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
