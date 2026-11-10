@@ -309,7 +309,7 @@ public class EntityMappingTests
     }
 
     [Fact]
-    public void OrderObservacoes_ShouldHaveMaximumLength500()
+    public void OrderNotes_ShouldHaveMaximumLength500()
     {
         using var context = CreateContext();
 
@@ -317,7 +317,7 @@ public class EntityMappingTests
 
         Assert.NotNull(entity);
 
-        var notes = entity.FindProperty(nameof(Order.Observacoes));
+        var notes = entity.FindProperty(nameof(Order.Notes));
 
         Assert.NotNull(notes);
         Assert.Equal(500, notes.GetMaxLength());

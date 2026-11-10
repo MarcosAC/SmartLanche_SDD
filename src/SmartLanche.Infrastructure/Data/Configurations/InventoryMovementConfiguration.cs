@@ -51,7 +51,7 @@ public class InventoryMovementConfiguration : IEntityTypeConfiguration<Inventory
             .HasMaxLength(150)
             .IsRequired(false);
 
-        builder.Property(m => m.Observacoes)
+        builder.Property(m => m.Notes)
             .HasMaxLength(500)
             .IsRequired(false);
 

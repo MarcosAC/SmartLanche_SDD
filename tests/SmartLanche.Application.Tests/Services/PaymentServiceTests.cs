@@ -419,7 +419,7 @@ public class PaymentServiceTests
     }
 
     [Fact]
-    public async Task GetAllAsync_WithSearchTerm_FiltersByObservacoes()
+    public async Task GetAllAsync_WithSearchTerm_FiltersByNotes()
     {
         var order1 = await CreateOrderAsync(total: 50m);
         var order2 = await CreateOrderAsync(total: 75m);
@@ -430,7 +430,7 @@ public class PaymentServiceTests
         var payments = await _service.GetAllAsync(new PaymentFilterRequest { SearchTerm = "João" });
 
         Assert.Single(payments);
-        Assert.Equal("Cliente João", payments[0].Observacoes);
+        Assert.Equal("Cliente João", payments[0].Notes);
     }
 
     [Fact]
@@ -663,7 +663,7 @@ public class PaymentServiceTests
                 {
                     var term = filter.SearchTerm.Trim().ToLower();
                     query = query.Where(p =>
-                        (p.Observacoes != null && p.Observacoes.ToLower().Contains(term)) ||
+                        (p.Notes != null && p.Notes.ToLower().Contains(term)) ||
                         p.OrderId.ToString().Contains(term));
                 }
 

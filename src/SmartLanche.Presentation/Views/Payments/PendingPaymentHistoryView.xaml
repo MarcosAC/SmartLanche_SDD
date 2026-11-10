@@ -42,7 +42,7 @@
                                     Binding="{Binding FormaPagamento}"
                                     Width="100"/>
                 <DataGridTextColumn Header="Observações"
-                                    Binding="{Binding Observacoes}"
+                                    Binding="{Binding Notes}"
                                     Width="*"/>
             </DataGrid.Columns>
         </DataGrid>

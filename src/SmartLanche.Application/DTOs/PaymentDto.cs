@@ -11,7 +11,7 @@ public record PaymentDto(
     int Parcelas,
     decimal ValorParcela,
     DateTime DataHora,
-    string? Observacoes,
+    string? Notes,
     bool Estornado,
     DateTime? EstornoDataHora,
     string? EstornoMotivo
@@ -22,7 +22,7 @@ public record ProcessPaymentRequest(
     FormaPagamento FormaPagamento,
     decimal ValorPago,
     int Parcelas,
-    string? Observacoes
+    string? Notes
 );
 
 public record ProcessPaymentResult(
@@ -42,7 +42,7 @@ public record PendingPaymentDto(
     DateTime DataHora,
     StatusPagamentoPendente StatusPagamento,
     DateTime? DataPagamento,
-    string? Observacoes,
+    string? Notes,
     IReadOnlyList<PendingPaymentHistoryDto> History
 );
 
@@ -52,14 +52,14 @@ public record PendingPaymentHistoryDto(
     decimal ValorPago,
     DateTime DataHora,
     FormaPagamento FormaPagamento,
-    string? Observacoes
+    string? Notes
 );
 
 public record RegisterPendingPaymentRequest(
     int PendingPaymentId,
     decimal Valor,
     FormaPagamento FormaPagamento,
-    string? Observacoes
+    string? Notes
 );
 
 public record RegisterPendingPaymentResult(

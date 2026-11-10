@@ -44,7 +44,7 @@ public sealed class EditMinStockViewModel : INotifyPropertyChanged
         set => SetProperty(ref _unidadeMedida, value);
     }
 
-    public string Observacoes
+    public string Notes
     {
         get => _observacoes;
         set => SetProperty(ref _observacoes, value);
@@ -54,7 +54,7 @@ public sealed class EditMinStockViewModel : INotifyPropertyChanged
     public string Reason
     {
         get => _observacoes;
-        set => Observacoes = value;
+        set => Notes = value;
     }
 
     public bool IsSaving
@@ -83,7 +83,7 @@ public sealed class EditMinStockViewModel : INotifyPropertyChanged
         MinQuantity = currentMinQuantity;
         ValorUnitario = valorUnitario;
         UnidadeMedida = unidadeMedida;
-        Observacoes = observacoes ?? string.Empty;
+        Notes = observacoes ?? string.Empty;
         OnPropertyChanged(nameof(ProductName));
         OnPropertyChanged(nameof(CurrentQuantity));
     }
@@ -101,7 +101,7 @@ public sealed class EditMinStockViewModel : INotifyPropertyChanged
                 MinQuantity,
                 ValorUnitario,
                 UnidadeMedida,
-                Observacoes);
+                Notes);
 
             await _inventoryService.UpdateAsync(InventoryItemId, request);
             _toastService.ShowSuccess("Quantidade mínima atualizada com sucesso");

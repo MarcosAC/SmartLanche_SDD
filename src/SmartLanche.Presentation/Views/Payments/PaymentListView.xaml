@@ -257,7 +257,7 @@
                                             ElementStyle="{StaticResource CenterAlignStyle}"/>
 
                         <DataGridTextColumn Header="Observações"
-                                            Binding="{Binding Observacoes}"
+                                            Binding="{Binding Notes}"
                                             Width="*"/>
 
                         <DataGridTemplateColumn Header="Estornado"

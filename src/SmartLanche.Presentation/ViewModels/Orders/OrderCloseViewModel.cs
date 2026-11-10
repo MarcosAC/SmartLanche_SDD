@@ -24,7 +24,7 @@ public sealed class OrderCloseViewModel : INotifyPropertyChanged
     private FormaPagamento? _selectedFormaPagamento;
     private decimal? _valorPago = 0m;
     private int? _parcelas;
-    private string? _paymentObservacoes;
+    private string? _paymentNotes;
     private int? _selectedCustomerId;
     private ObservableCollection<CustomerDto> _customers = [];
 
@@ -105,10 +105,10 @@ public sealed class OrderCloseViewModel : INotifyPropertyChanged
         }
     }
 
-    public string? PaymentObservacoes
+    public string? PaymentNotes
     {
-        get => _paymentObservacoes;
-        set => SetProperty(ref _paymentObservacoes, value);
+        get => _paymentNotes;
+        set => SetProperty(ref _paymentNotes, value);
     }
 
     public int? SelectedCustomerId
@@ -253,7 +253,7 @@ public sealed class OrderCloseViewModel : INotifyPropertyChanged
                 FormaPagamento = SelectedFormaPagamento,
                 ValorPago = ValorPago,
                 Parcelas = Parcelas,
-                Observacoes = PaymentObservacoes,
+                Notes = PaymentNotes,
                 CustomerId = SelectedCustomerId
             };
 

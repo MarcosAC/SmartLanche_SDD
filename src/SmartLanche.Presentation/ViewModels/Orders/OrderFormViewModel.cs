@@ -191,7 +191,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
         }
     }
 
-    public string? Observacoes
+    public string? Notes
     {
         get => _observacoes;
         set => SetProperty(ref _observacoes, value);
@@ -307,7 +307,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
                 }
 
                 // Load observacoes from existing order
-                Observacoes = _order.Observacoes;
+                Notes = _order.Notes;
 
                 // Load applied promotions
                 var promotions = await _orderService.GetAppliedPromotionsAsync(_order.Id);
@@ -324,7 +324,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
         {
             // Don't create order in DB yet - lazy creation on first item/combo
             _order = null;
-            Observacoes = null;
+            Notes = null;
             OnPropertyChanged(nameof(Order));
             OnPropertyChanged(nameof(TotalAmount));
             OnPropertyChanged(nameof(Status));
@@ -429,7 +429,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
             if (_order is null)
             {
                 var customerId = SelectedCustomer?.Id;
-                _order = await _orderService.CreateAsync(new CreateOrderRequest { CustomerId = customerId, Observacoes = Observacoes });
+                _order = await _orderService.CreateAsync(new CreateOrderRequest { CustomerId = customerId, Notes = Notes });
             }
 
             var request = new AddOrderItemRequest { OrderId = _order.Id, ProductId = product.Id, Quantity = product.Quantity };
@@ -613,7 +613,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
             if (_order is null)
             {
                 var customerId = SelectedCustomer?.Id;
-                _order = await _orderService.CreateAsync(new CreateOrderRequest { CustomerId = customerId, Observacoes = Observacoes });
+                _order = await _orderService.CreateAsync(new CreateOrderRequest { CustomerId = customerId, Notes = Notes });
             }
 
             foreach (var comboItem in combo.Items)
@@ -757,7 +757,7 @@ public sealed class OrderFormViewModel : INotifyPropertyChanged
         SelectedProduct = null;
         SelectedCustomer = null;
         CustomerSearchText = string.Empty;
-        Observacoes = null;
+        Notes = null;
         ClearMessages();
     }
 

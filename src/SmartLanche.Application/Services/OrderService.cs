@@ -99,7 +99,7 @@ public class OrderService : BaseService, IOrderService
             OrderDate = DateTime.Now,
             Status = OrderStatus.Aberto,
             TotalAmount = 0,
-            Observacoes = string.IsNullOrWhiteSpace(request.Observacoes) ? null : request.Observacoes.Trim()
+            Notes = string.IsNullOrWhiteSpace(request.Notes) ? null : request.Notes.Trim()
         };
 
         await _orderRepository.AddAsync(order, cancellationToken);
@@ -269,7 +269,7 @@ public class OrderService : BaseService, IOrderService
                 request.FormaPagamento.Value,
                 request.ValorPago ?? 0,
                 request.Parcelas ?? 1,
-                request.Observacoes);
+                request.Notes);
 
             var paymentResult = await _paymentService.ProcessPaymentAsync(paymentRequest, cancellationToken);
 
@@ -315,7 +315,7 @@ public class OrderService : BaseService, IOrderService
                 request.OrderId,
                 request.CustomerId.Value,
                 order.TotalAmount,
-                request.Observacoes,
+                request.Notes,
                 cancellationToken);
         }
 

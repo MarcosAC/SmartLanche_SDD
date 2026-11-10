@@ -115,7 +115,7 @@ public class InventoryMovementService : IInventoryMovementService
         {
             var term = searchTerm.Trim().ToLower();
             query = query.Where(m =>
-                (m.Observacoes != null && m.Observacoes.ToLower().Contains(term)) ||
+                (m.Notes != null && m.Notes.ToLower().Contains(term)) ||
                 m.OrderId.ToString().Contains(term) ||
                 (m.ComboId.HasValue && m.ComboId.Value.ToString().Contains(term)));
         }
@@ -152,6 +152,6 @@ public class InventoryMovementService : IInventoryMovementService
             movement.OrderId,
             movement.ComboId,
             movement.Fornecedor,
-            movement.Observacoes);
+            movement.Notes);
     }
 }

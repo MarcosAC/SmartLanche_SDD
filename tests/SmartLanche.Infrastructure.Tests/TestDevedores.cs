@@ -44,7 +44,7 @@ public class TestDevedores
                     OrderDate = DateTime.Now,
                     Status = OrderStatus.EmPreparacao,
                     TotalAmount = 51.00m,
-                    Observacoes = string.Empty
+                    Notes = string.Empty
                 };
                 var orderItem = new OrderItem
                 {
@@ -64,7 +64,7 @@ public class TestDevedores
                     ValorPago = 0m,
                     DataHora = DateTime.Now,
                     StatusPagamento = StatusPagamentoPendente.NaoPago,
-                    Observacoes = "Teste"
+                    Notes = "Teste"
                 };
                 await pendingPaymentRepository.AddAsync(pendingPayment);
             }
