@@ -210,7 +210,7 @@ public class PendingPaymentServiceTests
         Assert.Single(result.PendingPayment.History);
         Assert.Equal(100m, result.PendingPayment.History[0].ValorPago);
         Assert.Equal(FormaPagamento.Cartao, result.PendingPayment.History[0].FormaPagamento);
-        Assert.Equal("Parcelado", result.PendingPayment.History[0].Observacoes);
+        Assert.Equal("Parcelado", result.PendingPayment.History[0].Notes);
     }
 
     [Fact]
@@ -251,7 +251,7 @@ public class PendingPaymentServiceTests
         Assert.Equal(0m, result.ValorPago);
         Assert.Equal(150m, result.SaldoPendente);
         Assert.Equal(StatusPagamentoPendente.NaoPago, result.StatusPagamento);
-        Assert.Equal("Fiado VIP", result.Observacoes);
+        Assert.Equal("Fiado VIP", result.Notes);
         Assert.Empty(result.History);
     }
 

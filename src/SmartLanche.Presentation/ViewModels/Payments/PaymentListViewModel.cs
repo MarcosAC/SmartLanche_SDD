@@ -128,7 +128,7 @@ public sealed class PaymentListViewModel : ListViewModelBase<PaymentDto, IPaymen
                       $"Parcelas: {payment.Parcelas}\n" +
                       $"Valor Parcela: R$ {payment.ValorParcela:N2}\n" +
                       $"Data: {payment.DataHora:dd/MM/yyyy HH:mm}\n" +
-                      $"Observações: {payment.Observacoes ?? "Nenhuma"}\n" +
+                      $"Observações: {payment.Notes ?? "Nenhuma"}\n" +
                       $"Estornado: {(payment.Estornado ? "Sim" : "Não")}" +
                       (payment.Estornado ? $"\nEstorno em: {payment.EstornoDataHora:dd/MM/yyyy HH:mm}\nMotivo: {payment.EstornoMotivo}" : "");
 

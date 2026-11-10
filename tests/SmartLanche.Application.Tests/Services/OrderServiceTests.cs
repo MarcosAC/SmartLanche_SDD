@@ -1170,7 +1170,7 @@ public class OrderServiceTests : IDisposable
                 request.Parcelas,
                 request.Parcelas > 0 ? request.ValorPago / request.Parcelas : 0m,
                 DateTime.Now,
-                request.Observacoes,
+                request.Notes,
                 false,
                 null,
                 null);

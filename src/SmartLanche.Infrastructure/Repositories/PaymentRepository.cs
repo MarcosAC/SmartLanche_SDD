@@ -46,7 +46,7 @@ public class PaymentRepository : IPaymentRepository
             if (!string.IsNullOrWhiteSpace(filter.SearchTerm))
             {
                 var term = filter.SearchTerm.Trim();
-                query = query.Where(p => p.Observacoes != null && p.Observacoes.Contains(term) || p.OrderId.ToString().Contains(term));
+                query = query.Where(p => p.Notes != null && p.Notes.Contains(term) || p.OrderId.ToString().Contains(term));
             }
 
             if (filter.FormaPagamento.HasValue)

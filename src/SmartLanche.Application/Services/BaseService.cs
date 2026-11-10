@@ -15,7 +15,7 @@ public abstract class BaseService
             OrderDate = order.OrderDate,
             Status = order.Status,
             TotalAmount = order.TotalAmount,
-            Observacoes = order.Observacoes,
+            Notes = order.Notes,
             Items = order.OrderItems.Select(i => new OrderItemDto
             {
                 Id = i.Id,
@@ -36,7 +36,7 @@ public abstract class BaseService
                 p.Parcelas,
                 p.ValorParcela,
                 p.DataHora,
-                p.Observacoes,
+                p.Notes,
                 p.Estornado,
                 p.EstornoDataHora,
                 p.EstornoMotivo

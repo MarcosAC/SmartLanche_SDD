@@ -7,5 +7,5 @@ public sealed record RegistrarEntradaRequest(
     decimal Quantidade,
     decimal ValorUnitario,
     string? Fornecedor,
-    string? Observacoes
+    string? Notes
 );

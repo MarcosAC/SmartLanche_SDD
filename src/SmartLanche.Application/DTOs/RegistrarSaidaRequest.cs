@@ -6,5 +6,5 @@ public sealed record RegistrarSaidaRequest(
     int InventoryItemId,
     decimal Quantidade,
     InventoryMovementReason Motivo,
-    string? Observacoes
+    string? Notes
 );

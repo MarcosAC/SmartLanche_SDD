@@ -49,7 +49,7 @@ public class InventoryItemConfiguration : IEntityTypeConfiguration<InventoryItem
             .HasMaxLength(20)
             .HasDefaultValue("UN");
 
-        builder.Property(i => i.Observacoes)
+        builder.Property(i => i.Notes)
             .HasMaxLength(500)
             .IsRequired(false);
 

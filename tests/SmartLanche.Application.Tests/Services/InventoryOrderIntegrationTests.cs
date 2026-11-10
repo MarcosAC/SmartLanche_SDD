@@ -114,7 +114,7 @@ public class InventoryOrderIntegrationTests : IDisposable
                 QuantidadeMinima: 10,
                 ValorUnitario: 8.50m,
                 UnidadeMedida: "UN",
-                Observacoes: "Estoque inicial")
+                Notes: "Estoque inicial")
         });
 
         // Verify product created with inventory
@@ -637,7 +637,7 @@ public class InventoryOrderIntegrationTests : IDisposable
 
         public Task<OrderDto> CreateAsync(CreateOrderRequest request, CancellationToken cancellationToken = default)
         {
-            var order = new Order { CustomerId = request.CustomerId, OrderDate = DateTime.Now, Status = OrderStatus.Aberto, TotalAmount = 0, Observacoes = string.Empty };
+            var order = new Order { CustomerId = request.CustomerId, OrderDate = DateTime.Now, Status = OrderStatus.Aberto, TotalAmount = 0, Notes = string.Empty };
             _orderRepository.AddAsync(order, cancellationToken).Wait();
             return Task.FromResult(MapToDto(order));
         }
@@ -742,7 +742,7 @@ public class InventoryOrderIntegrationTests : IDisposable
                 OrderDate = order.OrderDate,
                 Status = order.Status,
                 TotalAmount = order.TotalAmount,
-                Observacoes = order.Observacoes,
+                Notes = order.Notes,
                 Items = order.OrderItems.Select(i => new OrderItemDto
                 {
                     Id = i.Id,

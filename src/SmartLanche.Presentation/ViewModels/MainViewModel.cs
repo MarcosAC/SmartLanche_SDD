@@ -830,7 +830,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private void OpenEditMinStockModal(InventoryItemDto item)
     {
         var viewModel = _services.GetRequiredService<EditMinStockViewModel>();
-        viewModel.Initialize(item.Id, item.ProdutoNome ?? item.Nome, item.QuantidadeAtual, item.QuantidadeMinima, item.ValorUnitario, item.UnidadeMedida, item.Observacoes);
+        viewModel.Initialize(item.Id, item.ProdutoNome ?? item.Nome, item.QuantidadeAtual, item.QuantidadeMinima, item.ValorUnitario, item.UnidadeMedida, item.Notes);
         viewModel.RequestClose += () =>
         {
             viewModel.RequestClose -= () => { };

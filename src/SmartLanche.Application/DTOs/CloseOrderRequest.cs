@@ -8,6 +8,6 @@ public class CloseOrderRequest
     public FormaPagamento? FormaPagamento { get; set; }
     public decimal? ValorPago { get; set; }
     public int? Parcelas { get; set; }
-    public string? Observacoes { get; set; }
+    public string? Notes { get; set; }
     public int? CustomerId { get; set; }
 }

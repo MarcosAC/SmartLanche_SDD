@@ -33,7 +33,7 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
         builder.Property(payment => payment.DataHora)
             .IsRequired();
 
-        builder.Property(payment => payment.Observacoes)
+        builder.Property(payment => payment.Notes)
             .HasMaxLength(500);
 
         builder.Property(payment => payment.Estornado)

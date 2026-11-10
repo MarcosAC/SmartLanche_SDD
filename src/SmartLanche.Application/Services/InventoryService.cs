@@ -38,7 +38,7 @@ public class InventoryService : IInventoryService
             QuantidadeMinima = request.QuantidadeMinima,
             ValorUnitario = request.ValorUnitario,
             UnidadeMedida = request.UnidadeMedida,
-            Observacoes = request.Observacoes
+            Notes = request.Notes
         };
 
         item.ValidateForCreate();
@@ -54,7 +54,7 @@ public class InventoryService : IInventoryService
                 ValorUnitario = item.ValorUnitario,
                 DataHora = DateTime.UtcNow,
                 Fornecedor = "Estoque inicial",
-                Observacoes = "Criação do item de estoque"
+                Notes = "Criação do item de estoque"
             };
             item.Movements.Add(initialMovement);
         }
@@ -76,7 +76,7 @@ public class InventoryService : IInventoryService
         item.QuantidadeMinima = request.QuantidadeMinima;
         item.ValorUnitario = request.ValorUnitario;
         item.UnidadeMedida = request.UnidadeMedida;
-        item.Observacoes = request.Observacoes;
+        item.Notes = request.Notes;
 
         item.ValidateForUpdate();
 
@@ -94,7 +94,7 @@ public class InventoryService : IInventoryService
             throw new ArgumentException($"Item de estoque {request.InventoryItemId} não encontrado.", nameof(request.InventoryItemId));
         }
 
-        item.ApplyEntrada(request.Quantidade, request.ValorUnitario, request.Fornecedor, request.Observacoes);
+        item.ApplyEntrada(request.Quantidade, request.ValorUnitario, request.Fornecedor, request.Notes);
 
         await _inventoryRepository.UpdateAsync(item, cancellationToken);
 
@@ -114,7 +114,7 @@ public class InventoryService : IInventoryService
             throw new ArgumentException($"Item de estoque {request.InventoryItemId} não encontrado.", nameof(request.InventoryItemId));
         }
 
-        item.ApplySaida(request.Quantidade, request.Motivo, request.Observacoes);
+        item.ApplySaida(request.Quantidade, request.Motivo, request.Notes);
 
         await _inventoryRepository.UpdateAsync(item, cancellationToken);
 
@@ -180,7 +180,7 @@ public class InventoryService : IInventoryService
                     DataHora = DateTime.UtcNow,
                     OrderId = orderId,
                     ComboId = movement.ComboId,
-                    Observacoes = $"Estorno de venda - Pedido #{orderId}"
+                    Notes = $"Estorno de venda - Pedido #{orderId}"
                 };
 
                 item.Movements.Add(estornoMovement);
@@ -213,7 +213,7 @@ public class InventoryService : IInventoryService
                     DataHora = DateTime.UtcNow,
                     OrderId = orderId,
                     ComboId = orderItem.ComboId,
-                    Observacoes = $"Baixa automática - Pedido #{orderId}"
+                    Notes = $"Baixa automática - Pedido #{orderId}"
                 };
 
                 inventoryItem.Movements.Add(movement);
@@ -238,7 +238,7 @@ public class InventoryService : IInventoryService
             item.QuantidadeMinima,
             item.ValorUnitario,
             item.UnidadeMedida,
-            item.Observacoes,
+            item.Notes,
             item.EstoqueBaixo,
             item.EstoqueZerado,
             item.ValorTotalEstoque);
@@ -259,6 +259,6 @@ public class InventoryService : IInventoryService
             movement.OrderId,
             movement.ComboId,
             movement.Fornecedor,
-            movement.Observacoes);
+            movement.Notes);
     }
 }

@@ -305,7 +305,7 @@
                                     <TextBox Height="80"
                                              HorizontalAlignment="Stretch"
                                              VerticalContentAlignment="Top"
-                                             Text="{Binding Observacoes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                             Text="{Binding Notes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                              BorderBrush="#D1D5DB" BorderThickness="1"
                                              AcceptsReturn="True"
                                              TextWrapping="Wrap"

@@ -1015,7 +1015,7 @@ public class ComboServiceTests
                 OrderDate = DateTime.Now,
                 Status = OrderStatus.Aberto,
                 TotalAmount = 0,
-                Observacoes = string.Empty
+                Notes = string.Empty
             };
 
             _orderRepository.AddAsync(order, cancellationToken).Wait();
@@ -1277,7 +1277,7 @@ public class ComboServiceTests
                 OrderDate = order.OrderDate,
                 Status = order.Status,
                 TotalAmount = order.TotalAmount,
-                Observacoes = order.Observacoes,
+                Notes = order.Notes,
                 Items = order.OrderItems.Select(i => new OrderItemDto
                 {
                     Id = i.Id,
