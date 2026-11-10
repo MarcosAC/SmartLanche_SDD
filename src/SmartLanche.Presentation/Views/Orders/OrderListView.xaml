@@ -7,6 +7,7 @@
     <UserControl.Resources>
         <converters:StatusToVisibilityConverter x:Key="StatusToVisibilityConverter"/>
         <converters:CancelOrderVisibilityConverter x:Key="CancelOrderVisibilityConverter"/>
+        <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
 
         <Style x:Key="ActionButtonStyle"
                TargetType="Button">
@@ -364,7 +365,8 @@
                 Background="White"
                 CornerRadius="8"
                 Padding="12"
-                Margin="0,16,0,0">
+                Margin="0,16,0,0"
+                Visibility="{Binding SelectedItem, Converter={StaticResource NullToVisibilityConverter}}">
             <DockPanel LastChildFill="False">
                 <TextBlock Text="Ações do pedido selecionado:"
                            VerticalAlignment="Center"
