@@ -25,8 +25,9 @@ public sealed class OrderCloseViewModel : INotifyPropertyChanged
     private decimal? _valorPago = 0m;
     private int? _parcelas;
     private string? _paymentNotes;
-    private int? _selectedCustomerId;
     private ObservableCollection<CustomerDto> _customers = [];
+    private CustomerDto? _selectedCustomer;
+    private string _customerSearchText = string.Empty;
 
     public event Action? RequestClose;
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -113,11 +114,73 @@ public sealed class OrderCloseViewModel : INotifyPropertyChanged
 
     public int? SelectedCustomerId
     {
-        get => _selectedCustomerId;
-        set => SetProperty(ref _selectedCustomerId, value);
+        get => SelectedCustomer?.Id;
+        set
+        {
+            if (value.HasValue)
+            {
+                var customer = Customers.FirstOrDefault(c => c.Id == value.Value);
+                if (customer is not null)
+                {
+                    SelectedCustomer = customer;
+                }
+            }
+            else
+            {
+                SelectedCustomer = null;
+            }
+        }
     }
 
     public ObservableCollection<CustomerDto> Customers => _customers;
+
+    public CustomerDto? SelectedCustomer
+    {
+        get => _selectedCustomer;
+        set
+        {
+            if (SetProperty(ref _selectedCustomer, value))
+            {
+                if (value is not null)
+                {
+                    _customerSearchText = value.Name ?? string.Empty;
+                    OnPropertyChanged(nameof(CustomerSearchText));
+                }
+                OnPropertyChanged(nameof(ShowCustomerSearchResults));
+                OnPropertyChanged(nameof(SelectedCustomerId));
+            }
+        }
+    }
+
+    public string CustomerSearchText
+    {
+        get => _customerSearchText;
+        set
+        {
+            if (SetProperty(ref _customerSearchText, value))
+            {
+                OnPropertyChanged(nameof(FilteredCustomers));
+                OnPropertyChanged(nameof(ShowCustomerSearchResults));
+            }
+        }
+    }
+
+    public IEnumerable<CustomerDto> FilteredCustomers
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(_customerSearchText))
+                return Customers;
+
+            var search = _customerSearchText.Trim().ToLower();
+            return Customers.Where(c =>
+                c.Name?.ToLower().Contains(search) == true ||
+                c.Phone?.Contains(search) == true ||
+                c.Notes?.ToLower().Contains(search) == true);
+        }
+    }
+
+    public bool ShowCustomerSearchResults => !string.IsNullOrWhiteSpace(_customerSearchText) && FilteredCustomers.Any() && SelectedCustomer is null;
 
     public FormaPagamento[] FormasPagamento => Enum.GetValues<FormaPagamento>();
 
