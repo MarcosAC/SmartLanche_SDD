@@ -364,6 +364,11 @@
             <viewsPayments:DevedoresView/>
         </DataTemplate>
 
+        <!-- Pendências (Fiado) -->
+        <DataTemplate DataType="{x:Type paymentVm:PendingPaymentListViewModel}">
+            <viewsPayments:PendingPaymentListView/>
+        </DataTemplate>
+
         <!-- Pagamentos -->
         <DataTemplate DataType="{x:Type paymentVm:PaymentListViewModel}">
             <viewsPayments:PaymentListView/>
