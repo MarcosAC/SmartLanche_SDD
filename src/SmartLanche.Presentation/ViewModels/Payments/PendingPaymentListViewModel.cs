@@ -1,14 +1,13 @@
-using System.Collections.ObjectModel;
-using System.Windows;
-using System.Windows.Input;
 using Microsoft.Extensions.DependencyInjection;
 using SmartLanche.Application.DTOs;
 using SmartLanche.Application.Interfaces;
 using SmartLanche.Domain.Enums;
 using SmartLanche.Presentation.Commands;
 using SmartLanche.Presentation.Services;
-using SmartLanche.Presentation.ViewModels;
 using SmartLanche.Presentation.Views.Payments;
+using System.Collections.ObjectModel;
+using System.Windows;
+using System.Windows.Input;
 
 namespace SmartLanche.Presentation.ViewModels.Payments;
 
@@ -20,6 +19,10 @@ public sealed class PendingPaymentListViewModel : ListViewModelBase<PendingPayme
 
     private StatusPagamentoPendente? _selectedStatus;
     private int? _selectedCustomerId;
+
+    private CustomerDto? _selectedCustomer;
+
+    private string _customerSearchText = string.Empty;
 
     public ObservableCollection<CustomerDto> Customers { get; } = [];
     public ObservableCollection<StatusPagamentoPendente> StatusFilters { get; } = new()
@@ -35,15 +38,27 @@ public sealed class PendingPaymentListViewModel : ListViewModelBase<PendingPayme
     public StatusPagamentoPendente? SelectedStatus
     {
         get => _selectedStatus;
-        set => SetProperty(ref _selectedStatus, value);
+        set
+        {
+            if (SetProperty(ref _selectedStatus, value))
+            {
+                _ = LoadAsync();
+            }
+        }
     }
 
     public int? SelectedCustomerId
     {
         get => _selectedCustomerId;
-        set => SetProperty(ref _selectedCustomerId, value);
+        set
+        {
+            if (SetProperty(ref _selectedCustomerId, value))
+            {
+                _ = LoadAsync();
+            }
+        }
     }
-
+    
     public PendingPaymentListViewModel(
         IPendingPaymentService pendingPaymentService,
         ICustomerService customerService,
@@ -117,6 +132,22 @@ public sealed class PendingPaymentListViewModel : ListViewModelBase<PendingPayme
     public override async Task LoadAsync()
     {
         await base.LoadAsync();
+    }
+
+    protected override async Task LoadItemsAsync()
+    {
+        var items = await GetItemsAsync();
+
+        var searchTerm = SearchText?.ToLowerInvariant() ?? string.Empty;
+        items = ApplySearchFilter(items, searchTerm);
+
+        items = ApplySort(items);
+
+        Items.Clear();
+        foreach (var item in items)
+        {
+            Items.Add(item);
+        }
     }
 
     private async Task LoadCustomersAsync()

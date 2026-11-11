@@ -105,7 +105,7 @@
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
@@ -137,26 +137,6 @@
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
-                </StackPanel>
-
-                <StackPanel Grid.Column="2" Margin="0,0,16,0">
-                    <TextBlock Text="Cliente"
-                               Style="{StaticResource FormLabelStyle}"/>
-                    <ComboBox ItemsSource="{Binding Customers}"
-                              DisplayMemberPath="Name"
-                              SelectedValuePath="Id"
-                              SelectedValue="{Binding SelectedCustomerId, UpdateSourceTrigger=PropertyChanged}"
-                              Style="{StaticResource FormComboBoxStyle}"
-                              Width="220"/>
-                </StackPanel>
-
-                <StackPanel Grid.Column="3" Margin="0,0,16,0">
-                    <TextBlock Text=" "
-                               Style="{StaticResource FormLabelStyle}"/>
-                    <Button Content="Filtrar"
-                            Style="{StaticResource PrimaryButtonStyle}"
-                            Command="{Binding LoadCommand}"
-                            MinWidth="100"/>
                 </StackPanel>
 
                 <StackPanel Grid.Column="4" VerticalAlignment="Bottom">
