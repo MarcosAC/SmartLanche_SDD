@@ -13,7 +13,6 @@
         <converters:EnumToDescriptionConverter x:Key="EnumToDescriptionConverter"/>
         <converters:StatusPagamentoToColorConverter x:Key="StatusPagamentoToColorConverter"/>
         <converters:StatusPagamentoToVisibilityConverter x:Key="StatusPagamentoToVisibilityConverter"/>
-        <converters:StringIsNullOrEmptyToVisibilityConverter x:Key="StringIsNullOrEmptyToVisibilityConverter"/>
 
         <Style x:Key="CenterAlignStyle" TargetType="TextBlock">
             <Setter Property="HorizontalAlignment" Value="Center"/>
@@ -107,8 +106,8 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
@@ -140,77 +139,9 @@
                     </ComboBox>
                 </StackPanel>
 
-                <StackPanel Grid.Column="2" Margin="0,0,16,0">
-                    <TextBlock Text="Cliente"
+                <StackPanel Grid.Column="4" VerticalAlignment="Bottom">
+                    <TextBlock Text=" "
                                Style="{StaticResource FormLabelStyle}"/>
-                    <!--<ComboBox ItemsSource="{Binding Customers}"
-                              DisplayMemberPath="Name"
-                              SelectedValuePath="Id"
-                              SelectedValue="{Binding SelectedCustomerId, UpdateSourceTrigger=PropertyChanged}"
-                              Style="{StaticResource FormComboBoxStyle}"
-                              Width="220"/>-->
-
-                    <!-- Campo de busca com ícone de lupa -->
-                    <TextBox Height="38"
-                             HorizontalAlignment="Stretch"
-                             VerticalContentAlignment="Center"
-                             Text="{Binding CustomerSearchText, UpdateSourceTrigger=PropertyChanged, Delay=300, Mode=TwoWay}"
-                             BorderBrush="#D1D5DB" BorderThickness="1"
-                             ToolTip="Digite nome, telefone ou observações para buscar cliente">
-                        <TextBox.Template>
-                            <ControlTemplate TargetType="TextBox">
-                                <Border x:Name="Border" Background="White" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Padding="8,4">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0" Text="🔍" VerticalAlignment="Center" Foreground="#94A3B8" Margin="8,0,8,0"
-                                                   Visibility="{Binding Text, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource StringIsNullOrEmptyToVisibilityConverter}}"/>
-                                        <ScrollViewer x:Name="PART_ContentHost" Grid.Column="1" VerticalAlignment="Center" Margin="0"/>
-                                    </Grid>
-                                </Border>
-                                <ControlTemplate.Triggers>
-                                    <Trigger Property="IsFocused" Value="True">
-                                        <Setter TargetName="Border" Property="BorderBrush" Value="#2563EB"/>
-                                        <Setter TargetName="Border" Property="BorderThickness" Value="2"/>
-                                    </Trigger>
-                                </ControlTemplate.Triggers>
-                            </ControlTemplate>
-                        </TextBox.Template>
-                    </TextBox>
-
-                    <!-- Resultados da busca -->
-                    <ListBox ItemsSource="{Binding FilteredCustomers}"
-                             SelectedItem="{Binding SelectedCustomer, Mode=TwoWay}"
-                             BorderBrush="#D1D5DB"
-                             BorderThickness="1"
-                             Background="White"
-                             MaxHeight="200"
-                             Margin="0,4,0,0"
-                             Visibility="{Binding ShowCustomerSearchResults, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding Name}"
-                           FontSize="14"
-                           Padding="12,8"
-                           Foreground="#1F2937"/>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
-                </StackPanel>                
-
-                <!--<StackPanel Grid.Column="3" 
-                            Margin="0,0,16,0"
-                            VerticalAlignment="Bottom">                    
-                    <Button Content="Filtrar"
-                            Style="{StaticResource PrimaryButtonStyle}"
-                            Command="{Binding LoadCommand}"
-                            MinWidth="100"/>
-                </StackPanel>-->
-
-                <StackPanel Grid.Column="3"
-                            VerticalAlignment="Bottom">                    
                     <Button Content="Atualizar"
                             Style="{StaticResource SecondaryButtonStyle}"
                             Command="{Binding RefreshCommand}"

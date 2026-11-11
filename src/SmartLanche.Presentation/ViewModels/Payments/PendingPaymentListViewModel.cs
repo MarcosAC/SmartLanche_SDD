@@ -47,55 +47,7 @@ public sealed class PendingPaymentListViewModel : ListViewModelBase<PendingPayme
         get => _selectedCustomerId;
         set => SetProperty(ref _selectedCustomerId, value);
     }
-
-    public CustomerDto? SelectedCustomer
-    {
-        get => _selectedCustomer;
-        set
-        {
-            if (SetProperty(ref _selectedCustomer, value))
-            {
-                if (value is not null)
-                {
-                    _customerSearchText = value.Name ?? string.Empty;
-                    OnPropertyChanged(nameof(CustomerSearchText));
-                }
-                OnPropertyChanged(nameof(ShowCustomerSearchResults));
-                OnPropertyChanged(nameof(SelectedCustomerId));
-            }
-        }
-    }
-
-    public string CustomerSearchText
-    {
-        get => _customerSearchText;
-        set
-        {
-            if (SetProperty(ref _customerSearchText, value))
-            {
-                OnPropertyChanged(nameof(FilteredCustomers));
-                OnPropertyChanged(nameof(ShowCustomerSearchResults));
-            }
-        }
-    }
-
-    public IEnumerable<CustomerDto> FilteredCustomers
-    {
-        get
-        {
-            if (string.IsNullOrWhiteSpace(_customerSearchText))
-                return Customers;
-
-            var search = _customerSearchText.Trim().ToLower();
-            return Customers.Where(c =>
-                c.Name?.ToLower().Contains(search) == true ||
-                c.Phone?.Contains(search) == true ||
-                c.Notes?.ToLower().Contains(search) == true);
-        }
-    }
-
-    public bool ShowCustomerSearchResults => !string.IsNullOrWhiteSpace(_customerSearchText) && FilteredCustomers.Any() && SelectedCustomer is null;
-
+    
     public PendingPaymentListViewModel(
         IPendingPaymentService pendingPaymentService,
         ICustomerService customerService,
