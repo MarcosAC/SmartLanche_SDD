@@ -1,8 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
 using Microsoft.Extensions.DependencyInjection;
 using SmartLanche.Application.DTOs;
 using SmartLanche.Application.Interfaces;
@@ -151,8 +149,20 @@ public sealed class PendingPaymentListViewModel : ListViewModelBase<PendingPayme
             return;
         }
 
-        // Show payment dialog
-        var dialog = new RegisterPaymentDialog(pendingPayment, Service, _toastService);
+        var dialogViewModel = new RegisterPaymentDialogViewModel(pendingPayment, Service, _toastService);
+
+        var dialog = new RegisterPaymentDialog
+        {
+            DataContext = dialogViewModel,
+            Owner = System.Windows.Application.Current.MainWindow
+        };
+
+        dialogViewModel.RequestClose += (result) =>
+        {
+            dialog.DialogResult = result;
+            dialog.Close();
+        };
+
         var result = dialog.ShowDialog();
 
         if (result == true)
@@ -179,188 +189,5 @@ public sealed class PendingPaymentListViewModel : ListViewModelBase<PendingPayme
         };
 
         window.ShowDialog();
-    }
-}
-
-// Dialog for registering payment on a pending payment
-public sealed class RegisterPaymentDialog : Window
-{
-    private readonly PendingPaymentDto _pendingPayment;
-    private readonly IPendingPaymentService _pendingPaymentService;
-    private readonly IToastNotificationService _toastService;
-
-    public RegisterPaymentDialog(PendingPaymentDto pendingPayment, IPendingPaymentService pendingPaymentService, IToastNotificationService toastService)
-    {
-        _pendingPayment = pendingPayment;
-        _pendingPaymentService = pendingPaymentService;
-        _toastService = toastService;
-
-        Title = "Registrar Pagamento";
-        Width = 400;
-        Height = 350;
-        WindowStartupLocation = WindowStartupLocation.CenterOwner;
-        Owner = System.Windows.Application.Current.MainWindow;
-        ResizeMode = ResizeMode.NoResize;
-
-        InitializeUI();
-    }
-
-    private void InitializeUI()
-    {
-        var grid = new Grid { Margin = new Thickness(20) };
-        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-
-        var stackPanel = new StackPanel();
-
-        // Header info
-        stackPanel.Children.Add(new TextBlock
-        {
-            Text = $"Cliente: {_pendingPayment.CustomerName}",
-            FontWeight = FontWeights.Bold,
-            FontSize = 14,
-            Margin = new Thickness(0, 0, 0, 5)
-        });
-        stackPanel.Children.Add(new TextBlock
-        {
-            Text = $"Pedido: #{_pendingPayment.OrderId}",
-            FontSize = 12,
-            Margin = new Thickness(0, 0, 0, 5)
-        });
-        stackPanel.Children.Add(new TextBlock
-        {
-            Text = $"Valor Original: R$ {_pendingPayment.ValorOriginal:N2}",
-            FontSize = 12,
-            Margin = new Thickness(0, 0, 0, 5)
-        });
-        stackPanel.Children.Add(new TextBlock
-        {
-            Text = $"Valor Pago: R$ {_pendingPayment.ValorPago:N2}",
-            FontSize = 12,
-            Margin = new Thickness(0, 0, 0, 5)
-        });
-        stackPanel.Children.Add(new TextBlock
-        {
-            Text = $"Saldo Pendente: R$ {_pendingPayment.SaldoPendente:N2}",
-            FontSize = 14,
-            FontWeight = FontWeights.Bold,
-            Foreground = System.Windows.Media.Brushes.Red,
-            Margin = new Thickness(0, 0, 0, 15)
-        });
-
-        // Valor do pagamento
-        stackPanel.Children.Add(new TextBlock { Text = "Valor do Pagamento:", FontWeight = FontWeights.SemiBold });
-        var txtValor = new TextBox
-        {
-            Name = "txtValor",
-            Margin = new Thickness(0, 5, 0, 10),
-            Text = _pendingPayment.SaldoPendente.ToString("N2")
-        };
-        stackPanel.Children.Add(txtValor);
-
-        // Forma de pagamento
-        stackPanel.Children.Add(new TextBlock { Text = "Forma de Pagamento:", FontWeight = FontWeights.SemiBold });
-        var cmbForma = new ComboBox
-        {
-            Name = "cmbForma",
-            Margin = new Thickness(0, 5, 0, 10),
-            ItemsSource = Enum.GetValues(typeof(FormaPagamento)),
-            SelectedItem = FormaPagamento.Dinheiro
-        };
-        stackPanel.Children.Add(cmbForma);
-
-        // Observações
-        stackPanel.Children.Add(new TextBlock { Text = "Observações:", FontWeight = FontWeights.SemiBold });
-        var txtObs = new TextBox
-        {
-            Name = "txtObs",
-            Margin = new Thickness(0, 5, 0, 15),
-            Height = 60,
-            AcceptsReturn = true,
-            TextWrapping = TextWrapping.Wrap,
-            VerticalScrollBarVisibility = ScrollBarVisibility.Auto
-        };
-        stackPanel.Children.Add(txtObs);
-
-        // Buttons
-        var btnPanel = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right };
-        var btnConfirm = new Button
-        {
-            Content = "Confirmar",
-            Width = 100,
-            Height = 35,
-            Margin = new Thickness(0, 0, 10, 0),
-            IsDefault = true
-        };
-        btnConfirm.Click += async (s, e) => await ConfirmClick(txtValor, cmbForma, txtObs);
-        btnPanel.Children.Add(btnConfirm);
-
-        var btnCancel = new Button
-        {
-            Content = "Cancelar",
-            Width = 100,
-            Height = 35,
-            IsCancel = true
-        };
-        btnPanel.Children.Add(btnCancel);
-        stackPanel.Children.Add(btnPanel);
-
-        grid.Children.Add(stackPanel);
-        Content = grid;
-    }
-
-    private async Task ConfirmClick(TextBox txtValor, ComboBox cmbForma, TextBox txtObs)
-    {
-        if (!decimal.TryParse(txtValor.Text, out var valor) || valor <= 0)
-        {
-            _toastService.ShowError("Informe um valor válido maior que zero.");
-            return;
-        }
-
-        if (valor > _pendingPayment.SaldoPendente + 0.01m) // Small tolerance for rounding
-        {
-            _toastService.ShowError($"Valor excede o saldo pendente (R$ {_pendingPayment.SaldoPendente:N2}).");
-            return;
-        }
-
-        var forma = (FormaPagamento)cmbForma.SelectedItem!;
-        var observacoes = string.IsNullOrWhiteSpace(txtObs.Text) ? null : txtObs.Text;
-
-        try
-        {
-            IsEnabled = false;
-
-            var request = new RegisterPendingPaymentRequest(
-                _pendingPayment.Id,
-                valor,
-                forma,
-                observacoes);
-
-            var result = await _pendingPaymentService.RegisterPaymentAsync(request);
-
-            if (result.Success)
-            {
-                _toastService.ShowSuccess($"Pagamento de R$ {valor:N2} registrado com sucesso!");
-                DialogResult = true;
-                Close();
-            }
-            else
-            {
-                _toastService.ShowError(result.ErrorMessage ?? "Erro ao registrar pagamento.");
-            }
-        }
-        catch (Exception ex)
-        {
-            _toastService.ShowError($"Erro: {ex.Message}");
-        }
-        finally
-        {
-            IsEnabled = true;
-        }
     }
 }

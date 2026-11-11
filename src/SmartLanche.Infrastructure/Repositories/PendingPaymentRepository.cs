@@ -20,6 +20,7 @@ public class PendingPaymentRepository : IPendingPaymentRepository
     {
         return await _context.PendingPayments
             .AsNoTracking()
+            .IgnoreQueryFilters()
             .Include(pp => pp.Customer)
             .Include(pp => pp.Order)
             .Include(pp => pp.History)
@@ -29,6 +30,7 @@ public class PendingPaymentRepository : IPendingPaymentRepository
     public async Task<PendingPayment?> GetByIdTrackedAsync(int id, CancellationToken cancellationToken = default)
     {
         return await _context.PendingPayments
+            .IgnoreQueryFilters()
             .Include(pp => pp.Customer)
             .Include(pp => pp.Order)
             .Include(pp => pp.History)
@@ -39,6 +41,7 @@ public class PendingPaymentRepository : IPendingPaymentRepository
     {
         return await _context.PendingPayments
             .AsNoTracking()
+            .IgnoreQueryFilters()
             .Include(pp => pp.Customer)
             .Include(pp => pp.Order)
             .Include(pp => pp.History)
@@ -49,6 +52,7 @@ public class PendingPaymentRepository : IPendingPaymentRepository
     {
         return await _context.PendingPayments
             .AsNoTracking()
+            .IgnoreQueryFilters()
             .Include(pp => pp.Customer)
             .Include(pp => pp.Order)
             .Include(pp => pp.History)
@@ -61,6 +65,7 @@ public class PendingPaymentRepository : IPendingPaymentRepository
     {
         return await _context.PendingPayments
             .AsNoTracking()
+            .IgnoreQueryFilters() // Include inactive customers' pending payments
             .Include(pp => pp.Customer)
             .Include(pp => pp.Order)
             .Include(pp => pp.History)
@@ -72,6 +77,7 @@ public class PendingPaymentRepository : IPendingPaymentRepository
     {
         return await _context.PendingPayments
             .AsNoTracking()
+            .IgnoreQueryFilters()
             .Include(pp => pp.Customer)
             .Include(pp => pp.Order)
             .Include(pp => pp.History)
