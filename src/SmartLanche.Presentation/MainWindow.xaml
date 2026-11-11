@@ -409,7 +409,13 @@
         <Border Grid.Column="0"
                 Background="{StaticResource SidebarColor}">
             <DockPanel Margin="18">
-                <StackPanel DockPanel.Dock="Top">
+                <!-- Scrollable menu area -->
+                <ScrollViewer DockPanel.Dock="Top"
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled"
+                              Padding="0,0,8,0"
+                              FocusVisualStyle="{x:Null}">
+                    <StackPanel>
                     <TextBlock Text="SmartLanche"
                                Foreground="White"
                                FontSize="25"
@@ -479,7 +485,9 @@
                             Command="{Binding NavigateDevedoresCommand}"
                             Style="{StaticResource MenuButtonStyle}"/>
                 </StackPanel>
+                </ScrollViewer>
 
+                <!-- Fixed bottom area -->
                 <StackPanel DockPanel.Dock="Bottom"
                             Margin="0,20,0,8">
                     <Separator Background="#334155"
