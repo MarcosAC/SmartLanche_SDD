@@ -114,7 +114,7 @@
                 <StackPanel Grid.Column="0" Margin="0,0,16,0">
                     <TextBlock Text="Buscar"
                                Style="{StaticResource FormLabelStyle}"/>
-                    <TextBox Text="{Binding SearchTerm, UpdateSourceTrigger=PropertyChanged}"
+                    <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                              Style="{StaticResource FormTextBoxStyle}"
                              Width="250"
                              ToolTip="Buscar por cliente ou observações">
@@ -275,7 +275,7 @@
                            FontSize="14"
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center"
-                           Visibility="{Binding PendingPayments.Count, Converter={StaticResource CountToVisibilityConverter}}"/>
+                           Visibility="{Binding Items.Count, Converter={StaticResource CountToVisibilityConverter}}"/>
             </Grid>
         </Border>
     </Grid>

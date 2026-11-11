@@ -471,6 +471,10 @@
                             Command="{Binding NavigatePaymentListCommand}"
                             Style="{StaticResource MenuButtonStyle}"/>
 
+                    <Button Content="Pendências (Fiado)"
+                            Command="{Binding NavigatePaymentsCommand}"
+                            Style="{StaticResource MenuButtonStyle}"/>
+
                     <Button Content="Inadimplência (Fiado)"
                             Command="{Binding NavigateDevedoresCommand}"
                             Style="{StaticResource MenuButtonStyle}"/>
