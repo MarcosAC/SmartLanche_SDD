@@ -309,14 +309,6 @@
                                     <TextBlock Text="Cliente (Obrigatório para Fiado)"
                                                Style="{StaticResource FormLabelStyle}"/>
                                     
-                                    <!--<ComboBox ItemsSource="{Binding Customers}"
-                                              DisplayMemberPath="Name"
-                                              SelectedValuePath="Id"
-                                              SelectedValue="{Binding SelectedCustomerId, UpdateSourceTrigger=PropertyChanged}"
-                                              Style="{StaticResource FormComboBoxStyle}"
-                                              Width="220"
-                                              ToolTip="Selecione o cliente para pagamento a prazo"/>-->
-
                                     <!-- Campo de busca com ícone de lupa -->
                                     <TextBox Height="38"
                                              HorizontalAlignment="Stretch"

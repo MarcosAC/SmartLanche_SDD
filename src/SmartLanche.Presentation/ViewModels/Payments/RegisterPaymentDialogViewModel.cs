@@ -1,12 +1,11 @@
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using System.Windows;
-using System.Windows.Input;
 using SmartLanche.Application.DTOs;
 using SmartLanche.Application.Interfaces;
 using SmartLanche.Domain.Enums;
 using SmartLanche.Presentation.Commands;
 using SmartLanche.Presentation.Services;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Windows.Input;
 
 namespace SmartLanche.Presentation.ViewModels.Payments;
 
@@ -16,7 +15,7 @@ public sealed class RegisterPaymentDialogViewModel : INotifyPropertyChanged
     private readonly IPendingPaymentService _pendingPaymentService;
     private readonly IToastNotificationService _toastService;
 
-    private decimal _valorPagamento;
+    private decimal? _valorPagamento;
     private FormaPagamento _selectedFormaPagamento = FormaPagamento.Dinheiro;
     private string? _observacoes;
     private string? _validationError;
@@ -33,7 +32,7 @@ public sealed class RegisterPaymentDialogViewModel : INotifyPropertyChanged
         _pendingPaymentService = pendingPaymentService ?? throw new ArgumentNullException(nameof(pendingPaymentService));
         _toastService = toastService ?? throw new ArgumentNullException(nameof(toastService));
 
-        ValorPagamento = _pendingPayment.SaldoPendente;
+        ValorPagamento = null;
 
         ConfirmCommand = new AsyncRelayCommand(_ => ConfirmAsync(), _ => CanConfirm);
         CancelCommand = new RelayCommand(_ => RequestClose?.Invoke(false));
@@ -43,14 +42,13 @@ public sealed class RegisterPaymentDialogViewModel : INotifyPropertyChanged
 
     public FormaPagamento[] FormasPagamento => Enum.GetValues<FormaPagamento>();
 
-    public decimal ValorPagamento
+    public decimal? ValorPagamento
     {
         get => _valorPagamento;
         set
         {
             if (SetProperty(ref _valorPagamento, value))
             {
-                Validate();
                 OnPropertyChanged(nameof(CanConfirm));
             }
         }
@@ -63,7 +61,6 @@ public sealed class RegisterPaymentDialogViewModel : INotifyPropertyChanged
         {
             if (SetProperty(ref _selectedFormaPagamento, value))
             {
-                Validate();
                 OnPropertyChanged(nameof(CanConfirm));
             }
         }
@@ -81,20 +78,20 @@ public sealed class RegisterPaymentDialogViewModel : INotifyPropertyChanged
         private set => SetProperty(ref _validationError, value);
     }
 
-    public bool CanConfirm => !string.IsNullOrWhiteSpace(ValidationError);
+    public bool CanConfirm => true;
 
     public ICommand ConfirmCommand { get; }
     public ICommand CancelCommand { get; }
 
     private void Validate()
     {
-        if (ValorPagamento <= 0)
+        if (!ValorPagamento.HasValue || ValorPagamento.Value <= 0)
         {
             ValidationError = "Informe um valor válido maior que zero.";
             return;
         }
 
-        if (ValorPagamento > _pendingPayment.SaldoPendente + 0.01m)
+        if (ValorPagamento.Value > _pendingPayment.SaldoPendente + 0.01m)
         {
             ValidationError = $"Valor excede o saldo pendente (R$ {_pendingPayment.SaldoPendente:N2}).";
             return;
@@ -112,9 +109,11 @@ public sealed class RegisterPaymentDialogViewModel : INotifyPropertyChanged
 
         try
         {
+            var valor = ValorPagamento!.Value;
+
             var request = new RegisterPendingPaymentRequest(
                 _pendingPayment.Id,
-                ValorPagamento,
+                valor,
                 SelectedFormaPagamento,
                 string.IsNullOrWhiteSpace(Observacoes) ? null : Observacoes);
 
@@ -122,7 +121,7 @@ public sealed class RegisterPaymentDialogViewModel : INotifyPropertyChanged
 
             if (result.Success)
             {
-                _toastService.ShowSuccess($"Pagamento de R$ {ValorPagamento:N2} registrado com sucesso!");
+                _toastService.ShowSuccess($"Pagamento de R$ {valor:N2} registrado com sucesso!");
                 RequestClose?.Invoke(true);
             }
             else
