@@ -453,9 +453,9 @@
                             Command="{Binding NavigateOrdersCommand}"
                             Style="{StaticResource MenuButtonStyle}"/>
 
-                    <Button Content="Pedidos em Preparação"
+                    <!--<Button Content="Pedidos em Preparação"
                             Command="{Binding NavigateOrderPreparationCommand}"
-                            Style="{StaticResource MenuButtonStyle}"/>
+                            Style="{StaticResource MenuButtonStyle}"/>-->
 
                     <Button Content="Estoque"
                             Command="{Binding NavigateInventoryCommand}"
@@ -465,13 +465,13 @@
                             Command="{Binding NavigateInventoryMovementsCommand}"
                             Style="{StaticResource MenuButtonStyle}"/>
 
-                    <Button Content="Promoções"
+                    <!--<Button Content="Promoções"
                             Command="{Binding NavigatePromotionsCommand}"
-                            Style="{StaticResource MenuButtonStyle}"/>
+                            Style="{StaticResource MenuButtonStyle}"/>-->
 
-                    <Button Content="Combos"
+                    <!--<Button Content="Combos"
                             Command="{Binding NavigateCombosCommand}"
-                            Style="{StaticResource MenuButtonStyle}"/>
+                            Style="{StaticResource MenuButtonStyle}"/>-->
 
                     <Button Content="Pagamentos"
                             Command="{Binding NavigatePaymentListCommand}"
