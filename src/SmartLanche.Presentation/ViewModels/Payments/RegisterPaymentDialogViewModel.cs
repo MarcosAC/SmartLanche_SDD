@@ -16,7 +16,7 @@ public sealed class RegisterPaymentDialogViewModel : INotifyPropertyChanged
     private readonly IPendingPaymentService _pendingPaymentService;
     private readonly IToastNotificationService _toastService;
 
-    private decimal _valorPagamento;
+    private decimal? _valorPagamento;
     private FormaPagamento _selectedFormaPagamento = FormaPagamento.Dinheiro;
     private string? _observacoes;
     private string? _validationError;
@@ -43,7 +43,7 @@ public sealed class RegisterPaymentDialogViewModel : INotifyPropertyChanged
 
     public FormaPagamento[] FormasPagamento => Enum.GetValues<FormaPagamento>();
 
-    public decimal ValorPagamento
+    public decimal? ValorPagamento
     {
         get => _valorPagamento;
         set
@@ -88,13 +88,13 @@ public sealed class RegisterPaymentDialogViewModel : INotifyPropertyChanged
 
     private void Validate()
     {
-        if (ValorPagamento <= 0)
+        if (!ValorPagamento.HasValue || ValorPagamento.Value <= 0)
         {
             ValidationError = "Informe um valor válido maior que zero.";
             return;
         }
 
-        if (ValorPagamento > _pendingPayment.SaldoPendente + 0.01m)
+        if (ValorPagamento.Value > _pendingPayment.SaldoPendente + 0.01m)
         {
             ValidationError = $"Valor excede o saldo pendente (R$ {_pendingPayment.SaldoPendente:N2}).";
             return;
@@ -112,9 +112,11 @@ public sealed class RegisterPaymentDialogViewModel : INotifyPropertyChanged
 
         try
         {
+            var valor = ValorPagamento!.Value;
+
             var request = new RegisterPendingPaymentRequest(
                 _pendingPayment.Id,
-                ValorPagamento,
+                valor,
                 SelectedFormaPagamento,
                 string.IsNullOrWhiteSpace(Observacoes) ? null : Observacoes);
 
@@ -122,7 +124,7 @@ public sealed class RegisterPaymentDialogViewModel : INotifyPropertyChanged
 
             if (result.Success)
             {
-                _toastService.ShowSuccess($"Pagamento de R$ {ValorPagamento:N2} registrado com sucesso!");
+                _toastService.ShowSuccess($"Pagamento de R$ {valor:N2} registrado com sucesso!");
                 RequestClose?.Invoke(true);
             }
             else
