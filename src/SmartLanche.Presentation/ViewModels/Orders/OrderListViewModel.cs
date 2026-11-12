@@ -1,9 +1,8 @@
-using System.Windows.Input;
 using SmartLanche.Application.DTOs;
 using SmartLanche.Application.Interfaces;
 using SmartLanche.Domain.Enums;
 using SmartLanche.Presentation.Commands;
-using SmartLanche.Presentation.ViewModels;
+using System.Windows.Input;
 
 namespace SmartLanche.Presentation.ViewModels.Orders;
 
@@ -62,9 +61,7 @@ public sealed class OrderListViewModel : ListViewModelBase<OrderDto, IOrderServi
 
     public OrderListViewModel(IOrderService orderService)
         : base(orderService)
-    {
-        // NewItemCommand and EditItemCommand are already initialized in base class
-        // Just need to hook up the events
+    {        
         RequestNewItem += () => RequestNewOrder?.Invoke();
         RequestEditItem += (order) => RequestViewOrder?.Invoke(order);
 
@@ -98,9 +95,7 @@ public sealed class OrderListViewModel : ListViewModelBase<OrderDto, IOrderServi
             DateFrom = DateFrom,
             DateTo = DateTo,
             SortBy = SortColumn,
-            SortDescending = SortDescending,
-            // Exclude cancelled only when a specific non-cancelled status is selected
-            // If no status filter (Todos) or Cancelado is selected, include cancelled orders
+            SortDescending = SortDescending,           
             ExcludeCancelled = SelectedStatus.HasValue && SelectedStatus != (int)OrderStatus.Cancelado
         };
 
@@ -108,8 +103,7 @@ public sealed class OrderListViewModel : ListViewModelBase<OrderDto, IOrderServi
     }
 
     protected override IReadOnlyList<OrderDto> ApplySearchFilter(IReadOnlyList<OrderDto> items, string searchTerm)
-    {
-        // Search is handled server-side via filter, but keep for fallback
+    {        
         return items.Where(o =>
             o.Id.ToString().Contains(searchTerm) ||
             o.CustomerName?.ToLowerInvariant().Contains(searchTerm) == true
@@ -118,7 +112,6 @@ public sealed class OrderListViewModel : ListViewModelBase<OrderDto, IOrderServi
 
     protected override IReadOnlyList<OrderDto> ApplySort(IReadOnlyList<OrderDto> items)
     {
-        // Sorting is handled server-side via filter, but keep for fallback
         if (string.IsNullOrWhiteSpace(SortColumn))
         {
             return items.OrderByDescending(o => o.OrderDate).ToList();
@@ -157,7 +150,6 @@ public sealed class OrderListViewModel : ListViewModelBase<OrderDto, IOrderServi
 
         await ExecuteWithLoadingAsync(async () =>
         {
-            // DeleteIfPendente = false: mark as Cancelado but keep in DB (list behavior)
             var request = new CancelOrderRequest { OrderId = SelectedItem.Id, DeleteIfPendente = false };
             await Service.CancelAsync(request);
 
@@ -178,4 +170,4 @@ public sealed class OrderListViewModel : ListViewModelBase<OrderDto, IOrderServi
         });
     }
 
-    }
+}
