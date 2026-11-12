@@ -19,9 +19,7 @@ public sealed class PendingPaymentListViewModel : ListViewModelBase<PendingPayme
 
     private StatusPagamentoPendente? _selectedStatus;
     private int? _selectedCustomerId;
-
     private CustomerDto? _selectedCustomer;
-
     private string _customerSearchText = string.Empty;
 
     public ObservableCollection<CustomerDto> Customers { get; } = [];

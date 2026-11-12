@@ -1,12 +1,11 @@
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using System.Windows;
-using System.Windows.Input;
 using SmartLanche.Application.DTOs;
 using SmartLanche.Application.Interfaces;
 using SmartLanche.Domain.Enums;
 using SmartLanche.Presentation.Commands;
 using SmartLanche.Presentation.Services;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Windows.Input;
 
 namespace SmartLanche.Presentation.ViewModels.Payments;
 
