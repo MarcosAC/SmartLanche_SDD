@@ -50,7 +50,6 @@ public sealed class RegisterPaymentDialogViewModel : INotifyPropertyChanged
         {
             if (SetProperty(ref _valorPagamento, value))
             {
-                Validate();
                 OnPropertyChanged(nameof(CanConfirm));
             }
         }
@@ -63,7 +62,6 @@ public sealed class RegisterPaymentDialogViewModel : INotifyPropertyChanged
         {
             if (SetProperty(ref _selectedFormaPagamento, value))
             {
-                Validate();
                 OnPropertyChanged(nameof(CanConfirm));
             }
         }
@@ -81,7 +79,7 @@ public sealed class RegisterPaymentDialogViewModel : INotifyPropertyChanged
         private set => SetProperty(ref _validationError, value);
     }
 
-    public bool CanConfirm => !string.IsNullOrWhiteSpace(ValidationError);
+    public bool CanConfirm => true;
 
     public ICommand ConfirmCommand { get; }
     public ICommand CancelCommand { get; }

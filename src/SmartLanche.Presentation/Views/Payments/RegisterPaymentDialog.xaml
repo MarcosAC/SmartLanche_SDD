@@ -1,10 +1,12 @@
 <Window x:Class="SmartLanche.Presentation.Views.Payments.RegisterPaymentDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:converters="clr-namespace:SmartLanche.Presentation.Converters"
+        xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+        xmlns:behaviors="clr-namespace:SmartLanche.Presentation.Behaviors"
+        xmlns:converters="clr-namespace:SmartLanche.Presentation.Converters"        
         Title="Registrar Pagamento"
         Width="420"
-        Height="480"
+        Height="580"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
         Background="#F5F6FA">
@@ -101,9 +103,12 @@
             <!-- Valor do Pagamento -->
             <StackPanel Grid.Row="1" Margin="0,0,0,12">
                 <TextBlock Text="Valor do Pagamento:" Style="{StaticResource DialogLabelStyle}"/>
-                <TextBox Text="{Binding ValorPagamento, UpdateSourceTrigger=PropertyChanged, Delay=100}"
-                         Style="{StaticResource DialogInputStyle}"
-                         ToolTip="Informe o valor do pagamento"/>
+                <TextBox Style="{StaticResource DialogInputStyle}"
+                         ToolTip="Informe o valor do pagamento">
+                    <i:Interaction.Behaviors>
+                        <behaviors:CurrencyTextBoxBehavior Value="{Binding ValorPagamento, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    </i:Interaction.Behaviors>
+                </TextBox>
             </StackPanel>
 
             <!-- Forma de Pagamento -->
