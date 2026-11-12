@@ -76,17 +76,16 @@
     </Window.Resources>
 
     <Border Background="White" CornerRadius="8" Margin="16" Padding="24">
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
 
             <!-- Header Info -->
             <StackPanel Grid.Row="0" Margin="0,0,0,16">
@@ -142,11 +141,8 @@
                        Margin="0,0,0,8"
                        Visibility="{Binding ValidationError, Converter={StaticResource StringIsNullOrEmptyToVisibilityConverter}, ConverterParameter=reverse}"/>
 
-            <!-- Espaçador -->
-            <Grid Grid.Row="6"/>
-
             <!-- Buttons -->
-            <StackPanel Grid.Row="7" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+            <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
                 <Button Content="Cancelar"
                         Style="{StaticResource SecondaryButtonStyle}"
                         Command="{Binding CancelCommand}"
@@ -158,5 +154,6 @@
                         Margin="8,0,0,0"/>
             </StackPanel>
         </Grid>
-    </Border>
+    </ScrollViewer>
+</Border>
 </Window>
