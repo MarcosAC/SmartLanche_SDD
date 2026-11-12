@@ -127,15 +127,15 @@
                 <StackPanel Grid.Column="1" Margin="0,0,16,0">
                     <TextBlock Text="Status"
                                Style="{StaticResource FormLabelStyle}"/>
-                    <ComboBox ItemsSource="{Binding StatusFilters}"
-                              SelectedItem="{Binding SelectedStatus, UpdateSourceTrigger=PropertyChanged}"
+                    <ComboBox Height="34"
+                              VerticalContentAlignment="Center"
+                              SelectedValuePath="Tag"
+                              SelectedValue="{Binding SelectedStatus, UpdateSourceTrigger=PropertyChanged}"
                               Style="{StaticResource FormComboBoxStyle}"
                               Width="180">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding Converter={StaticResource EnumToDescriptionConverter}}"/>
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
+                        <ComboBoxItem Content="Todos" Tag="{x:Null}"/>
+                        <ComboBoxItem Content="Não Pago" Tag="{x:Static domain:StatusPagamentoPendente.NaoPago}"/>
+                        <ComboBoxItem Content="Pago" Tag="{x:Static domain:StatusPagamentoPendente.Pago}"/>
                     </ComboBox>
                 </StackPanel>
 

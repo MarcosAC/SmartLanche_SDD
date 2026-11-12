@@ -23,11 +23,6 @@ public sealed class PendingPaymentListViewModel : ListViewModelBase<PendingPayme
     private string _customerSearchText = string.Empty;
 
     public ObservableCollection<CustomerDto> Customers { get; } = [];
-    public ObservableCollection<StatusPagamentoPendente> StatusFilters { get; } = new()
-    {
-        StatusPagamentoPendente.NaoPago,
-        StatusPagamentoPendente.Pago
-    };
 
     public ICommand RegisterPaymentCommand { get; }
     public ICommand RefreshCommand { get; }
