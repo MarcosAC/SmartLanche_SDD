@@ -33,7 +33,7 @@ public sealed class RegisterPaymentDialogViewModel : INotifyPropertyChanged
         _pendingPaymentService = pendingPaymentService ?? throw new ArgumentNullException(nameof(pendingPaymentService));
         _toastService = toastService ?? throw new ArgumentNullException(nameof(toastService));
 
-        ValorPagamento = _pendingPayment.SaldoPendente;
+        ValorPagamento = null;
 
         ConfirmCommand = new AsyncRelayCommand(_ => ConfirmAsync(), _ => CanConfirm);
         CancelCommand = new RelayCommand(_ => RequestClose?.Invoke(false));
