@@ -4,7 +4,7 @@
         xmlns:converters="clr-namespace:SmartLanche.Presentation.Converters"
         Title="Registrar Pagamento"
         Width="420"
-        Height="380"
+        Height="480"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
         Background="#F5F6FA">
@@ -76,16 +76,15 @@
     </Window.Resources>
 
     <Border Background="White" CornerRadius="8" Margin="16" Padding="24">
-        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
 
             <!-- Header Info -->
             <StackPanel Grid.Row="0" Margin="0,0,0,16">
@@ -154,6 +153,5 @@
                         Margin="8,0,0,0"/>
             </StackPanel>
         </Grid>
-    </ScrollViewer>
-</Border>
+    </Border>
 </Window>
