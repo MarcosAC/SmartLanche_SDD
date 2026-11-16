@@ -16,12 +16,10 @@
               FontSize="14"
               BorderBrush="#D1D5DB"
               BorderThickness="1"
-              Background="White">
+              Background="White"
+              Style="{StaticResource FilterComboBoxStyle}">
         <ComboBox.ItemContainerStyle>
-            <Style TargetType="ComboBoxItem">
-                <Setter Property="Padding" Value="10,8"/>
-                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-            </Style>
+            <Style TargetType="ComboBoxItem" BasedOn="{StaticResource ComboBoxItemStyle}"/>
         </ComboBox.ItemContainerStyle>
     </ComboBox>
 </UserControl>
