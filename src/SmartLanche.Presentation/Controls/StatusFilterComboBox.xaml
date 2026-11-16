@@ -17,7 +17,9 @@
               BorderBrush="#D1D5DB"
               BorderThickness="1"
               Background="White"
-              Style="{StaticResource FilterComboBoxStyle}">
+              Style="{StaticResource FilterComboBoxStyle}"
+              IsTextSearchEnabled="True"
+              IsReadOnly="True">
         <ComboBox.ItemContainerStyle>
             <Style TargetType="ComboBoxItem" BasedOn="{StaticResource ComboBoxItemStyle}"/>
         </ComboBox.ItemContainerStyle>
