@@ -13,7 +13,7 @@
               VerticalContentAlignment="Center"
               MinHeight="38"
               Padding="10,8"
-              FontSize="14"
+              FontSize="12"
               BorderBrush="#D1D5DB"
               BorderThickness="1"
               Background="White"

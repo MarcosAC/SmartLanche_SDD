@@ -99,11 +99,10 @@
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
@@ -112,7 +111,9 @@
                 </Grid.RowDefinitions>
 
                 <!-- Busca -->
-                <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,16,0">
+                <StackPanel Grid.Row="0"
+                            Grid.Column="0"
+                            Margin="0,0,16,0">
                     <TextBlock Text="Buscar"
                                Style="{StaticResource FormLabelStyle}"/>
                     <TextBox Text="{Binding SearchTerm, UpdateSourceTrigger=PropertyChanged, Delay=500}"
@@ -126,7 +127,9 @@
                 </StackPanel>
 
                 <!-- Forma de Pagamento -->
-                <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,16,0">
+                <StackPanel Grid.Row="0"
+                            Grid.Column="1"
+                            Margin="0,0,16,0">
                     <TextBlock Text="Forma de Pagamento"
                                Style="{StaticResource FormLabelStyle}"/>
                     <ComboBox ItemsSource="{Binding FormasPagamento}"
@@ -142,7 +145,9 @@
                 </StackPanel>
 
                 <!-- Data Início -->
-                <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,16,0">
+                <StackPanel Grid.Row="0"
+                            Grid.Column="2"
+                            Margin="0,0,16,0">
                     <TextBlock Text="Data Início"
                                Style="{StaticResource FormLabelStyle}"/>
                     <DatePicker SelectedDate="{Binding StartDate, UpdateSourceTrigger=PropertyChanged}"
@@ -151,7 +156,9 @@
                 </StackPanel>
 
                 <!-- Data Fim -->
-                <StackPanel Grid.Row="0" Grid.Column="3" Margin="0,0,16,0">
+                <StackPanel Grid.Row="0"
+                            Grid.Column="3"
+                            Margin="0,0,16,0">
                     <TextBlock Text="Data Fim"
                                Style="{StaticResource FormLabelStyle}"/>
                     <DatePicker SelectedDate="{Binding EndDate, UpdateSourceTrigger=PropertyChanged}"
@@ -159,20 +166,11 @@
                                 Width="150"/>
                 </StackPanel>
 
-                <!-- Botões de ação -->
-                <StackPanel Grid.Row="0" Grid.Column="4" VerticalAlignment="Bottom" Margin="0,0,8,0">
-                    <Button Content="Filtrar"
-                            Style="{StaticResource PrimaryButtonStyle}"
-                            Command="{Binding LoadCommand}"
-                            MinWidth="90"/>
-                </StackPanel>
-
-                <StackPanel Grid.Row="0" Grid.Column="5" VerticalAlignment="Bottom" Margin="0,0,8,0">
-                    <Button Content="Limpar"
-                            Style="{StaticResource SecondaryButtonStyle}"
-                            Command="{Binding RefreshCommand}"
-                            MinWidth="90"/>
-                </StackPanel>
+                <Button Grid.Column="5"
+                        Content="Atualizar"
+                        VerticalAlignment="Bottom"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Command="{Binding LoadCommand}"/>
             </Grid>
         </Border>
 

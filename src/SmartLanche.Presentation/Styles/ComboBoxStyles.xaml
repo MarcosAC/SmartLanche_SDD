@@ -5,7 +5,7 @@
     <!-- Estilo Base para todos os ComboBox da aplicação -->
     <Style x:Key="BaseComboBoxStyle" TargetType="ComboBox">
         <Setter Property="Padding" Value="10,8"/>
-        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontSize" Value="12"/>
         <Setter Property="BorderBrush" Value="#D1D5DB"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Background" Value="White"/>
