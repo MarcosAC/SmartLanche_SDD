@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System.Threading;
 using System.Windows.Input;
 using SmartLanche.Application.DTOs;
@@ -18,8 +17,6 @@ public sealed class PaymentListViewModel : ListViewModelBase<PaymentDto, IPaymen
     private DateTime? _startDate;
     private DateTime? _endDate;
     private Timer? _searchDebounceTimer;
-
-    public ObservableCollection<FormaPagamento> FormasPagamento { get; } = new(Enum.GetValues<FormaPagamento>());
 
     public ICommand RefreshCommand { get; }
     public ICommand ViewPaymentCommand { get; }

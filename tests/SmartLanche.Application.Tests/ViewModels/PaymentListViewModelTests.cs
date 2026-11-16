@@ -178,16 +178,6 @@ public class PaymentListViewModelTests
     }
 
     [Fact]
-    public async Task FormasPagamento_ContainsAllEnumValues()
-    {
-        Assert.Equal(4, _viewModel.FormasPagamento.Count);
-        Assert.Contains(FormaPagamento.Dinheiro, _viewModel.FormasPagamento);
-        Assert.Contains(FormaPagamento.Cartao, _viewModel.FormasPagamento);
-        Assert.Contains(FormaPagamento.Pix, _viewModel.FormasPagamento);
-        Assert.Contains(FormaPagamento.Fiado, _viewModel.FormasPagamento);
-    }
-
-    [Fact]
     public async Task IsLoading_FalseInitially()
     {
         Assert.False(_viewModel.IsLoading);
