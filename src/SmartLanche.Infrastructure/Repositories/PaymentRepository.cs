@@ -19,12 +19,16 @@ public class PaymentRepository : IPaymentRepository
     {
         return await _context.Payments
             .AsNoTracking()
+            .Include(p => p.Order)
+                .ThenInclude(o => o.Customer)
             .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
     }
 
     public async Task<Payment?> GetByIdTrackedAsync(int id, CancellationToken cancellationToken = default)
     {
         return await _context.Payments
+            .Include(p => p.Order)
+                .ThenInclude(o => o.Customer)
             .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
     }
 
@@ -32,6 +36,8 @@ public class PaymentRepository : IPaymentRepository
     {
         return await _context.Payments
             .AsNoTracking()
+            .Include(p => p.Order)
+                .ThenInclude(o => o.Customer)
             .Where(p => p.OrderId == orderId)
             .OrderByDescending(p => p.DataHora)
             .ToListAsync(cancellationToken);
@@ -66,6 +72,8 @@ public class PaymentRepository : IPaymentRepository
         }
 
         return await query
+            .Include(p => p.Order)
+                .ThenInclude(o => o.Customer)
             .OrderByDescending(p => p.DataHora)
             .ToListAsync(cancellationToken);
     }

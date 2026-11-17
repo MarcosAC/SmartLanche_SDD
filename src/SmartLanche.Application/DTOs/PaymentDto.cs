@@ -5,6 +5,7 @@ namespace SmartLanche.Application.DTOs;
 public record PaymentDto(
     int Id,
     int OrderId,
+    string? CustomerName,
     FormaPagamento FormaPagamento,
     decimal ValorPago,
     decimal Troco,

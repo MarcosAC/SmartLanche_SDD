@@ -117,6 +117,7 @@ public class PaymentService : IPaymentService
         return new PaymentDto(
             payment.Id,
             payment.OrderId,
+            payment.Order?.Customer?.Name,
             payment.FormaPagamento,
             payment.ValorPago,
             payment.Troco,

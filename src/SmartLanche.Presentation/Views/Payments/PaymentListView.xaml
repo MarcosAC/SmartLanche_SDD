@@ -191,6 +191,10 @@
                                             Width="60"
                                             ElementStyle="{StaticResource CenterAlignStyle}"/>
 
+                        <DataGridTextColumn Header="Cliente"
+                                            Binding="{Binding CustomerName}"
+                                            Width="2*"/>
+
                         <DataGridTextColumn Header="Pedido"
                                             Binding="{Binding OrderId, StringFormat='#{0}'}"
                                             Width="80"
