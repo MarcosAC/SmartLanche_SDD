@@ -1164,6 +1164,7 @@ public class OrderServiceTests : IDisposable
             var payment = new PaymentDto(
                 _nextId++,
                 request.OrderId,
+                "Cliente Teste", // CustomerName
                 request.FormaPagamento,
                 request.ValorPago,
                 request.FormaPagamento == FormaPagamento.Dinheiro ? request.ValorPago - 10m : 0m,
@@ -1173,7 +1174,7 @@ public class OrderServiceTests : IDisposable
                 request.Notes,
                 false,
                 null,
-                null);
+                null); // EstornoMotivo
             _payments.Add(payment);
             return Task.FromResult(new ProcessPaymentResult(true, payment, null));
         }
