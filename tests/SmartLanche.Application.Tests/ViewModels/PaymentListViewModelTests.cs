@@ -72,7 +72,7 @@ public class PaymentListViewModelTests
             2, 101, FormaPagamento.Cartao, 75m, 0m, 2, 37.5m,
             DateTime.Today, "Hoje", false, null, null));
 
-        _viewModel.StartDate = DateTime.Today.AddDays(-1);
+        _viewModel.DateFrom = DateTime.Today.AddDays(-1);
         await _viewModel.LoadAsync();
 
         Assert.Single(_viewModel.Items);
@@ -90,7 +90,7 @@ public class PaymentListViewModelTests
             2, 101, FormaPagamento.Cartao, 75m, 0m, 2, 37.5m,
             DateTime.Today, "Hoje", false, null, null));
 
-        _viewModel.EndDate = DateTime.Today.AddDays(-2);
+        _viewModel.DateTo = DateTime.Today.AddDays(-2);
         await _viewModel.LoadAsync();
 
         Assert.Single(_viewModel.Items);

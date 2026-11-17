@@ -14,8 +14,8 @@ public sealed class PaymentListViewModel : ListViewModelBase<PaymentDto, IPaymen
     private readonly IToastNotificationService _toastService;
 
     private FormaPagamento? _selectedFormaPagamento;
-    private DateTime? _startDate;
-    private DateTime? _endDate;
+    private DateTime? _dateFrom;
+    private DateTime? _dateTo;
     private Timer? _searchDebounceTimer;
 
     public ICommand RefreshCommand { get; }
@@ -25,19 +25,37 @@ public sealed class PaymentListViewModel : ListViewModelBase<PaymentDto, IPaymen
     public FormaPagamento? SelectedFormaPagamento
     {
         get => _selectedFormaPagamento;
-        set => SetProperty(ref _selectedFormaPagamento, value);
+        set
+        {
+            if (SetProperty(ref _selectedFormaPagamento, value))
+            {
+                _ = LoadAsync();
+            }
+        }
     }
 
-    public DateTime? StartDate
+    public DateTime? DateFrom
     {
-        get => _startDate;
-        set => SetProperty(ref _startDate, value);
+        get => _dateFrom;
+        set
+        {
+            if (SetProperty(ref _dateFrom, value))
+            {
+                _ = LoadAsync();
+            }
+        }
     }
 
-    public DateTime? EndDate
+    public DateTime? DateTo
     {
-        get => _endDate;
-        set => SetProperty(ref _endDate, value);
+        get => _dateTo;
+        set
+        {
+            if (SetProperty(ref _dateTo, value))
+            {
+                _ = LoadAsync();
+            }
+        }
     }
 
     public decimal TotalRecebido => Items.Sum(p => p.ValorPago);
@@ -56,9 +74,6 @@ public sealed class PaymentListViewModel : ListViewModelBase<PaymentDto, IPaymen
         RefreshCommand = new RelayCommand(async _ => await LoadAsync(), _ => !IsLoading);
         ViewPaymentCommand = new RelayCommand(async param => await ViewPaymentAsync(param), _ => !IsLoading);
         EstornarPaymentCommand = new RelayCommand(async param => await EstornarPaymentAsync(param), _ => !IsLoading);
-
-        EndDate = DateTime.Today;
-        StartDate = DateTime.Today.AddDays(-30);
     }
 
     protected override void OnSearchTextChanged()
@@ -72,8 +87,8 @@ public sealed class PaymentListViewModel : ListViewModelBase<PaymentDto, IPaymen
         {
             SearchTerm = string.IsNullOrWhiteSpace(SearchText) ? null : SearchText,
             FormaPagamento = SelectedFormaPagamento,
-            StartDate = StartDate,
-            EndDate = EndDate?.AddDays(1).AddTicks(-1) // End of day
+            StartDate = DateFrom,
+            EndDate = DateTo?.AddDays(1).AddTicks(-1) // End of day
         };
 
         return await Service.GetAllAsync(request);

@@ -28,16 +28,6 @@
             <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
 
-        <Style x:Key="FormDatePickerStyle" TargetType="DatePicker">
-            <Setter Property="Padding" Value="10,8"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="BorderBrush" Value="#D1D5DB"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="MinHeight" Value="38"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-        </Style>
-
         <Style x:Key="PrimaryButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="#2563EB"/>
             <Setter Property="Foreground" Value="White"/>
@@ -148,9 +138,9 @@
                             Margin="0,0,16,0">
                     <TextBlock Text="Data Início"
                                Style="{StaticResource FormLabelStyle}"/>
-                    <DatePicker SelectedDate="{Binding StartDate, UpdateSourceTrigger=PropertyChanged}"
-                                Style="{StaticResource FormDatePickerStyle}"
-                                Width="150"/>
+                    <DatePicker SelectedDate="{Binding DateFrom, UpdateSourceTrigger=PropertyChanged}"
+                                Height="34"
+                                VerticalContentAlignment="Center"/>
                 </StackPanel>
 
                 <!-- Data Fim -->
@@ -159,9 +149,9 @@
                             Margin="0,0,16,0">
                     <TextBlock Text="Data Fim"
                                Style="{StaticResource FormLabelStyle}"/>
-                    <DatePicker SelectedDate="{Binding EndDate, UpdateSourceTrigger=PropertyChanged}"
-                                Style="{StaticResource FormDatePickerStyle}"
-                                Width="150"/>
+                    <DatePicker SelectedDate="{Binding DateTo, UpdateSourceTrigger=PropertyChanged}"
+                                Height="34"
+                                VerticalContentAlignment="Center"/>
                 </StackPanel>
 
                 <Button Grid.Column="5"
