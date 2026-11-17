@@ -1,12 +1,10 @@
-using System.Collections.ObjectModel;
-using System.Windows.Input;
 using SmartLanche.Application.DTOs;
 using SmartLanche.Application.Interfaces;
 using SmartLanche.Domain.Entities;
 using SmartLanche.Domain.Enums;
 using SmartLanche.Presentation.Commands;
 using SmartLanche.Presentation.Services;
-using SmartLanche.Presentation.ViewModels;
+using System.Windows.Input;
 
 namespace SmartLanche.Presentation.ViewModels.Inventory;
 

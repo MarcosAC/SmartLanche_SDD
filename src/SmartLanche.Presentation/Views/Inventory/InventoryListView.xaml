@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:vm="clr-namespace:SmartLanche.Presentation.ViewModels.Inventory"
              xmlns:converters="clr-namespace:SmartLanche.Presentation.Converters"
+             xmlns:controls="clr-namespace:SmartLanche.Presentation.Controls"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              xmlns:domainEnums="clr-namespace:SmartLanche.Domain.Enums;assembly=SmartLanche.Domain"
              mc:Ignorable="d"
@@ -13,15 +14,8 @@
 
     <UserControl.Resources>
         <converters:StockStatusToColorConverter x:Key="StockStatusToColorConverter"/>
-        <converters:StockStatusToDescriptionConverter x:Key="StockStatusToDescriptionConverter"/>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <converters:StringIsNullOrEmptyToVisibilityConverter x:Key="StringIsNullOrEmptyToVisibilityConverter"/>
-
-        <ObjectDataProvider x:Key="StockStatusValues" MethodName="GetValues" ObjectType="{x:Type sys:Enum}">
-            <ObjectDataProvider.MethodParameters>
-                <x:Type TypeName="domainEnums:StockStatus"/>
-            </ObjectDataProvider.MethodParameters>
-        </ObjectDataProvider>
 
         <Style x:Key="ActionButtonStyle" TargetType="Button">
             <Setter Property="Padding" Value="8,4"/>
@@ -92,16 +86,12 @@
                     </TextBox.Template>
                 </TextBox>
 
-                <ComboBox Width="160" Margin="0,0,12,0" Padding="6,4" FontSize="13"
-                          ItemsSource="{Binding Source={StaticResource StockStatusValues}}"
-                          SelectedItem="{Binding FilterStatus, Mode=TwoWay}"
-                          BorderBrush="#D1D5DB" BorderThickness="1">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Converter={StaticResource StockStatusToDescriptionConverter}}"/>
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
+                <controls:StatusFilterComboBox Width="160" Margin="0,0,12,0"
+                                  EnumType="{x:Type domainEnums:StockStatus}"
+                                  SelectedValue="{Binding FilterStatus, Mode=TwoWay}"
+                                  IncludeAllOption="True"
+                                  AllOptionText="Todos os status"
+                                  UseEnumDescription="True"/>
 
                 <Button Command="{Binding RefreshCommand}"
                         Style="{StaticResource ActionButtonStyle}"

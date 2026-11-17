@@ -115,7 +115,7 @@
                     <ComboBox ItemsSource="{Binding DiscountTypes}"
                               SelectedItem="{Binding DiscountType, Mode=TwoWay}"
                               ToolTip="Selecione o tipo de desconto"
-                              Style="{StaticResource FieldControlStyle}">
+                              Style="{StaticResource FormComboBoxStyle}">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Converter={StaticResource EnumToDescriptionConverter}}"/>

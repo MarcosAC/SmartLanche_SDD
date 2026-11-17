@@ -101,7 +101,7 @@
                                                      Mode=TwoWay}"
                               DisplayMemberPath="Name"
                               ToolTip="Selecione uma categoria"
-                              Style="{StaticResource FieldControlStyle}"/>
+                              Style="{StaticResource FormComboBoxStyle}"/>
 
                     <TextBlock Text="Carregando categorias..."
                                Foreground="#6B7280"
