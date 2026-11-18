@@ -234,7 +234,8 @@ public class PaymentListViewModelTests
                     var term = filter.SearchTerm.Trim().ToLower();
                     query = query.Where(p =>
                         (p.Notes != null && p.Notes.ToLower().Contains(term)) ||
-                        p.OrderId.ToString().Contains(term));
+                        p.OrderId.ToString().Contains(term) ||
+                        (p.CustomerName != null && p.CustomerName.ToLower().Contains(term)));
                 }
 
                 if (filter.FormaPagamento.HasValue)

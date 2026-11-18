@@ -108,13 +108,12 @@
                             Margin="0,0,16,0">
                     <TextBlock Text="Buscar"
                                Style="{StaticResource FormLabelStyle}"/>
-                    <TextBox Text="{Binding SearchTerm, UpdateSourceTrigger=PropertyChanged, Delay=500}"
+                    <TextBox Text="{Binding SearchTerm, UpdateSourceTrigger=PropertyChanged}"
                              Style="{StaticResource FormTextBoxStyle}"
-                             Width="250"
-                             ToolTip="Buscar por ID do pedido, observações">
-                        <TextBox.InputBindings>
+                             Width="250">
+                        <!--<TextBox.InputBindings>
                             <KeyBinding Key="Enter" Command="{Binding LoadCommand}"/>
-                        </TextBox.InputBindings>
+                        </TextBox.InputBindings>-->
                     </TextBox>
                 </StackPanel>
 

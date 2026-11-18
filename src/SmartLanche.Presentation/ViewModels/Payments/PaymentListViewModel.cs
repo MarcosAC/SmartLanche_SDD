@@ -1,11 +1,9 @@
-using System.Threading;
-using System.Windows.Input;
 using SmartLanche.Application.DTOs;
 using SmartLanche.Application.Interfaces;
 using SmartLanche.Domain.Enums;
 using SmartLanche.Presentation.Commands;
 using SmartLanche.Presentation.Services;
-using SmartLanche.Presentation.ViewModels;
+using System.Windows.Input;
 
 namespace SmartLanche.Presentation.ViewModels.Payments;
 
@@ -16,7 +14,7 @@ public sealed class PaymentListViewModel : ListViewModelBase<PaymentDto, IPaymen
     private FormaPagamento? _selectedFormaPagamento;
     private DateTime? _dateFrom;
     private DateTime? _dateTo;
-    private Timer? _searchDebounceTimer;
+    //private Timer? _searchDebounceTimer;
 
     public ICommand RefreshCommand { get; }
     public ICommand ViewPaymentCommand { get; }
@@ -69,26 +67,26 @@ public sealed class PaymentListViewModel : ListViewModelBase<PaymentDto, IPaymen
     {
         _toastService = toastService ?? throw new ArgumentNullException(nameof(toastService));
 
-        _searchDebounceTimer = new Timer(async _ => await LoadAsync(), null, Timeout.Infinite, Timeout.Infinite);
+        //_searchDebounceTimer = new Timer(async _ => await LoadAsync(), null, Timeout.Infinite, Timeout.Infinite);
 
         RefreshCommand = new RelayCommand(async _ => await LoadAsync(), _ => !IsLoading);
         ViewPaymentCommand = new RelayCommand(async param => await ViewPaymentAsync(param), _ => !IsLoading);
         EstornarPaymentCommand = new RelayCommand(async param => await EstornarPaymentAsync(param), _ => !IsLoading);
     }
 
-    protected override void OnSearchTextChanged()
-    {
-        _searchDebounceTimer?.Change(300, Timeout.Infinite);
-    }
+    //protected override void OnSearchTextChanged()
+    //{
+    //    _searchDebounceTimer?.Change(300, Timeout.Infinite);
+    //}
 
     protected override async Task<IReadOnlyList<PaymentDto>> GetItemsAsync()
     {
         var request = new PaymentFilterRequest
         {
             SearchTerm = string.IsNullOrWhiteSpace(SearchText) ? null : SearchText,
-            FormaPagamento = SelectedFormaPagamento,
+            FormaPagamento = SelectedFormaPagamento.HasValue ? SelectedFormaPagamento.Value : null,
             StartDate = DateFrom,
-            EndDate = DateTo?.AddDays(1).AddTicks(-1) // End of day
+            EndDate = DateTo?.AddDays(1).AddTicks(-1)
         };
 
         return await Service.GetAllAsync(request);
@@ -96,8 +94,12 @@ public sealed class PaymentListViewModel : ListViewModelBase<PaymentDto, IPaymen
 
     protected override IReadOnlyList<PaymentDto> ApplySearchFilter(IReadOnlyList<PaymentDto> items, string searchTerm)
     {
-        // Search is handled server-side via filter
-        return items;
+        return items.Where(o =>
+            o.Id.ToString().Contains(searchTerm) ||
+            o.OrderId.ToString().Contains(searchTerm) ||
+            (o.Notes != null && o.Notes.ToLowerInvariant().Contains(searchTerm)) ||
+            (o.CustomerName != null && o.CustomerName.ToLowerInvariant().Contains(searchTerm))
+        ).ToList();
     }
 
     protected override IReadOnlyList<PaymentDto> ApplySort(IReadOnlyList<PaymentDto> items)
