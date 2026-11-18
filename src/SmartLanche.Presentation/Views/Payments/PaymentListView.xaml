@@ -9,7 +9,7 @@
 
     <UserControl.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-        <converters:BoolToSimNaoConverter x:Key="BoolToSimNaoConverter"/>
+        <converters:BoolToYesNoConverter x:Key="BoolToSimNaoConverter"/>
         <converters:EnumToDescriptionConverter x:Key="EnumToDescriptionConverter"/>
         <converters:CountToVisibilityConverter x:Key="CountToVisibilityConverter"/>
 

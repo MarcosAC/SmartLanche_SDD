@@ -4,7 +4,7 @@ using System.Windows.Data;
 
 namespace SmartLanche.Presentation.Converters;
 
-public class BoolToSimNaoConverter : IValueConverter
+public class BoolToYesNoConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
@@ -29,6 +29,7 @@ public class BoolToSimNaoConverter : IValueConverter
             boolValue = !boolValue;
         }
 
+        // Display in Portuguese for the user
         return boolValue ? "Sim" : "Não";
     }
 
