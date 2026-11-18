@@ -110,10 +110,7 @@
                                Style="{StaticResource FormLabelStyle}"/>
                     <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                              Style="{StaticResource FormTextBoxStyle}"
-                             Width="250">
-                        <!--<TextBox.InputBindings>
-                            <KeyBinding Key="Enter" Command="{Binding LoadCommand}"/>
-                        </TextBox.InputBindings>-->
+                             Width="250">                       
                     </TextBox>
                 </StackPanel>
 
@@ -280,14 +277,7 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
                     </DataGrid.Columns>
-                </DataGrid>
-
-                <TextBlock Text="Nenhum pagamento encontrado."
-                           Foreground="#9CA3AF"
-                           FontSize="14"
-                           HorizontalAlignment="Center"
-                           VerticalAlignment="Center"
-                           Visibility="{Binding Payments.Count, Converter={StaticResource CountToVisibilityConverter}}"/>
+                </DataGrid>                
             </Grid>
         </Border>
 

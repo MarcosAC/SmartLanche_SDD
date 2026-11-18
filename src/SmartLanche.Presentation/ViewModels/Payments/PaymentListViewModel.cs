@@ -14,7 +14,6 @@ public sealed class PaymentListViewModel : ListViewModelBase<PaymentDto, IPaymen
     private FormaPagamento? _selectedFormaPagamento;
     private DateTime? _dateFrom;
     private DateTime? _dateTo;
-    //private Timer? _searchDebounceTimer;
 
     public ICommand RefreshCommand { get; }
     public ICommand ViewPaymentCommand { get; }
@@ -67,17 +66,10 @@ public sealed class PaymentListViewModel : ListViewModelBase<PaymentDto, IPaymen
     {
         _toastService = toastService ?? throw new ArgumentNullException(nameof(toastService));
 
-        //_searchDebounceTimer = new Timer(async _ => await LoadAsync(), null, Timeout.Infinite, Timeout.Infinite);
-
         RefreshCommand = new RelayCommand(async _ => await LoadAsync(), _ => !IsLoading);
         ViewPaymentCommand = new RelayCommand(async param => await ViewPaymentAsync(param), _ => !IsLoading);
         EstornarPaymentCommand = new RelayCommand(async param => await EstornarPaymentAsync(param), _ => !IsLoading);
     }
-
-    //protected override void OnSearchTextChanged()
-    //{
-    //    _searchDebounceTimer?.Change(300, Timeout.Infinite);
-    //}
 
     protected override async Task<IReadOnlyList<PaymentDto>> GetItemsAsync()
     {
