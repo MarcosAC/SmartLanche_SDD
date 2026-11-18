@@ -52,7 +52,10 @@ public class PaymentRepository : IPaymentRepository
             if (!string.IsNullOrWhiteSpace(filter.SearchTerm))
             {
                 var term = filter.SearchTerm.Trim();
-                query = query.Where(p => p.Notes != null && p.Notes.Contains(term) || p.OrderId.ToString().Contains(term));
+                query = query.Where(p =>
+                    (p.Notes != null && p.Notes.Contains(term)) ||
+                    p.OrderId.ToString().Contains(term) ||
+                    (p.Order != null && p.Order.Customer != null && p.Order.Customer.Name != null && p.Order.Customer.Name.Contains(term)));
             }
 
             if (filter.FormaPagamento.HasValue)
