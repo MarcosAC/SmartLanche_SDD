@@ -9,6 +9,7 @@
 
     <UserControl.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <converters:BoolToSimNaoConverter x:Key="BoolToSimNaoConverter"/>
         <converters:EnumToDescriptionConverter x:Key="EnumToDescriptionConverter"/>
         <converters:CountToVisibilityConverter x:Key="CountToVisibilityConverter"/>
 
@@ -240,7 +241,7 @@
                                                 Width="90">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding Estornado, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Sim;Não}"
+                                    <TextBlock Text="{Binding Estornado, Converter={StaticResource BoolToSimNaoConverter}}"
                                                VerticalAlignment="Center"
                                                HorizontalAlignment="Center"
                                                Foreground="{Binding Estornado, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=#DC2626;#166534}"
