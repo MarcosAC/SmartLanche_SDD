@@ -108,7 +108,7 @@
                             Margin="0,0,16,0">
                     <TextBlock Text="Buscar"
                                Style="{StaticResource FormLabelStyle}"/>
-                    <TextBox Text="{Binding SearchTerm, UpdateSourceTrigger=PropertyChanged}"
+                    <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                              Style="{StaticResource FormTextBoxStyle}"
                              Width="250">
                         <!--<TextBox.InputBindings>
