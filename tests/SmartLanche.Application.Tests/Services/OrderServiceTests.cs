@@ -1165,16 +1165,16 @@ public class OrderServiceTests : IDisposable
                 _nextId++,
                 request.OrderId,
                 "Cliente Teste", // CustomerName
-                request.FormaPagamento,
-                request.ValorPago,
-                request.FormaPagamento == FormaPagamento.Dinheiro ? request.ValorPago - 10m : 0m,
-                request.Parcelas,
-                request.Parcelas > 0 ? request.ValorPago / request.Parcelas : 0m,
+                request.PaymentMethod,
+                request.AmountPaid,
+                request.PaymentMethod == FormaPagamento.Dinheiro ? request.AmountPaid - 10m : 0m,
+                request.Installments,
+                request.Installments > 0 ? request.AmountPaid / request.Installments : 0m,
                 DateTime.Now,
                 request.Notes,
                 false,
                 null,
-                null); // EstornoMotivo
+                null); // ReversalReason
             _payments.Add(payment);
             return Task.FromResult(new ProcessPaymentResult(true, payment, null));
         }
@@ -1213,7 +1213,7 @@ public class OrderServiceTests : IDisposable
             => Task.FromResult<IReadOnlyList<PendingPaymentDto>>(_pendingPayments.ToList());
 
         public Task<IReadOnlyList<PendingPaymentDto>> GetByStatusAsync(StatusPagamentoPendente status, CancellationToken cancellationToken = default)
-            => Task.FromResult<IReadOnlyList<PendingPaymentDto>>(_pendingPayments.Where(p => p.StatusPagamento == status).ToList());
+            => Task.FromResult<IReadOnlyList<PendingPaymentDto>>(_pendingPayments.Where(p => p.PaymentStatus == status).ToList());
 
         public Task<IReadOnlyList<PendingPaymentHistoryDto>> GetHistoryAsync(int pendingPaymentId, CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<PendingPaymentHistoryDto>>(Array.Empty<PendingPaymentHistoryDto>());
@@ -1241,24 +1241,24 @@ public class OrderServiceTests : IDisposable
         public Task<decimal> GetSaldoDevedorAsync(int customerId, CancellationToken cancellationToken = default)
         {
             var saldo = _pendingPayments
-                .Where(p => p.CustomerId == customerId && p.StatusPagamento == StatusPagamentoPendente.NaoPago)
-                .Sum(p => p.SaldoPendente);
+                .Where(p => p.CustomerId == customerId && p.PaymentStatus == StatusPagamentoPendente.NaoPago)
+                .Sum(p => p.PendingBalance);
             return Task.FromResult(saldo);
         }
 
         public Task<IReadOnlyList<DevedorDto>> GetDevedoresAsync(CancellationToken cancellationToken = default)
         {
             var devedores = _pendingPayments
-                .Where(p => p.StatusPagamento == StatusPagamentoPendente.NaoPago)
+                .Where(p => p.PaymentStatus == StatusPagamentoPendente.NaoPago)
                 .GroupBy(p => p.CustomerId)
                 .Select(g => new DevedorDto(
                     g.Key,
                     "Test Customer",
                     "123456789",
-                    g.Sum(p => p.SaldoPendente),
+                    g.Sum(p => p.PendingBalance),
                     g.Count(),
-                    g.Max(p => p.DataHora)))
-                .OrderByDescending(d => d.SaldoDevedor)
+                    g.Max(p => p.DateTime)))
+                .OrderByDescending(d => d.DebtBalance)
                 .ToList();
             return Task.FromResult<IReadOnlyList<DevedorDto>>(devedores);
         }
@@ -1453,7 +1453,7 @@ public class OrderServiceTests : IDisposable
                     g.Sum(p => p.ValorOriginal - p.ValorPago),
                     g.Count(),
                     g.Max(p => p.DataHora)))
-                .OrderByDescending(d => d.SaldoDevedor)
+                .OrderByDescending(d => d.DebtBalance)
                 .ToList();
             return Task.FromResult<IReadOnlyList<DevedorDto>>(devedores);
         }

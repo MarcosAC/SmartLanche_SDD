@@ -173,22 +173,22 @@
                                             ElementStyle="{StaticResource CenterAlignStyle}"/>
 
                         <DataGridTextColumn Header="Valor Original (R$)"
-                                            Binding="{Binding ValorOriginal, StringFormat='C2', ConverterCulture='pt-BR'}"
+                                            Binding="{Binding OriginalAmount, StringFormat='C2', ConverterCulture='pt-BR'}"
                                             Width="130"
                                             ElementStyle="{StaticResource RightAlignStyle}"/>
 
                         <DataGridTextColumn Header="Valor Pago (R$)"
-                                            Binding="{Binding ValorPago, StringFormat='C2', ConverterCulture='pt-BR'}"
+                                            Binding="{Binding AmountPaid, StringFormat='C2', ConverterCulture='pt-BR'}"
                                             Width="120"
                                             ElementStyle="{StaticResource RightAlignStyle}"/>
 
                         <DataGridTextColumn Header="Saldo (R$)"
-                                            Binding="{Binding SaldoPendente, StringFormat='C2', ConverterCulture='pt-BR'}"
+                                            Binding="{Binding PendingBalance, StringFormat='C2', ConverterCulture='pt-BR'}"
                                             Width="120"
                                             ElementStyle="{StaticResource RightAlignStyle}"/>
 
                         <DataGridTextColumn Header="Data"
-                                            Binding="{Binding DataHora, StringFormat='dd/MM/yyyy HH:mm'}"
+                                            Binding="{Binding DateTime, StringFormat='dd/MM/yyyy HH:mm'}"
                                             Width="130"
                                             ElementStyle="{StaticResource CenterAlignStyle}"/>
 
@@ -196,8 +196,8 @@
                                                 Width="130">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding StatusPagamento, Converter={StaticResource EnumToDescriptionConverter}}"
-                                               Foreground="{Binding StatusPagamento, Converter={StaticResource StatusPagamentoToColorConverter}}"
+                                    <TextBlock Text="{Binding PaymentStatus, Converter={StaticResource EnumToDescriptionConverter}}"
+                                               Foreground="{Binding PaymentStatus, Converter={StaticResource StatusPagamentoToColorConverter}}"
                                                FontWeight="SemiBold"
                                                HorizontalAlignment="Center"
                                                VerticalAlignment="Center"/>
@@ -213,7 +213,7 @@
                                             Style="{StaticResource PrimaryButtonStyle}"
                                             Padding="6,3"
                                             MinWidth="100"
-                                            Visibility="{Binding StatusPagamento, Converter={StaticResource StatusPagamentoToVisibilityConverter}, ConverterParameter=NaoPago}"
+                                            Visibility="{Binding PaymentStatus, Converter={StaticResource StatusPagamentoToVisibilityConverter}, ConverterParameter=NaoPago}"
                                             Command="{Binding DataContext.RegisterPaymentCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                             CommandParameter="{Binding}"/>
                                 </DataTemplate>

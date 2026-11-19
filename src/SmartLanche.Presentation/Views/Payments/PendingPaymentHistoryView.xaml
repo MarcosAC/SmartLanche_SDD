@@ -1,10 +1,15 @@
 <UserControl x:Class="SmartLanche.Presentation.Views.Payments.PendingPaymentHistoryView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converters="clr-namespace:SmartLanche.Presentation.Converters"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d"
              d:DesignHeight="300" d:DesignWidth="500">
+
+    <UserControl.Resources>
+        <converters:EnumToDescriptionConverter x:Key="EnumToDescriptionConverter"/>
+    </UserControl.Resources>
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -33,13 +38,13 @@
                                     Binding="{Binding Id}"
                                     Width="50"/>
                 <DataGridTextColumn Header="Valor Pago"
-                                    Binding="{Binding ValorPago, StringFormat='C2', ConverterCulture='pt-BR'}"
+                                    Binding="{Binding AmountPaid, StringFormat='C2', ConverterCulture='pt-BR'}"
                                     Width="100"/>
                 <DataGridTextColumn Header="Data/Hora"
-                                    Binding="{Binding DataHora, StringFormat='dd/MM/yyyy HH:mm'}"
+                                    Binding="{Binding DateTime, StringFormat='dd/MM/yyyy HH:mm'}"
                                     Width="140"/>
                 <DataGridTextColumn Header="Forma"
-                                    Binding="{Binding FormaPagamento}"
+                                    Binding="{Binding PaymentMethod, Converter={StaticResource EnumToDescriptionConverter}}"
                                     Width="100"/>
                 <DataGridTextColumn Header="Observações"
                                     Binding="{Binding Notes}"

@@ -82,9 +82,9 @@
             <StackPanel Grid.Row="0" Margin="0,0,0,16">
                 <TextBlock Text="{Binding PendingPayment.CustomerName, StringFormat='Cliente: {0}'}" Style="{StaticResource DialogHeaderStyle}"/>
                 <TextBlock Text="{Binding PendingPayment.OrderId, StringFormat='Pedido: #{0}'}" Style="{StaticResource DialogValueStyle}"/>
-                <TextBlock Text="{Binding PendingPayment.ValorOriginal, StringFormat='Valor Original: R$ {0:N2}'}" Style="{StaticResource DialogValueStyle}"/>
-                <TextBlock Text="{Binding PendingPayment.ValorPago, StringFormat='Valor Pago: R$ {0:N2}'}" Style="{StaticResource DialogValueStyle}"/>
-                <TextBlock Text="{Binding PendingPayment.SaldoPendente, StringFormat='Saldo Pendente: R$ {0:N2}'}"
+                <TextBlock Text="{Binding PendingPayment.OriginalAmount, StringFormat='Valor Original: R$ {0:N2}'}" Style="{StaticResource DialogValueStyle}"/>
+                <TextBlock Text="{Binding PendingPayment.AmountPaid, StringFormat='Valor Pago: R$ {0:N2}'}" Style="{StaticResource DialogValueStyle}"/>
+                <TextBlock Text="{Binding PendingPayment.PendingBalance, StringFormat='Saldo Pendente: R$ {0:N2}'}"
                            Style="{StaticResource DialogHeaderStyle}"
                            Foreground="#DC2626"
                            Margin="0,8,0,0"/>

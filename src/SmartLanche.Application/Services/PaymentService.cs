@@ -37,9 +37,9 @@ public class PaymentService : IPaymentService
             var payment = new Payment
             {
                 OrderId = request.OrderId,
-                FormaPagamento = request.FormaPagamento,
-                ValorPago = request.ValorPago,
-                Parcelas = request.Parcelas,
+                FormaPagamento = request.PaymentMethod,
+                ValorPago = request.AmountPaid,
+                Parcelas = request.Installments,
                 Notes = request.Notes
             };
 

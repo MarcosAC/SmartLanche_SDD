@@ -201,7 +201,7 @@
                                                 Width="140">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding FormaPagamento, Converter={StaticResource EnumToDescriptionConverter}}"
+                                    <TextBlock Text="{Binding PaymentMethod, Converter={StaticResource EnumToDescriptionConverter}}"
                                                VerticalAlignment="Center"
                                                Margin="8,0"/>
                                 </DataTemplate>
@@ -209,27 +209,27 @@
                         </DataGridTemplateColumn>
 
                         <DataGridTextColumn Header="Valor Pago (R$)"
-                                            Binding="{Binding ValorPago, StringFormat='C2', ConverterCulture='pt-BR'}"
+                                            Binding="{Binding AmountPaid, StringFormat='C2', ConverterCulture='pt-BR'}"
                                             Width="120"
                                             ElementStyle="{StaticResource RightAlignStyle}"/>
 
                         <DataGridTextColumn Header="Troco (R$)"
-                                            Binding="{Binding Troco, StringFormat='C2', ConverterCulture='pt-BR'}"
+                                            Binding="{Binding Change, StringFormat='C2', ConverterCulture='pt-BR'}"
                                             Width="100"
                                             ElementStyle="{StaticResource RightAlignStyle}"/>
 
                         <DataGridTextColumn Header="Parcelas"
-                                            Binding="{Binding Parcelas}"
+                                            Binding="{Binding Installments}"
                                             Width="80"
                                             ElementStyle="{StaticResource CenterAlignStyle}"/>
 
                         <DataGridTextColumn Header="Valor Parcela (R$)"
-                                            Binding="{Binding ValorParcela, StringFormat='C2', ConverterCulture='pt-BR'}"
+                                            Binding="{Binding InstallmentAmount, StringFormat='C2', ConverterCulture='pt-BR'}"
                                             Width="120"
                                             ElementStyle="{StaticResource RightAlignStyle}"/>
 
                         <DataGridTextColumn Header="Data/Hora"
-                                            Binding="{Binding DataHora, StringFormat='dd/MM/yyyy HH:mm'}"
+                                            Binding="{Binding DateTime, StringFormat='dd/MM/yyyy HH:mm'}"
                                             Width="140"
                                             ElementStyle="{StaticResource CenterAlignStyle}"/>
 
@@ -241,10 +241,10 @@
                                                 Width="90">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding Estornado, Converter={StaticResource BoolToSimNaoConverter}}"
+                                    <TextBlock Text="{Binding IsReversed, Converter={StaticResource BoolToSimNaoConverter}}"
                                                VerticalAlignment="Center"
                                                HorizontalAlignment="Center"
-                                               Foreground="{Binding Estornado, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=#DC2626;#166534}"
+                                               Foreground="{Binding IsReversed, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=#DC2626;#166534}"
                                                FontWeight="SemiBold"/>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
