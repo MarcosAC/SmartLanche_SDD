@@ -55,7 +55,7 @@ public sealed class PaymentListViewModel : ListViewModelBase<PaymentDto, IPaymen
         }
     }
 
-    public decimal TotalRecebido => Items.Sum(p => p.ValorPago);
+    public decimal TotalRecebido => Items.Sum(p => p.AmountPaid);
     public string TotalRecebidoFormatted => $"R$ {TotalRecebido:N2}";
     public int TotalPaymentsCount => Items.Count;
 
@@ -76,7 +76,7 @@ public sealed class PaymentListViewModel : ListViewModelBase<PaymentDto, IPaymen
         var request = new PaymentFilterRequest
         {
             SearchTerm = string.IsNullOrWhiteSpace(SearchText) ? null : SearchText,
-            FormaPagamento = SelectedFormaPagamento.HasValue ? SelectedFormaPagamento.Value : null,
+            PaymentMethod = SelectedFormaPagamento.HasValue ? SelectedFormaPagamento.Value : null,
             StartDate = DateFrom,
             EndDate = DateTo?.AddDays(1).AddTicks(-1)
         };
@@ -98,18 +98,18 @@ public sealed class PaymentListViewModel : ListViewModelBase<PaymentDto, IPaymen
     {
         if (string.IsNullOrWhiteSpace(SortColumn))
         {
-            return items.OrderByDescending(p => p.DataHora).ToList();
+            return items.OrderByDescending(p => p.DateTime).ToList();
         }
 
         var sorted = SortColumn.ToLowerInvariant() switch
         {
             "id" => items.OrderBy(p => p.Id),
             "orderid" or "pedidoid" => items.OrderBy(p => p.OrderId),
-            "formapagamento" or "forma" => items.OrderBy(p => p.FormaPagamento),
-            "valorpago" or "valor" => items.OrderBy(p => p.ValorPago),
-            "datahora" or "data" => items.OrderBy(p => p.DataHora),
-            "estornado" => items.OrderBy(p => p.Estornado),
-            _ => items.OrderByDescending(p => p.DataHora)
+            "formapagamento" or "forma" or "paymentmethod" => items.OrderBy(p => p.PaymentMethod),
+            "valorpago" or "valor" or "amountpaid" => items.OrderBy(p => p.AmountPaid),
+            "datahora" or "data" or "datetime" => items.OrderBy(p => p.DateTime),
+            "estornado" or "isreversed" => items.OrderBy(p => p.IsReversed),
+            _ => items.OrderByDescending(p => p.DateTime)
         };
 
         return SortDescending ? sorted.Reverse().ToList() : sorted.ToList();
@@ -128,15 +128,15 @@ public sealed class PaymentListViewModel : ListViewModelBase<PaymentDto, IPaymen
 
         var message = $"Pagamento #{payment.Id}\n" +
                       $"Pedido: #{payment.OrderId}\n" +
-                      $"Forma: {payment.FormaPagamento}\n" +
-                      $"Valor: R$ {payment.ValorPago:N2}\n" +
-                      $"Troco: R$ {payment.Troco:N2}\n" +
-                      $"Parcelas: {payment.Parcelas}\n" +
-                      $"Valor Parcela: R$ {payment.ValorParcela:N2}\n" +
-                      $"Data: {payment.DataHora:dd/MM/yyyy HH:mm}\n" +
+                      $"Forma: {payment.PaymentMethod}\n" +
+                      $"Valor: R$ {payment.AmountPaid:N2}\n" +
+                      $"Troco: R$ {payment.Change:N2}\n" +
+                      $"Parcelas: {payment.Installments}\n" +
+                      $"Valor Parcela: R$ {payment.InstallmentAmount:N2}\n" +
+                      $"Data: {payment.DateTime:dd/MM/yyyy HH:mm}\n" +
                       $"Observações: {payment.Notes ?? "Nenhuma"}\n" +
-                      $"Estornado: {(payment.Estornado ? "Sim" : "Não")}" +
-                      (payment.Estornado ? $"\nEstorno em: {payment.EstornoDataHora:dd/MM/yyyy HH:mm}\nMotivo: {payment.EstornoMotivo}" : "");
+                      $"Estornado: {(payment.IsReversed ? "Sim" : "Não")}" +
+                      (payment.IsReversed ? $"\nEstorno em: {payment.ReversedAt:dd/MM/yyyy HH:mm}\nMotivo: {payment.ReversalReason}" : "");
 
         System.Windows.MessageBox.Show(message, "Detalhes do Pagamento", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
     }
@@ -145,14 +145,14 @@ public sealed class PaymentListViewModel : ListViewModelBase<PaymentDto, IPaymen
     {
         if (parameter is not PaymentDto payment) return;
 
-        if (payment.Estornado)
+        if (payment.IsReversed)
         {
             _toastService.ShowWarning("Este pagamento já foi estornado.");
             return;
         }
 
         var result = System.Windows.MessageBox.Show(
-            $"Tem certeza que deseja estornar o pagamento #{payment.Id} (R$ {payment.ValorPago:N2})?\n\n" +
+            $"Tem certeza que deseja estornar o pagamento #{payment.Id} (R$ {payment.AmountPaid:N2})?\n\n" +
             "Esta ação não pode ser desfeita.",
             "Confirmar Estorno",
             System.Windows.MessageBoxButton.YesNo,

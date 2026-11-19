@@ -58,7 +58,7 @@ public class PaymentListViewModelTests
         await _viewModel.LoadAsync();
 
         Assert.Single(_viewModel.Items);
-        Assert.Equal(FormaPagamento.Dinheiro, _viewModel.Items[0].FormaPagamento);
+        Assert.Equal(FormaPagamento.Dinheiro, _viewModel.Items[0].PaymentMethod);
     }
 
     [Fact]
@@ -238,23 +238,23 @@ public class PaymentListViewModelTests
                         (p.CustomerName != null && p.CustomerName.ToLower().Contains(term)));
                 }
 
-                if (filter.FormaPagamento.HasValue)
+                if (filter.PaymentMethod.HasValue)
                 {
-                    query = query.Where(p => p.FormaPagamento == filter.FormaPagamento.Value);
+                    query = query.Where(p => p.PaymentMethod == filter.PaymentMethod.Value);
                 }
 
                 if (filter.StartDate.HasValue)
                 {
-                    query = query.Where(p => p.DataHora >= filter.StartDate.Value);
+                    query = query.Where(p => p.DateTime >= filter.StartDate.Value);
                 }
 
                 if (filter.EndDate.HasValue)
                 {
-                    query = query.Where(p => p.DataHora <= filter.EndDate.Value);
+                    query = query.Where(p => p.DateTime <= filter.EndDate.Value);
                 }
             }
 
-            return Task.FromResult<IReadOnlyList<PaymentDto>>(query.OrderByDescending(p => p.DataHora).ToList());
+            return Task.FromResult<IReadOnlyList<PaymentDto>>(query.OrderByDescending(p => p.DateTime).ToList());
         }
 
         public Task<ProcessPaymentResult> EstornarPaymentAsync(int paymentId, string motivo, CancellationToken cancellationToken = default)

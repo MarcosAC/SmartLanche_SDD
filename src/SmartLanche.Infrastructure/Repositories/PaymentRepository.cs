@@ -58,9 +58,9 @@ public class PaymentRepository : IPaymentRepository
                     (p.Order != null && p.Order.Customer != null && p.Order.Customer.Name != null && p.Order.Customer.Name.Contains(term)));
             }
 
-            if (filter.FormaPagamento.HasValue)
+            if (filter.PaymentMethod.HasValue)
             {
-                query = query.Where(p => p.FormaPagamento == filter.FormaPagamento.Value);
+                query = query.Where(p => p.FormaPagamento == filter.PaymentMethod.Value);
             }
 
             if (filter.StartDate.HasValue)

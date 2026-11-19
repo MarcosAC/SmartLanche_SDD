@@ -6,23 +6,23 @@ public record PaymentDto(
     int Id,
     int OrderId,
     string? CustomerName,
-    FormaPagamento FormaPagamento,
-    decimal ValorPago,
-    decimal Troco,
-    int Parcelas,
-    decimal ValorParcela,
-    DateTime DataHora,
+    FormaPagamento PaymentMethod,
+    decimal AmountPaid,
+    decimal Change,
+    int Installments,
+    decimal InstallmentAmount,
+    DateTime DateTime,
     string? Notes,
-    bool Estornado,
-    DateTime? EstornoDataHora,
-    string? EstornoMotivo
+    bool IsReversed,
+    DateTime? ReversedAt,
+    string? ReversalReason
 );
 
 public record ProcessPaymentRequest(
     int OrderId,
-    FormaPagamento FormaPagamento,
-    decimal ValorPago,
-    int Parcelas,
+    FormaPagamento PaymentMethod,
+    decimal AmountPaid,
+    int Installments,
     string? Notes
 );
 
@@ -37,12 +37,12 @@ public record PendingPaymentDto(
     int CustomerId,
     string CustomerName,
     int OrderId,
-    decimal ValorOriginal,
-    decimal ValorPago,
-    decimal SaldoPendente,
-    DateTime DataHora,
-    StatusPagamentoPendente StatusPagamento,
-    DateTime? DataPagamento,
+    decimal OriginalAmount,
+    decimal AmountPaid,
+    decimal PendingBalance,
+    DateTime DateTime,
+    StatusPagamentoPendente PaymentStatus,
+    DateTime? PaymentDate,
     string? Notes,
     IReadOnlyList<PendingPaymentHistoryDto> History
 );
@@ -50,16 +50,16 @@ public record PendingPaymentDto(
 public record PendingPaymentHistoryDto(
     int Id,
     int PendingPaymentId,
-    decimal ValorPago,
-    DateTime DataHora,
-    FormaPagamento FormaPagamento,
+    decimal AmountPaid,
+    DateTime DateTime,
+    FormaPagamento PaymentMethod,
     string? Notes
 );
 
 public record RegisterPendingPaymentRequest(
     int PendingPaymentId,
-    decimal Valor,
-    FormaPagamento FormaPagamento,
+    decimal Amount,
+    FormaPagamento PaymentMethod,
     string? Notes
 );
 
@@ -73,14 +73,14 @@ public record DevedorDto(
     int CustomerId,
     string CustomerName,
     string? CustomerPhone,
-    decimal SaldoDevedor,
-    int QuantidadePendencias,
-    DateTime? UltimaPendenciaData
+    decimal DebtBalance,
+    int PendingCount,
+    DateTime? LastPendingDate
 );
 
 public record PaymentFilterRequest(
     string? SearchTerm = null,
-    FormaPagamento? FormaPagamento = null,
+    FormaPagamento? PaymentMethod = null,
     DateTime? StartDate = null,
     DateTime? EndDate = null
 );
