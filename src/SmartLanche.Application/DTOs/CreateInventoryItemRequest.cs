@@ -5,6 +5,7 @@ public sealed record CreateInventoryItemRequest(
     string Nome,
     decimal QuantidadeAtual,
     decimal QuantidadeMinima,
+    decimal QuantidadeTotalRecebida,
     decimal ValorUnitario,
     string UnidadeMedida,
     string? Notes

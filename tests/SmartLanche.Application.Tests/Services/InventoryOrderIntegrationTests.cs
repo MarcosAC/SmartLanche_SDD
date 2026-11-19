@@ -112,6 +112,7 @@ public class InventoryOrderIntegrationTests : IDisposable
                 Nome: "X-Burguer 150g",
                 QuantidadeAtual: 50,
                 QuantidadeMinima: 10,
+                QuantidadeTotalRecebida: 50,
                 ValorUnitario: 8.50m,
                 UnidadeMedida: "UN",
                 Notes: "Estoque inicial")
@@ -165,7 +166,7 @@ public class InventoryOrderIntegrationTests : IDisposable
             Name = "Hambúrguer",
             CategoryId = category.Id,
             Price = 15m,
-            InventoryRequest = new CreateInventoryItemRequest(null, "Hambúrguer 150g", 30, 5, 8m, "UN", null)
+            InventoryRequest = new CreateInventoryItemRequest(null, "Hambúrguer 150g", 30, 5, 30, 8m, "UN", null)
         });
 
         var fries = await _productService.CreateAsync(new CreateProductRequest
@@ -173,7 +174,7 @@ public class InventoryOrderIntegrationTests : IDisposable
             Name = "Batata Frita",
             CategoryId = category.Id,
             Price = 8m,
-            InventoryRequest = new CreateInventoryItemRequest(null, "Batata Frita 200g", 40, 10, 3m, "UN", null)
+            InventoryRequest = new CreateInventoryItemRequest(null, "Batata Frita 200g", 40, 10, 40, 3m, "UN", null)
         });
 
         var drink = await _productService.CreateAsync(new CreateProductRequest
@@ -181,7 +182,7 @@ public class InventoryOrderIntegrationTests : IDisposable
             Name = "Refrigerante",
             CategoryId = category.Id,
             Price = 6m,
-            InventoryRequest = new CreateInventoryItemRequest(null, "Refrigerante 350ml", 50, 10, 2m, "UN", null)
+            InventoryRequest = new CreateInventoryItemRequest(null, "Refrigerante 350ml", 50, 10, 50, 2m, "UN", null)
         });
 
         // Create combo
@@ -247,7 +248,7 @@ public class InventoryOrderIntegrationTests : IDisposable
             Name = "X-Burguer",
             CategoryId = category.Id,
             Price = 25m,
-            InventoryRequest = new CreateInventoryItemRequest(null, "X-Burguer", 20, 5, 8m, "UN", null)
+            InventoryRequest = new CreateInventoryItemRequest(null, "X-Burguer", 20, 5, 20, 8m, "UN", null)
         });
 
         var order = await _orderService.CreateAsync(new CreateOrderRequest());
@@ -326,7 +327,7 @@ public class InventoryOrderIntegrationTests : IDisposable
             Name = "X-Burguer",
             CategoryId = category.Id,
             Price = 25m,
-            InventoryRequest = new CreateInventoryItemRequest(null, "X-Burguer", 5, 5, 8m, "UN", null)
+            InventoryRequest = new CreateInventoryItemRequest(null, "X-Burguer", 5, 5, 5, 8m, "UN", null)
         });
 
         var order = await _orderService.CreateAsync(new CreateOrderRequest());

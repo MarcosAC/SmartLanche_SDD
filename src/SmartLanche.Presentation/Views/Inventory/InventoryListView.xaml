@@ -14,6 +14,7 @@
 
     <UserControl.Resources>
         <converters:StockStatusToColorConverter x:Key="StockStatusToColorConverter"/>
+        <converters:StockStatusToDescriptionConverter x:Key="StockStatusToDescriptionConverter"/>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <converters:StringIsNullOrEmptyToVisibilityConverter x:Key="StringIsNullOrEmptyToVisibilityConverter"/>
 
@@ -164,7 +165,7 @@
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
 
-                    <DataGridTextColumn Header="Qtd Atual" Binding="{Binding Quantity}" Width="90" FontWeight="SemiBold">
+                    <DataGridTextColumn Header="Qtd Atual" Binding="{Binding CurrentQuantity}" Width="90" FontWeight="SemiBold">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
                                 <Setter Property="VerticalAlignment" Value="Center"/>
@@ -181,6 +182,16 @@
                                 <Setter Property="HorizontalAlignment" Value="Center"/>
                                 <Setter Property="FontSize" Value="13"/>
                                 <Setter Property="Foreground" Value="#64748B"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
+                    <DataGridTextColumn Header="Qtd Total Recebida" Binding="{Binding TotalReceivedQuantity}" Width="100" FontWeight="SemiBold">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                <Setter Property="HorizontalAlignment" Value="Center"/>
+                                <Setter Property="FontSize" Value="14"/>
                             </Style>
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
