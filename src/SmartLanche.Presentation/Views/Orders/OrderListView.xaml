@@ -287,18 +287,17 @@
                                             Binding="{Binding TotalAmount, StringFormat='C2', ConverterCulture='pt-BR'}"
                                             Width="120"/>
 
-                        <DataGridTemplateColumn Header="Ações"
-                                                Width="280">
+                        <DataGridTemplateColumn Header="Ações" Width="280">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <StackPanel Orientation="Horizontal"
-                                                HorizontalAlignment="Center">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                         <Button Content="Ver"
                                                 Style="{StaticResource SecondaryButtonStyle}"
                                                 Padding="8,4"
                                                 MinWidth="55"
                                                 Command="{Binding DataContext.ViewOrderCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                 CommandParameter="{Binding}"/>
+                                        
                                         <Button Content="Pronto"
                                                 Style="{StaticResource SuccessButtonStyle}"
                                                 Padding="8,4"
@@ -306,6 +305,7 @@
                                                 Command="{Binding DataContext.MarkAsReadyCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                 CommandParameter="{Binding}"
                                                 Visibility="{Binding Status, Converter={StaticResource StatusToVisibilityConverter}, ConverterParameter=2}"/>
+                                        
                                         <Button Content="Finalizar"
                                                 Style="{StaticResource PrimaryButtonStyle}"
                                                 Padding="8,4"
@@ -313,6 +313,7 @@
                                                 Command="{Binding DataContext.FinalizeOrderCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                 CommandParameter="{Binding}"
                                                 Visibility="{Binding Status, Converter={StaticResource StatusToVisibilityConverter}, ConverterParameter=3}"/>
+                                        
                                         <Button Content="Cancelar"
                                                 Style="{StaticResource DangerButtonStyle}"
                                                 Padding="8,4"

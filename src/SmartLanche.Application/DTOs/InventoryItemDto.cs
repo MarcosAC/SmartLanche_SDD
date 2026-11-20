@@ -9,6 +9,7 @@ public sealed record InventoryItemDto(
     string Nome,
     decimal QuantidadeAtual,
     decimal QuantidadeMinima,
+    decimal QuantidadeTotalRecebida,
     decimal ValorUnitario,
     string UnidadeMedida,
     string? Notes,
@@ -21,6 +22,7 @@ public sealed record InventoryItemDto(
     public string ProductName => ProdutoNome ?? Nome ?? string.Empty;
     public decimal CurrentQuantity => QuantidadeAtual;
     public decimal MinQuantity => QuantidadeMinima;
+    public decimal TotalReceivedQuantity => QuantidadeTotalRecebida;
     public decimal UnitPrice => ValorUnitario;
     public decimal TotalValue => ValorTotalEstoque;
     public bool IsLowStock => EstoqueBaixo;
