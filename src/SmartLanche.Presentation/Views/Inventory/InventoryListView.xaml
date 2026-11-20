@@ -6,8 +6,8 @@
              xmlns:vm="clr-namespace:SmartLanche.Presentation.ViewModels.Inventory"
              xmlns:converters="clr-namespace:SmartLanche.Presentation.Converters"
              xmlns:controls="clr-namespace:SmartLanche.Presentation.Controls"
-             xmlns:sys="clr-namespace:System;assembly=mscorlib"
              xmlns:domainEnums="clr-namespace:SmartLanche.Domain.Enums;assembly=SmartLanche.Domain"
+             Background="#F5F6FA"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=vm:InventoryListViewModel, IsDesignTimeCreatable=False}"
              d:DesignHeight="600" d:DesignWidth="900">
@@ -17,27 +17,127 @@
         <converters:StockStatusToDescriptionConverter x:Key="StockStatusToDescriptionConverter"/>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <converters:StringIsNullOrEmptyToVisibilityConverter x:Key="StringIsNullOrEmptyToVisibilityConverter"/>
+        <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
 
-        <Style x:Key="ActionButtonStyle" TargetType="Button">
-            <Setter Property="Padding" Value="8,4"/>
-            <Setter Property="Margin" Value="2,0"/>
-            <Setter Property="FontSize" Value="12"/>
+        <Style x:Key="ActionButtonStyle"
+               TargetType="Button">
+            <Setter Property="Padding" Value="12,7"/>
+            <Setter Property="Margin" Value="4,0"/>
+            <Setter Property="MinWidth" Value="90"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+
+        <Style x:Key="PrimaryButtonStyle"
+               TargetType="Button"
+               BasedOn="{StaticResource ActionButtonStyle}">
+            <Setter Property="Background" Value="#2563EB"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+
+        <Style x:Key="SecondaryButtonStyle"
+               TargetType="Button"
+               BasedOn="{StaticResource ActionButtonStyle}">
+            <Setter Property="Background" Value="#E5E7EB"/>
+            <Setter Property="Foreground" Value="#1F2937"/>
+        </Style>
+
+        <Style x:Key="SuccessButtonStyle"
+               TargetType="Button"
+               BasedOn="{StaticResource ActionButtonStyle}">
+            <Setter Property="Background" Value="#16A34A"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+
+        <Style x:Key="WarningButtonStyle"
+               TargetType="Button"
+               BasedOn="{StaticResource ActionButtonStyle}">
+            <Setter Property="Background" Value="#F59E0B"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+
+        <Style x:Key="DangerButtonStyle"
+               TargetType="Button"
+               BasedOn="{StaticResource ActionButtonStyle}">
+            <Setter Property="Background" Value="#FEE2E2"/>
+            <Setter Property="Foreground" Value="#991B1B"/>
+        </Style>
+
+        <Style x:Key="SearchTextBoxStyle"
+               TargetType="TextBox"
+               BasedOn="{StaticResource {x:Type TextBox}}">
+            <Setter Property="Padding" Value="8,0"/>
+            <Setter Property="BorderBrush" Value="#D1D5DB"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Foreground" Value="#111827"/>
+            <Setter Property="FontSize" Value="13"/>
             <Setter Property="Template">
                 <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="Border" Background="{TemplateBinding Background}" CornerRadius="4" Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="Border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}"
+                                SnapsToDevicePixels="True">
+                            <ScrollViewer x:Name="PART_ContentHost"
+                                          Focusable="False"
+                                          HorizontalScrollBarVisibility="Hidden"
+                                          VerticalScrollBarVisibility="Hidden"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Border" Property="Opacity" Value="0.85"/>
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#9CA3AF"/>
+                            </Trigger>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#2563EB"/>
+                                <Setter TargetName="Border" Property="BorderThickness" Value="2"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
+        </Style>
+
+        <Style x:Key="StatusCellStyle"
+               TargetType="TextBlock">
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
+        <Style x:Key="StockStatusCellStyle"
+               TargetType="TextBlock"
+               BasedOn="{StaticResource StatusCellStyle}">
+            <Setter Property="Text" Value="Normal"/>
+            <Setter Property="Foreground" Value="#16A34A"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Status}" Value="0">
+                    <Setter Property="Text" Value="Normal"/>
+                    <Setter Property="Foreground" Value="#16A34A"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Status}" Value="1">
+                    <Setter Property="Text" Value="Baixo"/>
+                    <Setter Property="Foreground" Value="#F59E0B"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Status}" Value="2">
+                    <Setter Property="Text" Value="Zerado"/>
+                    <Setter Property="Foreground" Value="#DC2626"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="DataGridColumnHeaderStyle" TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="#F9FAFB"/>
+            <Setter Property="Foreground" Value="#374151"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="BorderBrush" Value="#E5E7EB"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
         </Style>
     </UserControl.Resources>
 
@@ -46,230 +146,357 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Header + Toolbar (Row 0) - EXACTLY like OrderPreparationView -->
-        <Grid Grid.Row="0" Margin="0,0,0,16">
+        <!-- Cabeçalho -->
+        <Grid Grid.Row="0" Margin="0,0,0,20">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <StackPanel Grid.Column="0">
-                <TextBlock Text="Estoque" FontSize="24" FontWeight="Bold" Foreground="#1F2937"/>
-                <TextBlock Text="{Binding StatusText}" FontSize="14" Foreground="#64748B" Margin="0,4,0,0"/>
+
+            <StackPanel>
+                <TextBlock Text="Estoque"
+                           FontSize="26"
+                           FontWeight="SemiBold"
+                           Foreground="#111827"/>
+                <TextBlock Text="Consulte e gerencie o estoque de produtos."
+                           Margin="0,6,0,0"
+                           FontSize="13"
+                           Foreground="#6B7280"/>
             </StackPanel>
 
-            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                <TextBox Width="300" Margin="0,0,12,0" Padding="10,6" FontSize="14"
-                         Text="{Binding FilterText, UpdateSourceTrigger=PropertyChanged, Delay=300}"
-                         VerticalContentAlignment="Center"
-                         BorderBrush="#D1D5DB" BorderThickness="1">
-                    <TextBox.Template>
-                        <ControlTemplate TargetType="TextBox">
-                            <Border x:Name="Border" Background="White" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Padding="8,4">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="🔍" VerticalAlignment="Center" Foreground="#94A3B8" Margin="8,0,8,0"
-                                               Visibility="{Binding Text, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource StringIsNullOrEmptyToVisibilityConverter}}"/>
-                                    <ScrollViewer x:Name="PART_ContentHost" Grid.Column="1" VerticalAlignment="Center" Margin="0"/>
-                                </Grid>
-                            </Border>
-                            <ControlTemplate.Triggers>
-                                <Trigger Property="IsFocused" Value="True">
-                                    <Setter TargetName="Border" Property="BorderBrush" Value="#2563EB"/>
-                                    <Setter TargetName="Border" Property="BorderThickness" Value="2"/>
-                                </Trigger>
-                            </ControlTemplate.Triggers>
-                        </ControlTemplate>
-                    </TextBox.Template>
-                </TextBox>
-
-                <controls:StatusFilterComboBox Width="160" Margin="0,0,12,0"
-                                  EnumType="{x:Type domainEnums:StockStatus}"
-                                  SelectedValue="{Binding FilterStatus, Mode=TwoWay}"
-                                  IncludeAllOption="True"
-                                  AllOptionText="Todos os status"
-                                  UseEnumDescription="True"/>
-
-                <Button Command="{Binding RefreshCommand}"
-                        Style="{StaticResource ActionButtonStyle}"
-                        Background="#64748B" Foreground="White"
-                        Padding="12,6" Content="⟳ Atualizar"
-                        IsEnabled="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=inverse}"/>
-
-                <!-- Status Legend -->
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="24,0,0,0">
-                    <StackPanel Orientation="Horizontal" Margin="0,0,16,0">
-                        <Border Width="16" Height="16" Background="#16A34A" CornerRadius="3" Margin="0,0,6,0"/>
-                        <TextBlock Text="Normal" FontSize="12" Foreground="#64748B" VerticalAlignment="Center"/>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,0,16,0">
-                        <Border Width="16" Height="16" Background="#F59E0B" CornerRadius="3" Margin="0,0,6,0"/>
-                        <TextBlock Text="Baixo" FontSize="12" Foreground="#64748B" VerticalAlignment="Center"/>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal">
-                        <Border Width="16" Height="16" Background="#DC2626" CornerRadius="3" Margin="0,0,6,0"/>
-                        <TextBlock Text="Zerado" FontSize="12" Foreground="#64748B" VerticalAlignment="Center"/>
-                    </StackPanel>
-                </StackPanel>
-            </StackPanel>
+            <!-- Botão para sincronizar produtos sem estoque (opcional, pode remover se não necessário) -->
+            <Button Grid.Column="1"
+                    Content="⟳ Sincronizar"
+                    Style="{StaticResource PrimaryButtonStyle}"
+                    Command="{Binding RefreshCommand}"
+                    VerticalAlignment="Center"
+                    Padding="12,7"
+                    MinWidth="110"
+                    FontSize="12"/>
         </Grid>
 
-        <!-- Loading Overlay (spans Row 1 and 2) - like OrderPreparationView -->
-        <Border Grid.Row="1" Grid.RowSpan="2" Background="#80FFFFFF" Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}"
-                VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Panel.ZIndex="10">
-            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                <TextBlock Text="Carregando..." FontSize="16" Foreground="#374151"/>
-                <ProgressBar Width="200" Height="6" IsIndeterminate="True" Margin="0,12,0,0" Foreground="#2563EB"/>
-            </StackPanel>
+        <!-- Filtros -->
+        <Border Grid.Row="1"
+                Background="White"
+                CornerRadius="8"
+                Padding="16"
+                Margin="0,0,0,16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="300"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="180"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0"
+                           Text="Buscar:"
+                           VerticalAlignment="Center"
+                           Margin="0,0,8,0"
+                           Foreground="#374151"/>
+
+                <TextBox Grid.Column="1"
+                         Height="34"
+                         VerticalContentAlignment="Center"
+                         Text="{Binding FilterText, UpdateSourceTrigger=PropertyChanged}"
+                         Style="{StaticResource SearchTextBoxStyle}"/>
+
+                <TextBlock Grid.Column="2"
+                           Text="Status:"
+                           VerticalAlignment="Center"
+                           Margin="16,0,8,0"
+                           Foreground="#374151"/>
+
+                <controls:StatusFilterComboBox Grid.Column="3"
+                                               SelectedValue="{Binding FilterStatus, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                               EnumType="{x:Type domainEnums:StockStatus}"
+                                               IncludeAllOption="True"
+                                               AllOptionText="Todos"
+                                               UseEnumDescription="True"/>
+
+                <Button Grid.Column="5"
+                        Content="Atualizar"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Command="{Binding RefreshCommand}"
+                        Height="34"
+                        VerticalAlignment="Center"/>
+            </Grid>
         </Border>
 
-        <!-- Data Grid (spans Row 1 and 2) - DIRECTLY in Border like OrderPreparationView -->
-        <Border Grid.Row="1" Grid.RowSpan="2" Background="White" BorderBrush="#E5E7EB" BorderThickness="1" Padding="0"
-                Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=inverse}">
+        <!-- Listagem -->
+        <Border Grid.Row="2"
+                Background="White"
+                CornerRadius="8"
+                Padding="12">
 
-            <DataGrid ItemsSource="{Binding Items}"
-                      AutoGenerateColumns="False"
-                      IsReadOnly="True"
-                      HeadersVisibility="Column"
-                      GridLinesVisibility="Horizontal"
-                      HorizontalGridLinesBrush="#F3F4F6"
-                      RowHeaderWidth="0"
-                      CanUserAddRows="False"
-                      CanUserDeleteRows="False"
-                      CanUserResizeRows="False"
-                      SelectionMode="Single"
-                      AlternatingRowBackground="#FAFAFA">
+            <Grid>
+                <DataGrid ItemsSource="{Binding Items}"
+                          SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          CanUserAddRows="False"
+                          CanUserDeleteRows="False"                          
+                          SelectionMode="Single"
+                          SelectionUnit="FullRow"
+                          HeadersVisibility="Column"
+                          GridLinesVisibility="Horizontal"
+                          RowHeaderWidth="0"
+                          BorderThickness="0"
+                          Background="White"
+                          AlternatingRowBackground="#F9FAFB">
 
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Produto" Binding="{Binding ProductName}" Width="*" FontWeight="Medium">
-                        <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="VerticalAlignment" Value="Center"/>
-                                <Setter Property="FontSize" Value="14"/>
-                                <Setter Property="TextWrapping" Value="Wrap"/>
-                            </Style>
-                        </DataGridTextColumn.ElementStyle>
-                    </DataGridTextColumn>
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Produto"
+                                            Binding="{Binding ProductName}"
+                                            Width="160">
+                            <!--<DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="FontSize" Value="14"/>
+                                    <Setter Property="TextWrapping" Value="Wrap"/>
+                                    <Setter Property="Margin" Value="8,0"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>-->
+                        </DataGridTextColumn>                        
 
-                    <DataGridTextColumn Header="Categoria" Binding="{Binding CategoryName}" Width="140">
-                        <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="VerticalAlignment" Value="Center"/>
-                                <Setter Property="FontSize" Value="13"/>
-                                <Setter Property="Foreground" Value="#64748B"/>
-                            </Style>
-                        </DataGridTextColumn.ElementStyle>
-                    </DataGridTextColumn>
+                        <DataGridTextColumn Header="Qtd Atual"
+                                            Binding="{Binding CurrentQuantity}"
+                                            Width="100">
+                            <!--<DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                                    <Setter Property="FontSize" Value="14"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>-->
+                        </DataGridTextColumn>
 
-                    <DataGridTextColumn Header="Qtd Atual" Binding="{Binding CurrentQuantity}" Width="90" FontWeight="SemiBold">
-                        <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="VerticalAlignment" Value="Center"/>
-                                <Setter Property="HorizontalAlignment" Value="Center"/>
-                                <Setter Property="FontSize" Value="14"/>
-                            </Style>
-                        </DataGridTextColumn.ElementStyle>
-                    </DataGridTextColumn>
+                        <DataGridTextColumn Header="Qtd Mín"
+                                            Binding="{Binding MinQuantity}"
+                                            Width="80">
+                            <!--<DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                                    <Setter Property="FontSize" Value="13"/>
+                                    <Setter Property="Foreground" Value="#64748B"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>-->
+                        </DataGridTextColumn>
 
-                    <DataGridTextColumn Header="Qtd Mín" Binding="{Binding MinQuantity}" Width="90">
-                        <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="VerticalAlignment" Value="Center"/>
-                                <Setter Property="HorizontalAlignment" Value="Center"/>
-                                <Setter Property="FontSize" Value="13"/>
-                                <Setter Property="Foreground" Value="#64748B"/>
-                            </Style>
-                        </DataGridTextColumn.ElementStyle>
-                    </DataGridTextColumn>
+                        <DataGridTextColumn Header="Qtd Total Recebida"
+                                            Binding="{Binding TotalReceivedQuantity}"
+                                            Width="110">
+                            <!--<DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                                    <Setter Property="FontSize" Value="14"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>-->
+                        </DataGridTextColumn>
 
-                    <DataGridTextColumn Header="Qtd Total Recebida" Binding="{Binding TotalReceivedQuantity}" Width="100" FontWeight="SemiBold">
-                        <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="VerticalAlignment" Value="Center"/>
-                                <Setter Property="HorizontalAlignment" Value="Center"/>
-                                <Setter Property="FontSize" Value="14"/>
-                            </Style>
-                        </DataGridTextColumn.ElementStyle>
-                    </DataGridTextColumn>
+                        <DataGridTextColumn Header="Valor Unit."
+                                            Binding="{Binding UnitPrice, StringFormat='C2', ConverterCulture='pt-BR'}"
+                                            Width="100">
+                            <!--<DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="HorizontalAlignment" Value="Right"/>
+                                    <Setter Property="FontSize" Value="13"/>
+                                    <Setter Property="Margin" Value="0,0,12,0"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>-->
+                        </DataGridTextColumn>
 
-                    <DataGridTextColumn Header="Valor Unit." Binding="{Binding UnitPrice, StringFormat='C2', ConverterCulture='pt-BR'}" Width="110">
-                        <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="VerticalAlignment" Value="Center"/>
-                                <Setter Property="HorizontalAlignment" Value="Right"/>
-                                <Setter Property="FontSize" Value="13"/>
-                                <Setter Property="Margin" Value="0,0,12,0"/>
-                            </Style>
-                        </DataGridTextColumn.ElementStyle>
-                    </DataGridTextColumn>
+                        <DataGridTextColumn Header="Valor Total"
+                                            Binding="{Binding TotalValue, StringFormat='C2', ConverterCulture='pt-BR'}"
+                                            Width="110">
+                            <!--<DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="HorizontalAlignment" Value="Right"/>
+                                    <Setter Property="FontSize" Value="14"/>
+                                    <Setter Property="Margin" Value="0,0,12,0"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>-->
+                        </DataGridTextColumn>
 
-                    <DataGridTextColumn Header="Valor Total" Binding="{Binding TotalValue, StringFormat='C2', ConverterCulture='pt-BR'}" Width="110" FontWeight="SemiBold">
-                        <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="VerticalAlignment" Value="Center"/>
-                                <Setter Property="HorizontalAlignment" Value="Right"/>
-                                <Setter Property="FontSize" Value="14"/>
-                                <Setter Property="Margin" Value="0,0,12,0"/>
-                            </Style>
-                        </DataGridTextColumn.ElementStyle>
-                    </DataGridTextColumn>
+                        <DataGridTemplateColumn Header="Status"
+                                                Width="100">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock HorizontalAlignment="Center"
+                                               Style="{StaticResource StockStatusCellStyle}"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
 
-                    <DataGridTemplateColumn Header="Status" Width="100">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <Border Background="{Binding Status, Converter={StaticResource StockStatusToColorConverter}}"
-                                        CornerRadius="12" Padding="6,2" HorizontalAlignment="Center" MinWidth="70">
-                                    <TextBlock Text="{Binding Status, Converter={StaticResource StockStatusToDescriptionConverter}}"
-                                               FontSize="11" FontWeight="Medium" Foreground="White"
-                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                </Border>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Header="Ações" 
+                                                Width="*" 
+                                                MinWidth="280">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                        <Button Content="➕ Entrada"
+                                                Command="{Binding DataContext.AddStockCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                CommandParameter="{Binding}"
+                                                Style="{StaticResource SuccessButtonStyle}"
+                                                Padding="8,4"
+                                                FontSize="11"
+                                                ToolTip="Registrar entrada de estoque"/>
 
-                    <DataGridTemplateColumn Header="Ações" Width="180">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                    <Button Content="➕ Entrada" Command="{Binding DataContext.AddStockCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                            CommandParameter="{Binding}"
-                                            Style="{StaticResource ActionButtonStyle}" Background="#16A34A" Foreground="White"
-                                            Padding="8,4" FontSize="11" ToolTip="Registrar entrada de estoque"/>
+                                        <Button Content="➖ Saída"
+                                                Command="{Binding DataContext.RemoveStockCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                CommandParameter="{Binding}"
+                                                Style="{StaticResource WarningButtonStyle}"
+                                                Padding="8,4"
+                                                FontSize="11"
+                                                Margin="4,0,0,0"
+                                                ToolTip="Registrar saída de estoque"/>
 
-                                    <Button Content="➖ Saída" Command="{Binding DataContext.RemoveStockCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                            CommandParameter="{Binding}"
-                                            Style="{StaticResource ActionButtonStyle}" Background="#F59E0B" Foreground="White"
-                                            Padding="8,4" FontSize="11" ToolTip="Registrar saída de estoque"/>
+                                        <Button Content="📋 Histórico"
+                                                Command="{Binding DataContext.ViewHistoryCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                CommandParameter="{Binding}"
+                                                Style="{StaticResource PrimaryButtonStyle}"
+                                                Padding="8,4"
+                                                FontSize="11"
+                                                Margin="4,0,0,0"
+                                                ToolTip="Ver histórico de movimentações"/>
 
-                                    <Button Content="📋 Histórico" Command="{Binding DataContext.ViewHistoryCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                            CommandParameter="{Binding}"
-                                            Style="{StaticResource ActionButtonStyle}" Background="#2563EB" Foreground="White"
-                                            Padding="8,4" FontSize="11" ToolTip="Ver histórico de movimentações"/>
+                                        <Button Content="⚙️ Mínimo"
+                                                Command="{Binding DataContext.EditMinStockCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                CommandParameter="{Binding}"
+                                                Style="{StaticResource SecondaryButtonStyle}"
+                                                Padding="8,4"
+                                                FontSize="11"
+                                                Margin="4,0,0,0"
+                                                ToolTip="Editar quantidade mínima"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
 
-                                    <Button Content="⚙️ Mín." Command="{Binding DataContext.EditMinStockCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                            CommandParameter="{Binding}"
-                                            Style="{StaticResource ActionButtonStyle}" Background="#64748B" Foreground="White"
-                                            Padding="8,4" FontSize="11" ToolTip="Editar quantidade mínima"/>
-                                </StackPanel>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                </DataGrid.Columns>
-            </DataGrid>
+                <!-- Estado vazio -->
+                <Border Background="#CCFFFFFF"
+                        Panel.ZIndex="1">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <MultiDataTrigger>
+                                    <MultiDataTrigger.Conditions>
+                                        <Condition Binding="{Binding Items.Count}" Value="0"/>
+                                        <Condition Binding="{Binding IsLoading}" Value="False"/>
+                                    </MultiDataTrigger.Conditions>
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </MultiDataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+
+                    <StackPanel HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Margin="32">
+                        <TextBlock Text="📦"
+                                   FontSize="48"
+                                   HorizontalAlignment="Center"/>
+                        <TextBlock Text="Nenhum item no estoque"
+                                   FontSize="18"
+                                   FontWeight="SemiBold"
+                                   Foreground="#374151"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,16,0,8"/>
+                        <TextBlock Text="Cadastre produtos para começar a gerenciar o estoque"
+                                   FontSize="14"
+                                   Foreground="#64748B"
+                                   HorizontalAlignment="Center"
+                                   TextAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Overlay de carregamento (dentro do Border do DataGrid) -->
+                <Border Background="#CCFFFFFF"
+                        Panel.ZIndex="2">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsLoading}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+
+                    <StackPanel HorizontalAlignment="Center"
+                                VerticalAlignment="Center">
+                        <ProgressBar IsIndeterminate="True"
+                                     Width="180"
+                                     Height="5"/>
+                        <TextBlock Text="Carregando estoque..."
+                                   Margin="0,12,0,0"
+                                   Foreground="#374151"
+                                   HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
         </Border>
 
-        <!-- Empty State - SIBLING Border at same position (like OrderPreparationView) -->
-        <Border Grid.Row="1" Grid.RowSpan="2" Background="White" BorderBrush="#E5E7EB" BorderThickness="1"
-                Visibility="{Binding Items.Count, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=reverse}">
-            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="32">
-                <TextBlock Text="📦" FontSize="48" HorizontalAlignment="Center"/>
-                <TextBlock Text="Nenhum item no estoque" FontSize="18" FontWeight="SemiBold" Foreground="#374151" HorizontalAlignment="Center" Margin="0,16,0,8"/>
-                <TextBlock Text="Cadastre produtos para começar a gerenciar o estoque" FontSize="14" Foreground="#64748B" HorizontalAlignment="Center" TextAlignment="Center"/>
-            </StackPanel>
-        </Border>
+        <!-- Ações do item selecionado -->
+        <!--<Border Grid.Row="3"
+                Background="White"
+                CornerRadius="8"
+                Padding="12"
+                Margin="0,16,0,0"
+                Visibility="{Binding SelectedItem, Converter={StaticResource NullToVisibilityConverter}}">
+            <DockPanel LastChildFill="False">
+                <TextBlock Text="Ações do item selecionado:"
+                           VerticalAlignment="Center"
+                           Foreground="#4B5563"
+                           Margin="0,0,12,0"/>
+
+                <StackPanel Orientation="Horizontal"
+                            DockPanel.Dock="Right">
+                    <Button Content="➕ Entrada"
+                            Style="{StaticResource SuccessButtonStyle}"
+                            Command="{Binding AddStockCommand}"
+                            CommandParameter="{Binding SelectedItem}"
+                            Padding="12,7"
+                            MinWidth="90"/>
+
+                    <Button Content="➖ Saída"
+                            Style="{StaticResource WarningButtonStyle}"
+                            Command="{Binding RemoveStockCommand}"
+                            CommandParameter="{Binding SelectedItem}"
+                            Padding="12,7"
+                            MinWidth="80"
+                            Margin="4,0,0,0"/>
+
+                    <Button Content="📋 Histórico"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            Command="{Binding ViewHistoryCommand}"
+                            CommandParameter="{Binding SelectedItem}"
+                            Padding="12,7"
+                            MinWidth="100"
+                            Margin="4,0,0,0"/>
+
+                    <Button Content="⚙️ Mín."
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            Command="{Binding EditMinStockCommand}"
+                            CommandParameter="{Binding SelectedItem}"
+                            Padding="12,7"
+                            MinWidth="80"
+                            Margin="4,0,0,0"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>-->
     </Grid>
 </UserControl>
