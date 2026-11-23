@@ -129,12 +129,39 @@ public sealed class InventoryListViewModel : ListViewModelBase<InventoryItemDto,
         return SortDescending ? sorted.Reverse().ToList() : sorted.ToList();
     }
 
-    public override async Task LoadAsync()
+    protected override async Task LoadItemsAsync()
     {
-        await base.LoadAsync();
+        var items = await GetItemsAsync();
+
+        // Apply search filter (client-side) - always apply to include status filter
+        if (!string.IsNullOrWhiteSpace(SearchText))
+        {
+            var searchTerm = SearchText.ToLowerInvariant();
+            items = ApplySearchFilter(items, searchTerm);
+        }
+        else if (FilterStatus.HasValue)
+        {
+            // Apply status filter even when search text is empty
+            items = ApplySearchFilter(items, string.Empty);
+        }
+
+        // Apply sorting
+        items = ApplySort(items);
+
+        Items.Clear();
+        foreach (var item in items)
+        {
+            Items.Add(item);
+        }
+
         StatusText = $"{Items.Count} itens no estoque";
         TotalItemsCount = Items.Count;
         TotalInventoryValue = Items.Sum(i => i.ValorTotalEstoque);
+    }
+
+    public override async Task LoadAsync()
+    {
+        await base.LoadAsync();
     }
 
     private static InventoryItemDto MapToDto(InventoryItem item)
