@@ -29,25 +29,26 @@ public class InventoryItemConfiguration : IEntityTypeConfiguration<InventoryItem
         builder.Property(i => i.QuantidadeAtual)
             .IsRequired()
             .HasColumnType("decimal(18,4)")
-            .HasPrecision(18, 4)
-            .HasDefaultValue(0);
+            .HasPrecision(18, 4);
 
         builder.Property(i => i.QuantidadeMinima)
             .IsRequired()
             .HasColumnType("decimal(18,4)")
-            .HasPrecision(18, 4)
-            .HasDefaultValue(0);
+            .HasPrecision(18, 4);
+
+        builder.Property(i => i.QuantidadeTotalRecebida)
+            .IsRequired()
+            .HasColumnType("decimal(18,4)")
+            .HasPrecision(18, 4);
 
         builder.Property(i => i.ValorUnitario)
             .IsRequired()
             .HasColumnType("decimal(18,4)")
-            .HasPrecision(18, 4)
-            .HasDefaultValue(0);
+            .HasPrecision(18, 4);
 
         builder.Property(i => i.UnidadeMedida)
             .IsRequired()
-            .HasMaxLength(20)
-            .HasDefaultValue("UN");
+            .HasMaxLength(20);
 
         builder.Property(i => i.Notes)
             .HasMaxLength(500)

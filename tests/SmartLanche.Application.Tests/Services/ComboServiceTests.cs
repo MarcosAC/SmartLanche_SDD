@@ -1155,7 +1155,7 @@ public class ComboServiceTests
             }
 
             // Allow closing both EmPreparacao and Pronto orders when payment is provided
-            var hasPaymentInfo = request.FormaPagamento.HasValue;
+            var hasPaymentInfo = request.PaymentMethod.HasValue;
             var validStatusForClose = hasPaymentInfo
                 ? (order.Status == OrderStatus.EmPreparacao || order.Status == OrderStatus.Pronto)
                 : order.Status == OrderStatus.Pronto;

@@ -36,6 +36,7 @@ public class InventoryService : IInventoryService
             Nome = request.Nome,
             QuantidadeAtual = request.QuantidadeAtual,
             QuantidadeMinima = request.QuantidadeMinima,
+            QuantidadeTotalRecebida = request.QuantidadeTotalRecebida,
             ValorUnitario = request.ValorUnitario,
             UnidadeMedida = request.UnidadeMedida,
             Notes = request.Notes
@@ -97,10 +98,9 @@ public class InventoryService : IInventoryService
         item.ApplyEntrada(request.Quantidade, request.ValorUnitario, request.Fornecedor, request.Notes);
 
         await _inventoryRepository.UpdateAsync(item, cancellationToken);
+        await PersistNewMovementsAsync(item, cancellationToken);
 
         var movement = item.Movements.Last();
-
-        await _movementRepository.AddAsync(movement, cancellationToken);
 
         return MapToMovementDto(movement, item.Nome);
     }
@@ -117,10 +117,9 @@ public class InventoryService : IInventoryService
         item.ApplySaida(request.Quantidade, request.Motivo, request.Notes);
 
         await _inventoryRepository.UpdateAsync(item, cancellationToken);
+        await PersistNewMovementsAsync(item, cancellationToken);
 
         var movement = item.Movements.Last();
-
-        await _movementRepository.AddAsync(movement, cancellationToken);
 
         return MapToMovementDto(movement, item.Nome);
     }
@@ -186,7 +185,7 @@ public class InventoryService : IInventoryService
                 item.Movements.Add(estornoMovement);
 
                 await _inventoryRepository.UpdateAsync(item, cancellationToken);
-                await _movementRepository.AddAsync(estornoMovement, cancellationToken);
+                await PersistNewMovementsAsync(item, cancellationToken);
             }
         }
     }
@@ -219,11 +218,22 @@ public class InventoryService : IInventoryService
                 inventoryItem.Movements.Add(movement);
 
                 await _inventoryRepository.UpdateAsync(inventoryItem, cancellationToken);
-                await _movementRepository.AddAsync(movement, cancellationToken);
+                await PersistNewMovementsAsync(inventoryItem, cancellationToken);
             }
             // If no inventory item exists for this product, skip creating movement
             // to avoid FK violation (InventoryItemId would be 0)
             // Consider making InventoryItemId nullable in InventoryMovement if logging is needed
+        }
+    }
+
+    private async Task PersistNewMovementsAsync(InventoryItem item, CancellationToken cancellationToken)
+    {
+        // Persist only movements that don't have an ID yet (new movements not saved via cascade)
+        // This handles both EF Core (where cascade saves them and assigns IDs) and fake repositories (where they need explicit AddAsync)
+        var newMovements = item.Movements.Where(m => m.Id == 0).ToList();
+        foreach (var movement in newMovements)
+        {
+            await _movementRepository.AddAsync(movement, cancellationToken);
         }
     }
 
@@ -236,6 +246,7 @@ public class InventoryService : IInventoryService
             item.Nome,
             item.QuantidadeAtual,
             item.QuantidadeMinima,
+            item.QuantidadeTotalRecebida,
             item.ValorUnitario,
             item.UnidadeMedida,
             item.Notes,

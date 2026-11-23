@@ -8,7 +8,7 @@ namespace SmartLanche.Presentation.ViewModels.Orders;
 
 public sealed class OrderListViewModel : ListViewModelBase<OrderDto, IOrderService>
 {
-    private int? _selectedStatus;
+    private OrderStatus? _selectedStatus;
     private DateTime? _dateFrom;
     private DateTime? _dateTo;
 
@@ -23,7 +23,7 @@ public sealed class OrderListViewModel : ListViewModelBase<OrderDto, IOrderServi
 
     public ICommand ViewOrderCommand => EditItemCommand;
 
-    public int? SelectedStatus
+    public OrderStatus? SelectedStatus
     {
         get => _selectedStatus;
         set
@@ -91,12 +91,12 @@ public sealed class OrderListViewModel : ListViewModelBase<OrderDto, IOrderServi
         var filter = new OrderFilterRequest
         {
             SearchTerm = string.IsNullOrWhiteSpace(SearchText) ? null : SearchText,
-            Status = SelectedStatus,
+            Status = SelectedStatus.HasValue ? (int)SelectedStatus.Value : null,
             DateFrom = DateFrom,
             DateTo = DateTo,
             SortBy = SortColumn,
-            SortDescending = SortDescending,           
-            ExcludeCancelled = SelectedStatus.HasValue && SelectedStatus != (int)OrderStatus.Cancelado
+            SortDescending = SortDescending,
+            ExcludeCancelled = SelectedStatus.HasValue && SelectedStatus != OrderStatus.Cancelado
         };
 
         return await Service.GetAllAsync(filter);

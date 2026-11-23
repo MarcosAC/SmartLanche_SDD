@@ -19,12 +19,16 @@ public class PaymentRepository : IPaymentRepository
     {
         return await _context.Payments
             .AsNoTracking()
+            .Include(p => p.Order)
+                .ThenInclude(o => o.Customer)
             .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
     }
 
     public async Task<Payment?> GetByIdTrackedAsync(int id, CancellationToken cancellationToken = default)
     {
         return await _context.Payments
+            .Include(p => p.Order)
+                .ThenInclude(o => o.Customer)
             .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
     }
 
@@ -32,6 +36,8 @@ public class PaymentRepository : IPaymentRepository
     {
         return await _context.Payments
             .AsNoTracking()
+            .Include(p => p.Order)
+                .ThenInclude(o => o.Customer)
             .Where(p => p.OrderId == orderId)
             .OrderByDescending(p => p.DataHora)
             .ToListAsync(cancellationToken);
@@ -46,12 +52,15 @@ public class PaymentRepository : IPaymentRepository
             if (!string.IsNullOrWhiteSpace(filter.SearchTerm))
             {
                 var term = filter.SearchTerm.Trim();
-                query = query.Where(p => p.Notes != null && p.Notes.Contains(term) || p.OrderId.ToString().Contains(term));
+                query = query.Where(p =>
+                    (p.Notes != null && p.Notes.Contains(term)) ||
+                    p.OrderId.ToString().Contains(term) ||
+                    (p.Order != null && p.Order.Customer != null && p.Order.Customer.Name != null && p.Order.Customer.Name.Contains(term)));
             }
 
-            if (filter.FormaPagamento.HasValue)
+            if (filter.PaymentMethod.HasValue)
             {
-                query = query.Where(p => p.FormaPagamento == filter.FormaPagamento.Value);
+                query = query.Where(p => p.FormaPagamento == filter.PaymentMethod.Value);
             }
 
             if (filter.StartDate.HasValue)
@@ -66,6 +75,8 @@ public class PaymentRepository : IPaymentRepository
         }
 
         return await query
+            .Include(p => p.Order)
+                .ThenInclude(o => o.Customer)
             .OrderByDescending(p => p.DataHora)
             .ToListAsync(cancellationToken);
     }
