@@ -203,7 +203,7 @@
                 <TextBox Grid.Column="1"
                          Height="34"
                          VerticalContentAlignment="Center"
-                         Text="{Binding FilterText, UpdateSourceTrigger=PropertyChanged}"
+                         Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                          Style="{StaticResource SearchTextBoxStyle}"/>
 
                 <TextBlock Grid.Column="2"
