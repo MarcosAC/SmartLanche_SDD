@@ -4,6 +4,7 @@
              xmlns:converters="clr-namespace:SmartLanche.Presentation.Converters"
              xmlns:dto="clr-namespace:SmartLanche.Application.DTOs;assembly=SmartLanche.Application"
              xmlns:domain="clr-namespace:SmartLanche.Domain.Enums;assembly=SmartLanche.Domain"
+             xmlns:controls="clr-namespace:SmartLanche.Presentation.Controls"
              Background="#F5F6FA">
 
     <UserControl.Resources>
@@ -30,17 +31,6 @@
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Margin" Value="0,0,0,6"/>
-        </Style>
-
-        <Style x:Key="FormComboBoxStyle"
-               TargetType="ComboBox">
-            <Setter Property="Padding" Value="10,8"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="BorderBrush" Value="#D1D5DB"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="MinHeight" Value="38"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
 
         <Style x:Key="FormTextBoxStyle"
@@ -127,16 +117,12 @@
                 <StackPanel Grid.Column="1" Margin="0,0,16,0">
                     <TextBlock Text="Status"
                                Style="{StaticResource FormLabelStyle}"/>
-                    <ComboBox Height="34"
-                              VerticalContentAlignment="Center"
-                              SelectedValuePath="Tag"
-                              SelectedValue="{Binding SelectedStatus, UpdateSourceTrigger=PropertyChanged}"
-                              Style="{StaticResource FormComboBoxStyle}"
-                              Width="180">
-                        <ComboBoxItem Content="Todos" Tag="{x:Null}"/>
-                        <ComboBoxItem Content="Não Pago" Tag="{x:Static domain:StatusPagamentoPendente.NaoPago}"/>
-                        <ComboBoxItem Content="Pago" Tag="{x:Static domain:StatusPagamentoPendente.Pago}"/>
-                    </ComboBox>
+                    <controls:StatusFilterComboBox
+                        SelectedValue="{Binding SelectedStatus, UpdateSourceTrigger=PropertyChanged}"
+                        EnumType="{x:Type domain:StatusPagamentoPendente}"
+                        IncludeAllOption="True"
+                        AllOptionText="Todos"
+                        Width="180"/>
                 </StackPanel>
 
                 <StackPanel Grid.Column="4" VerticalAlignment="Bottom">
@@ -187,22 +173,22 @@
                                             ElementStyle="{StaticResource CenterAlignStyle}"/>
 
                         <DataGridTextColumn Header="Valor Original (R$)"
-                                            Binding="{Binding ValorOriginal, StringFormat='C2', ConverterCulture='pt-BR'}"
+                                            Binding="{Binding OriginalAmount, StringFormat='C2', ConverterCulture='pt-BR'}"
                                             Width="130"
                                             ElementStyle="{StaticResource RightAlignStyle}"/>
 
                         <DataGridTextColumn Header="Valor Pago (R$)"
-                                            Binding="{Binding ValorPago, StringFormat='C2', ConverterCulture='pt-BR'}"
+                                            Binding="{Binding AmountPaid, StringFormat='C2', ConverterCulture='pt-BR'}"
                                             Width="120"
                                             ElementStyle="{StaticResource RightAlignStyle}"/>
 
                         <DataGridTextColumn Header="Saldo (R$)"
-                                            Binding="{Binding SaldoPendente, StringFormat='C2', ConverterCulture='pt-BR'}"
+                                            Binding="{Binding PendingBalance, StringFormat='C2', ConverterCulture='pt-BR'}"
                                             Width="120"
                                             ElementStyle="{StaticResource RightAlignStyle}"/>
 
                         <DataGridTextColumn Header="Data"
-                                            Binding="{Binding DataHora, StringFormat='dd/MM/yyyy HH:mm'}"
+                                            Binding="{Binding DateTime, StringFormat='dd/MM/yyyy HH:mm'}"
                                             Width="130"
                                             ElementStyle="{StaticResource CenterAlignStyle}"/>
 
@@ -210,8 +196,8 @@
                                                 Width="130">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding StatusPagamento, Converter={StaticResource EnumToDescriptionConverter}}"
-                                               Foreground="{Binding StatusPagamento, Converter={StaticResource StatusPagamentoToColorConverter}}"
+                                    <TextBlock Text="{Binding PaymentStatus, Converter={StaticResource EnumToDescriptionConverter}}"
+                                               Foreground="{Binding PaymentStatus, Converter={StaticResource StatusPagamentoToColorConverter}}"
                                                FontWeight="SemiBold"
                                                HorizontalAlignment="Center"
                                                VerticalAlignment="Center"/>
@@ -227,7 +213,7 @@
                                             Style="{StaticResource PrimaryButtonStyle}"
                                             Padding="6,3"
                                             MinWidth="100"
-                                            Visibility="{Binding StatusPagamento, Converter={StaticResource StatusPagamentoToVisibilityConverter}, ConverterParameter=NaoPago}"
+                                            Visibility="{Binding PaymentStatus, Converter={StaticResource StatusPagamentoToVisibilityConverter}, ConverterParameter=NaoPago}"
                                             Command="{Binding DataContext.RegisterPaymentCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                             CommandParameter="{Binding}"/>
                                 </DataTemplate>

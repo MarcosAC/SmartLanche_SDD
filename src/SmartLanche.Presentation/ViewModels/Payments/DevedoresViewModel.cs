@@ -74,7 +74,7 @@ public sealed class DevedoresViewModel : INotifyPropertyChanged
                 Devedores.Add(devedor);
             }
 
-            TotalDevedor = Devedores.Sum(d => d.SaldoDevedor);
+            TotalDevedor = Devedores.Sum(d => d.DebtBalance);
             OnPropertyChanged(nameof(TotalDevedorFormatted));
             OnPropertyChanged(nameof(TotalDevedoresCount));
         }

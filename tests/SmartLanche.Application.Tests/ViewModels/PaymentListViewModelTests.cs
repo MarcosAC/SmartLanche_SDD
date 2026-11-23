@@ -31,11 +31,11 @@ public class PaymentListViewModelTests
     public async Task LoadAsync_LoadsPayments()
     {
         _paymentService.AddPayment(new PaymentDto(
-            1, 100, FormaPagamento.Dinheiro, 50m, 0m, 1, 50m,
+            1, 100, "Cliente Teste", FormaPagamento.Dinheiro, 50m, 0m, 1, 50m,
             DateTime.Today.AddDays(-1), "Teste", false, null, null));
 
         _paymentService.AddPayment(new PaymentDto(
-            2, 101, FormaPagamento.Cartao, 75m, 0m, 2, 37.5m,
+            2, 101, "Cliente Teste 2", FormaPagamento.Cartao, 75m, 0m, 2, 37.5m,
             DateTime.Today, "Cartão", false, null, null));
 
         await _viewModel.LoadAsync();
@@ -47,32 +47,32 @@ public class PaymentListViewModelTests
     public async Task LoadAsync_WithFormaPagamentoFilter_ReturnsFiltered()
     {
         _paymentService.AddPayment(new PaymentDto(
-            1, 100, FormaPagamento.Dinheiro, 50m, 0m, 1, 50m,
+            1, 100, "Cliente Teste", FormaPagamento.Dinheiro, 50m, 0m, 1, 50m,
             DateTime.Today.AddDays(-1), "Teste", false, null, null));
 
         _paymentService.AddPayment(new PaymentDto(
-            2, 101, FormaPagamento.Cartao, 75m, 0m, 2, 37.5m,
+            2, 101, "Cliente Teste 2", FormaPagamento.Cartao, 75m, 0m, 2, 37.5m,
             DateTime.Today, "Cartão", false, null, null));
 
         _viewModel.SelectedFormaPagamento = FormaPagamento.Dinheiro;
         await _viewModel.LoadAsync();
 
         Assert.Single(_viewModel.Items);
-        Assert.Equal(FormaPagamento.Dinheiro, _viewModel.Items[0].FormaPagamento);
+        Assert.Equal(FormaPagamento.Dinheiro, _viewModel.Items[0].PaymentMethod);
     }
 
     [Fact]
     public async Task LoadAsync_WithStartDateFilter_ReturnsFiltered()
     {
         _paymentService.AddPayment(new PaymentDto(
-            1, 100, FormaPagamento.Dinheiro, 50m, 0m, 1, 50m,
+            1, 100, "Cliente Teste", FormaPagamento.Dinheiro, 50m, 0m, 1, 50m,
             DateTime.Today.AddDays(-5), "Antigo", false, null, null));
 
         _paymentService.AddPayment(new PaymentDto(
-            2, 101, FormaPagamento.Cartao, 75m, 0m, 2, 37.5m,
+            2, 101, "Cliente Teste 2", FormaPagamento.Cartao, 75m, 0m, 2, 37.5m,
             DateTime.Today, "Hoje", false, null, null));
 
-        _viewModel.StartDate = DateTime.Today.AddDays(-1);
+        _viewModel.DateFrom = DateTime.Today.AddDays(-1);
         await _viewModel.LoadAsync();
 
         Assert.Single(_viewModel.Items);
@@ -83,14 +83,14 @@ public class PaymentListViewModelTests
     public async Task LoadAsync_WithEndDateFilter_ReturnsFiltered()
     {
         _paymentService.AddPayment(new PaymentDto(
-            1, 100, FormaPagamento.Dinheiro, 50m, 0m, 1, 50m,
+            1, 100, "Cliente Teste", FormaPagamento.Dinheiro, 50m, 0m, 1, 50m,
             DateTime.Today.AddDays(-5), "Antigo", false, null, null));
 
         _paymentService.AddPayment(new PaymentDto(
-            2, 101, FormaPagamento.Cartao, 75m, 0m, 2, 37.5m,
+            2, 101, "Cliente Teste 2", FormaPagamento.Cartao, 75m, 0m, 2, 37.5m,
             DateTime.Today, "Hoje", false, null, null));
 
-        _viewModel.EndDate = DateTime.Today.AddDays(-2);
+        _viewModel.DateTo = DateTime.Today.AddDays(-2);
         await _viewModel.LoadAsync();
 
         Assert.Single(_viewModel.Items);
@@ -101,15 +101,15 @@ public class PaymentListViewModelTests
     public async Task SearchText_FiltersPaymentsByNotes()
     {
         _paymentService.AddPayment(new PaymentDto(
-            1, 100, FormaPagamento.Dinheiro, 50m, 0m, 1, 50m,
+            1, 100, "Cliente Teste", FormaPagamento.Dinheiro, 50m, 0m, 1, 50m,
             DateTime.Today.AddDays(-1), "Cliente João", false, null, null));
 
         _paymentService.AddPayment(new PaymentDto(
-            2, 101, FormaPagamento.Cartao, 75m, 0m, 2, 37.5m,
+            2, 101, "Cliente Teste 2", FormaPagamento.Cartao, 75m, 0m, 2, 37.5m,
             DateTime.Today, "Cliente Maria", false, null, null));
 
         _paymentService.AddPayment(new PaymentDto(
-            3, 102, FormaPagamento.Pix, 30m, 0m, 1, 30m,
+            3, 102, "Cliente Teste 3", FormaPagamento.Pix, 30m, 0m, 1, 30m,
             DateTime.Today, "Venda rápida", false, null, null));
 
         await _viewModel.LoadAsync();
@@ -125,11 +125,11 @@ public class PaymentListViewModelTests
     public async Task SearchText_FiltersPaymentsByOrderId()
     {
         _paymentService.AddPayment(new PaymentDto(
-            1, 100, FormaPagamento.Dinheiro, 50m, 0m, 1, 50m,
+            1, 100, "Cliente Teste", FormaPagamento.Dinheiro, 50m, 0m, 1, 50m,
             DateTime.Today.AddDays(-1), "Teste", false, null, null));
 
         _paymentService.AddPayment(new PaymentDto(
-            2, 101, FormaPagamento.Cartao, 75m, 0m, 2, 37.5m,
+            2, 101, "Cliente Teste 2", FormaPagamento.Cartao, 75m, 0m, 2, 37.5m,
             DateTime.Today, "Teste", false, null, null));
 
         await _viewModel.LoadAsync();
@@ -145,11 +145,11 @@ public class PaymentListViewModelTests
     public async Task TotalRecebido_CalculatesSumOfValorPago()
     {
         _paymentService.AddPayment(new PaymentDto(
-            1, 100, FormaPagamento.Dinheiro, 50m, 0m, 1, 50m,
+            1, 100, "Cliente Teste", FormaPagamento.Dinheiro, 50m, 0m, 1, 50m,
             DateTime.Today.AddDays(-1), "Teste", false, null, null));
 
         _paymentService.AddPayment(new PaymentDto(
-            2, 101, FormaPagamento.Cartao, 75m, 0m, 2, 37.5m,
+            2, 101, "Cliente Teste 2", FormaPagamento.Cartao, 75m, 0m, 2, 37.5m,
             DateTime.Today, "Teste", false, null, null));
 
         await _viewModel.LoadAsync();
@@ -161,7 +161,7 @@ public class PaymentListViewModelTests
     public async Task SelectedItem_PropertyChanged_Notifies()
     {
         var payment = new PaymentDto(
-            1, 100, FormaPagamento.Dinheiro, 50m, 0m, 1, 50m,
+            1, 100, "Cliente Teste", FormaPagamento.Dinheiro, 50m, 0m, 1, 50m,
             DateTime.Today.AddDays(-1), "Teste", false, null, null);
 
         bool notified = false;
@@ -178,16 +178,6 @@ public class PaymentListViewModelTests
     }
 
     [Fact]
-    public async Task FormasPagamento_ContainsAllEnumValues()
-    {
-        Assert.Equal(4, _viewModel.FormasPagamento.Count);
-        Assert.Contains(FormaPagamento.Dinheiro, _viewModel.FormasPagamento);
-        Assert.Contains(FormaPagamento.Cartao, _viewModel.FormasPagamento);
-        Assert.Contains(FormaPagamento.Pix, _viewModel.FormasPagamento);
-        Assert.Contains(FormaPagamento.Fiado, _viewModel.FormasPagamento);
-    }
-
-    [Fact]
     public async Task IsLoading_FalseInitially()
     {
         Assert.False(_viewModel.IsLoading);
@@ -197,14 +187,14 @@ public class PaymentListViewModelTests
     public async Task RefreshCommand_ReloadsData()
     {
         _paymentService.AddPayment(new PaymentDto(
-            1, 100, FormaPagamento.Dinheiro, 50m, 0m, 1, 50m,
+            1, 100, "Cliente Teste", FormaPagamento.Dinheiro, 50m, 0m, 1, 50m,
             DateTime.Today.AddDays(-1), "Teste", false, null, null));
 
         await _viewModel.LoadAsync();
         Assert.Single(_viewModel.Items);
 
         _paymentService.AddPayment(new PaymentDto(
-            2, 101, FormaPagamento.Cartao, 75m, 0m, 2, 37.5m,
+            2, 101, "Cliente Teste 2", FormaPagamento.Cartao, 75m, 0m, 2, 37.5m,
             DateTime.Today, "Novo", false, null, null));
 
         _viewModel.RefreshCommand.Execute(null);
@@ -244,26 +234,27 @@ public class PaymentListViewModelTests
                     var term = filter.SearchTerm.Trim().ToLower();
                     query = query.Where(p =>
                         (p.Notes != null && p.Notes.ToLower().Contains(term)) ||
-                        p.OrderId.ToString().Contains(term));
+                        p.OrderId.ToString().Contains(term) ||
+                        (p.CustomerName != null && p.CustomerName.ToLower().Contains(term)));
                 }
 
-                if (filter.FormaPagamento.HasValue)
+                if (filter.PaymentMethod.HasValue)
                 {
-                    query = query.Where(p => p.FormaPagamento == filter.FormaPagamento.Value);
+                    query = query.Where(p => p.PaymentMethod == filter.PaymentMethod.Value);
                 }
 
                 if (filter.StartDate.HasValue)
                 {
-                    query = query.Where(p => p.DataHora >= filter.StartDate.Value);
+                    query = query.Where(p => p.DateTime >= filter.StartDate.Value);
                 }
 
                 if (filter.EndDate.HasValue)
                 {
-                    query = query.Where(p => p.DataHora <= filter.EndDate.Value);
+                    query = query.Where(p => p.DateTime <= filter.EndDate.Value);
                 }
             }
 
-            return Task.FromResult<IReadOnlyList<PaymentDto>>(query.OrderByDescending(p => p.DataHora).ToList());
+            return Task.FromResult<IReadOnlyList<PaymentDto>>(query.OrderByDescending(p => p.DateTime).ToList());
         }
 
         public Task<ProcessPaymentResult> EstornarPaymentAsync(int paymentId, string motivo, CancellationToken cancellationToken = default)

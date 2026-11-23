@@ -67,16 +67,6 @@
             <Setter Property="Margin" Value="0,0,0,6"/>
         </Style>
 
-        <Style x:Key="FormComboBoxStyle" TargetType="ComboBox">
-            <Setter Property="Padding" Value="10,8"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="BorderBrush" Value="#D1D5DB"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="MinHeight" Value="38"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-        </Style>
-
         <Style x:Key="FormTextBoxStyle" TargetType="TextBox">
             <Setter Property="Padding" Value="10,8"/>
             <Setter Property="FontSize" Value="14"/>
@@ -253,8 +243,8 @@
                                 <StackPanel Grid.Column="0" Margin="0,0,16,0">
                                     <TextBlock Text="Forma de Pagamento"
                                                Style="{StaticResource FormLabelStyle}"/>
-                                    <ComboBox ItemsSource="{Binding FormasPagamento}"
-                                              SelectedItem="{Binding SelectedFormaPagamento, UpdateSourceTrigger=PropertyChanged}"
+                                    <ComboBox ItemsSource="{Binding PaymentMethods}"
+                                              SelectedItem="{Binding SelectedPaymentMethod, UpdateSourceTrigger=PropertyChanged}"
                                               Style="{StaticResource FormComboBoxStyle}"
                                               Width="180">
                                         <ComboBox.ItemTemplate>
@@ -274,17 +264,17 @@
                                              HorizontalAlignment="Left"
                                              Width="150">
                                         <i:Interaction.Behaviors>
-                                            <behaviors:CurrencyTextBoxBehavior Value="{Binding ValorPago, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                            <behaviors:CurrencyTextBoxBehavior Value="{Binding AmountPaid, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                         </i:Interaction.Behaviors>
                                     </TextBox>
                                 </StackPanel>
 
                                 <!-- Parcelas (visível para Cartão) -->
                                 <StackPanel Grid.Column="2" Margin="0,0,16,0"
-                                            Visibility="{Binding ShowParcelas, Converter={StaticResource BoolToVisibilityConverter}}">
+                                            Visibility="{Binding ShowInstallments, Converter={StaticResource BoolToVisibilityConverter}}">
                                     <TextBlock Text="Parcelas"
                                                Style="{StaticResource FormLabelStyle}"/>
-                                    <TextBox Text="{Binding Parcelas, UpdateSourceTrigger=PropertyChanged}"
+                                    <TextBox Text="{Binding Installments, UpdateSourceTrigger=PropertyChanged}"
                                              Style="{StaticResource FormTextBoxStyle}"
                                              Width="80"
                                              ToolTip="Número de parcelas (1-12)"/>
@@ -292,10 +282,10 @@
 
                                 <!-- Troco (visível para Dinheiro) -->
                                 <StackPanel Grid.Column="3" Margin="0,0,16,0"
-                                            Visibility="{Binding ShowTroco, Converter={StaticResource BoolToVisibilityConverter}}">
+                                            Visibility="{Binding ShowChange, Converter={StaticResource BoolToVisibilityConverter}}">
                                     <TextBlock Text="Troco (R$)"
                                                Style="{StaticResource FormLabelStyle}"/>
-                                    <TextBlock Text="{Binding Troco, StringFormat='C2', ConverterCulture='pt-BR', FallbackValue='R$ 0,00'}"
+                                    <TextBlock Text="{Binding Change, StringFormat='C2', ConverterCulture='pt-BR', FallbackValue='R$ 0,00'}"
                                                FontSize="16"
                                                FontWeight="Bold"
                                                Foreground="#166534"
@@ -363,10 +353,10 @@
 
                                 <!-- Valor Parcela -->
                                 <StackPanel Grid.Column="5" Margin="0,0,0,0"
-                                            Visibility="{Binding ShowParcelas, Converter={StaticResource BoolToVisibilityConverter}}">
+                                            Visibility="{Binding ShowInstallments, Converter={StaticResource BoolToVisibilityConverter}}">
                                     <TextBlock Text="Valor Parcela (R$)"
                                                Style="{StaticResource FormLabelStyle}"/>
-                                    <TextBlock Text="{Binding ValorParcela, StringFormat='C2', ConverterCulture='pt-BR', FallbackValue='R$ 0,00'}"
+                                    <TextBlock Text="{Binding InstallmentAmount, StringFormat='C2', ConverterCulture='pt-BR', FallbackValue='R$ 0,00'}"
                                                FontSize="16"
                                                FontWeight="Bold"
                                                Foreground="#0369A1"
