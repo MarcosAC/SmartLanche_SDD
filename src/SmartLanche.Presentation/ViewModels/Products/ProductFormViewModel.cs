@@ -19,6 +19,13 @@ public class ProductFormViewModel : FormViewModelBase<ProductDto, CreateProductR
     private bool _isActive = true;
     private bool _isLoadingCategories;
 
+    // Inventory fields
+    private decimal _quantidadeMinima = 0m;
+    private decimal _valorUnitario = 0m;
+    private string _unidadeMedida = "UN";
+    private string? _inventoryNotes;
+    private decimal _quantidadeInicial = 0m;
+
     public ObservableCollection<CategoryDto> Categories { get; } = [];
 
     public ProductFormViewModel(
@@ -78,6 +85,37 @@ public class ProductFormViewModel : FormViewModelBase<ProductDto, CreateProductR
         }
     }
 
+    // Inventory properties
+    public decimal QuantidadeMinima
+    {
+        get => _quantidadeMinima;
+        set => SetProperty(ref _quantidadeMinima, value);
+    }
+
+    public decimal ValorUnitario
+    {
+        get => _valorUnitario;
+        set => SetProperty(ref _valorUnitario, value);
+    }
+
+    public string UnidadeMedida
+    {
+        get => _unidadeMedida;
+        set => SetProperty(ref _unidadeMedida, value);
+    }
+
+    public string? InventoryNotes
+    {
+        get => _inventoryNotes;
+        set => SetProperty(ref _inventoryNotes, value);
+    }
+
+    public decimal QuantidadeInicial
+    {
+        get => _quantidadeInicial;
+        set => SetProperty(ref _quantidadeInicial, value);
+    }
+
     protected override async Task OnInitializeAsync(ProductDto? product)
     {
         Name = product?.Name ?? string.Empty;
@@ -129,7 +167,7 @@ public class ProductFormViewModel : FormViewModelBase<ProductDto, CreateProductR
 
     protected override CreateProductRequest BuildCreateRequest()
     {
-        return new CreateProductRequest
+        var request = new CreateProductRequest
         {
             Name = NormalizeStringRequired(Name),
             CategoryId = SelectedCategory!.Id,
@@ -137,6 +175,23 @@ public class ProductFormViewModel : FormViewModelBase<ProductDto, CreateProductR
             IsCombo = IsCombo,
             Description = NormalizeString(Description)
         };
+
+        // Include inventory request if user provided inventory data
+        if (QuantidadeMinima > 0 || ValorUnitario > 0 || !string.IsNullOrWhiteSpace(UnidadeMedida) || QuantidadeInicial > 0)
+        {
+            request.InventoryRequest = new CreateInventoryItemRequest(
+                ProductId: null, // Will be set by service after product is created
+                Nome: NormalizeStringRequired(Name),
+                QuantidadeAtual: QuantidadeInicial, // Initial stock quantity
+                QuantidadeMinima: QuantidadeMinima,
+                QuantidadeTotalRecebida: QuantidadeInicial, // Initially equals initial stock
+                ValorUnitario: ValorUnitario,
+                UnidadeMedida: NormalizeStringRequired(UnidadeMedida),
+                Notes: NormalizeString(InventoryNotes)
+            );
+        }
+
+        return request;
     }
 
     protected override UpdateProductRequest BuildUpdateRequest(int entityId)
@@ -202,6 +257,47 @@ public class ProductFormViewModel : FormViewModelBase<ProductDto, CreateProductR
         {
             ToastService.ShowWarning("Selecione uma categoria ativa.");
             return false;
+        }
+
+        // Validate inventory fields if any inventory data is provided
+        var hasInventoryData = QuantidadeMinima > 0 || ValorUnitario > 0 || !string.IsNullOrWhiteSpace(UnidadeMedida) || QuantidadeInicial > 0;
+        if (hasInventoryData)
+        {
+            if (QuantidadeMinima < 0)
+            {
+                ToastService.ShowWarning("A quantidade mínima não pode ser negativa.");
+                return false;
+            }
+
+            if (ValorUnitario < 0)
+            {
+                ToastService.ShowWarning("O valor unitário não pode ser negativo.");
+                return false;
+            }
+
+            if (QuantidadeInicial < 0)
+            {
+                ToastService.ShowWarning("A quantidade inicial não pode ser negativa.");
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(UnidadeMedida))
+            {
+                ToastService.ShowWarning("Informe a unidade de medida.");
+                return false;
+            }
+
+            if (UnidadeMedida.Trim().Length > 20)
+            {
+                ToastService.ShowWarning("A unidade de medida deve ter no máximo 20 caracteres.");
+                return false;
+            }
+
+            if (InventoryNotes?.Length > 500)
+            {
+                ToastService.ShowWarning("As observações do estoque devem ter no máximo 500 caracteres.");
+                return false;
+            }
         }
 
         return true;

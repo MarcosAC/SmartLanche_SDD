@@ -1,12 +1,9 @@
-using System.Collections.ObjectModel;
-using System.Threading;
-using System.Windows.Input;
 using SmartLanche.Application.DTOs;
 using SmartLanche.Application.Interfaces;
 using SmartLanche.Domain.Enums;
 using SmartLanche.Presentation.Commands;
 using SmartLanche.Presentation.Services;
-using SmartLanche.Presentation.ViewModels;
+using System.Windows.Input;
 
 namespace SmartLanche.Presentation.ViewModels.Payments;
 
@@ -15,11 +12,8 @@ public sealed class PaymentListViewModel : ListViewModelBase<PaymentDto, IPaymen
     private readonly IToastNotificationService _toastService;
 
     private FormaPagamento? _selectedFormaPagamento;
-    private DateTime? _startDate;
-    private DateTime? _endDate;
-    private Timer? _searchDebounceTimer;
-
-    public ObservableCollection<FormaPagamento> FormasPagamento { get; } = new(Enum.GetValues<FormaPagamento>());
+    private DateTime? _dateFrom;
+    private DateTime? _dateTo;
 
     public ICommand RefreshCommand { get; }
     public ICommand ViewPaymentCommand { get; }
@@ -28,22 +22,40 @@ public sealed class PaymentListViewModel : ListViewModelBase<PaymentDto, IPaymen
     public FormaPagamento? SelectedFormaPagamento
     {
         get => _selectedFormaPagamento;
-        set => SetProperty(ref _selectedFormaPagamento, value);
+        set
+        {
+            if (SetProperty(ref _selectedFormaPagamento, value))
+            {
+                _ = LoadAsync();
+            }
+        }
     }
 
-    public DateTime? StartDate
+    public DateTime? DateFrom
     {
-        get => _startDate;
-        set => SetProperty(ref _startDate, value);
+        get => _dateFrom;
+        set
+        {
+            if (SetProperty(ref _dateFrom, value))
+            {
+                _ = LoadAsync();
+            }
+        }
     }
 
-    public DateTime? EndDate
+    public DateTime? DateTo
     {
-        get => _endDate;
-        set => SetProperty(ref _endDate, value);
+        get => _dateTo;
+        set
+        {
+            if (SetProperty(ref _dateTo, value))
+            {
+                _ = LoadAsync();
+            }
+        }
     }
 
-    public decimal TotalRecebido => Items.Sum(p => p.ValorPago);
+    public decimal TotalRecebido => Items.Sum(p => p.AmountPaid);
     public string TotalRecebidoFormatted => $"R$ {TotalRecebido:N2}";
     public int TotalPaymentsCount => Items.Count;
 
@@ -54,19 +66,9 @@ public sealed class PaymentListViewModel : ListViewModelBase<PaymentDto, IPaymen
     {
         _toastService = toastService ?? throw new ArgumentNullException(nameof(toastService));
 
-        _searchDebounceTimer = new Timer(async _ => await LoadAsync(), null, Timeout.Infinite, Timeout.Infinite);
-
         RefreshCommand = new RelayCommand(async _ => await LoadAsync(), _ => !IsLoading);
         ViewPaymentCommand = new RelayCommand(async param => await ViewPaymentAsync(param), _ => !IsLoading);
         EstornarPaymentCommand = new RelayCommand(async param => await EstornarPaymentAsync(param), _ => !IsLoading);
-
-        EndDate = DateTime.Today;
-        StartDate = DateTime.Today.AddDays(-30);
-    }
-
-    protected override void OnSearchTextChanged()
-    {
-        _searchDebounceTimer?.Change(300, Timeout.Infinite);
     }
 
     protected override async Task<IReadOnlyList<PaymentDto>> GetItemsAsync()
@@ -74,9 +76,9 @@ public sealed class PaymentListViewModel : ListViewModelBase<PaymentDto, IPaymen
         var request = new PaymentFilterRequest
         {
             SearchTerm = string.IsNullOrWhiteSpace(SearchText) ? null : SearchText,
-            FormaPagamento = SelectedFormaPagamento,
-            StartDate = StartDate,
-            EndDate = EndDate?.AddDays(1).AddTicks(-1) // End of day
+            PaymentMethod = SelectedFormaPagamento.HasValue ? SelectedFormaPagamento.Value : null,
+            StartDate = DateFrom,
+            EndDate = DateTo?.AddDays(1).AddTicks(-1)
         };
 
         return await Service.GetAllAsync(request);
@@ -84,26 +86,30 @@ public sealed class PaymentListViewModel : ListViewModelBase<PaymentDto, IPaymen
 
     protected override IReadOnlyList<PaymentDto> ApplySearchFilter(IReadOnlyList<PaymentDto> items, string searchTerm)
     {
-        // Search is handled server-side via filter
-        return items;
+        return items.Where(o =>
+            o.Id.ToString().Contains(searchTerm) ||
+            o.OrderId.ToString().Contains(searchTerm) ||
+            (o.Notes != null && o.Notes.ToLowerInvariant().Contains(searchTerm)) ||
+            (o.CustomerName != null && o.CustomerName.ToLowerInvariant().Contains(searchTerm))
+        ).ToList();
     }
 
     protected override IReadOnlyList<PaymentDto> ApplySort(IReadOnlyList<PaymentDto> items)
     {
         if (string.IsNullOrWhiteSpace(SortColumn))
         {
-            return items.OrderByDescending(p => p.DataHora).ToList();
+            return items.OrderByDescending(p => p.DateTime).ToList();
         }
 
         var sorted = SortColumn.ToLowerInvariant() switch
         {
             "id" => items.OrderBy(p => p.Id),
             "orderid" or "pedidoid" => items.OrderBy(p => p.OrderId),
-            "formapagamento" or "forma" => items.OrderBy(p => p.FormaPagamento),
-            "valorpago" or "valor" => items.OrderBy(p => p.ValorPago),
-            "datahora" or "data" => items.OrderBy(p => p.DataHora),
-            "estornado" => items.OrderBy(p => p.Estornado),
-            _ => items.OrderByDescending(p => p.DataHora)
+            "formapagamento" or "forma" or "paymentmethod" => items.OrderBy(p => p.PaymentMethod),
+            "valorpago" or "valor" or "amountpaid" => items.OrderBy(p => p.AmountPaid),
+            "datahora" or "data" or "datetime" => items.OrderBy(p => p.DateTime),
+            "estornado" or "isreversed" => items.OrderBy(p => p.IsReversed),
+            _ => items.OrderByDescending(p => p.DateTime)
         };
 
         return SortDescending ? sorted.Reverse().ToList() : sorted.ToList();
@@ -122,15 +128,15 @@ public sealed class PaymentListViewModel : ListViewModelBase<PaymentDto, IPaymen
 
         var message = $"Pagamento #{payment.Id}\n" +
                       $"Pedido: #{payment.OrderId}\n" +
-                      $"Forma: {payment.FormaPagamento}\n" +
-                      $"Valor: R$ {payment.ValorPago:N2}\n" +
-                      $"Troco: R$ {payment.Troco:N2}\n" +
-                      $"Parcelas: {payment.Parcelas}\n" +
-                      $"Valor Parcela: R$ {payment.ValorParcela:N2}\n" +
-                      $"Data: {payment.DataHora:dd/MM/yyyy HH:mm}\n" +
+                      $"Forma: {payment.PaymentMethod}\n" +
+                      $"Valor: R$ {payment.AmountPaid:N2}\n" +
+                      $"Troco: R$ {payment.Change:N2}\n" +
+                      $"Parcelas: {payment.Installments}\n" +
+                      $"Valor Parcela: R$ {payment.InstallmentAmount:N2}\n" +
+                      $"Data: {payment.DateTime:dd/MM/yyyy HH:mm}\n" +
                       $"Observações: {payment.Notes ?? "Nenhuma"}\n" +
-                      $"Estornado: {(payment.Estornado ? "Sim" : "Não")}" +
-                      (payment.Estornado ? $"\nEstorno em: {payment.EstornoDataHora:dd/MM/yyyy HH:mm}\nMotivo: {payment.EstornoMotivo}" : "");
+                      $"Estornado: {(payment.IsReversed ? "Sim" : "Não")}" +
+                      (payment.IsReversed ? $"\nEstorno em: {payment.ReversedAt:dd/MM/yyyy HH:mm}\nMotivo: {payment.ReversalReason}" : "");
 
         System.Windows.MessageBox.Show(message, "Detalhes do Pagamento", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
     }
@@ -139,14 +145,14 @@ public sealed class PaymentListViewModel : ListViewModelBase<PaymentDto, IPaymen
     {
         if (parameter is not PaymentDto payment) return;
 
-        if (payment.Estornado)
+        if (payment.IsReversed)
         {
             _toastService.ShowWarning("Este pagamento já foi estornado.");
             return;
         }
 
         var result = System.Windows.MessageBox.Show(
-            $"Tem certeza que deseja estornar o pagamento #{payment.Id} (R$ {payment.ValorPago:N2})?\n\n" +
+            $"Tem certeza que deseja estornar o pagamento #{payment.Id} (R$ {payment.AmountPaid:N2})?\n\n" +
             "Esta ação não pode ser desfeita.",
             "Confirmar Estorno",
             System.Windows.MessageBoxButton.YesNo,

@@ -190,13 +190,13 @@ public abstract class CrudListViewModelBase<TDto, TService> : ListViewModelBase<
     public ICommand DeactivateItemCommand { get; }
     public ICommand ReactivateItemCommand { get; }
 
-    private string? _selectedFilter = "Todos";
+    private bool? _selectedFilter = null;
 
     /// <summary>
     /// Gets or sets the selected filter from the status ComboBox.
-    /// Values: "Todos", "Ativos", "Inativos"
+    /// Values: null (Todos), true (Ativos), false (Inativos)
     /// </summary>
-    public string? SelectedFilter
+    public bool? SelectedFilter
     {
         get => _selectedFilter;
         set
@@ -233,12 +233,7 @@ public abstract class CrudListViewModelBase<TDto, TService> : ListViewModelBase<
     /// </summary>
     protected virtual bool? GetActiveFilter()
     {
-        return SelectedFilter switch
-        {
-            "Ativos" => true,
-            "Inativos" => false,
-            _ => null // "Todos" or null
-        };
+        return SelectedFilter; // null = Todos, true = Ativos, false = Inativos
     }
 
     protected virtual async Task ChangeItemStatusAsync(bool activate)

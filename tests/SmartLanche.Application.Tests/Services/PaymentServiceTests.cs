@@ -39,9 +39,9 @@ public class PaymentServiceTests
 
         Assert.True(result.Success);
         Assert.NotNull(result.Payment);
-        Assert.Equal(50m, result.Payment!.Troco); // 100 - 50 = 50
-        Assert.Equal(1, result.Payment.Parcelas);
-        Assert.Equal(100m, result.Payment.ValorParcela); // 100 / 1 = 100
+        Assert.Equal(50m, result.Payment!.Change); // 100 - 50 = 50
+        Assert.Equal(1, result.Payment.Installments);
+        Assert.Equal(100m, result.Payment.InstallmentAmount); // 100 / 1 = 100
     }
 
     [Fact]
@@ -60,7 +60,7 @@ public class PaymentServiceTests
         var result = await _service.ProcessPaymentAsync(request);
 
         Assert.True(result.Success);
-        Assert.Equal(0m, result.Payment!.Troco);
+        Assert.Equal(0m, result.Payment!.Change);
     }
 
     [Fact]
@@ -122,10 +122,10 @@ public class PaymentServiceTests
 
         Assert.True(result.Success);
         Assert.NotNull(result.Payment);
-        Assert.Equal(FormaPagamento.Cartao, result.Payment!.FormaPagamento);
-        Assert.Equal(3, result.Payment.Parcelas);
-        Assert.Equal(25m, result.Payment.ValorParcela);
-        Assert.Equal(0m, result.Payment.Troco);
+        Assert.Equal(FormaPagamento.Cartao, result.Payment!.PaymentMethod);
+        Assert.Equal(3, result.Payment.Installments);
+        Assert.Equal(25m, result.Payment.InstallmentAmount);
+        Assert.Equal(0m, result.Payment.Change);
     }
 
     [Fact]
@@ -206,10 +206,10 @@ public class PaymentServiceTests
 
         Assert.True(result.Success);
         Assert.NotNull(result.Payment);
-        Assert.Equal(FormaPagamento.Pix, result.Payment!.FormaPagamento);
-        Assert.Equal(1, result.Payment.Parcelas);
-        Assert.Equal(30m, result.Payment.ValorParcela);
-        Assert.Equal(0m, result.Payment.Troco);
+        Assert.Equal(FormaPagamento.Pix, result.Payment!.PaymentMethod);
+        Assert.Equal(1, result.Payment.Installments);
+        Assert.Equal(30m, result.Payment.InstallmentAmount);
+        Assert.Equal(0m, result.Payment.Change);
     }
 
     [Fact]
@@ -253,8 +253,8 @@ public class PaymentServiceTests
 
         Assert.True(result.Success);
         Assert.NotNull(result.Payment);
-        Assert.Equal(FormaPagamento.Fiado, result.Payment!.FormaPagamento);
-        Assert.Equal(0m, result.Payment.Troco);
+        Assert.Equal(FormaPagamento.Fiado, result.Payment!.PaymentMethod);
+        Assert.Equal(0m, result.Payment.Change);
     }
 
     [Fact]
@@ -275,7 +275,7 @@ public class PaymentServiceTests
 
         // PaymentService apenas processa o pagamento, não valida regras de negócio de Fiado
         Assert.True(result.Success);
-        Assert.Equal(FormaPagamento.Fiado, result.Payment!.FormaPagamento);
+        Assert.Equal(FormaPagamento.Fiado, result.Payment!.PaymentMethod);
     }
 
     #endregion
@@ -355,9 +355,9 @@ public class PaymentServiceTests
 
         Assert.True(result.Success);
         Assert.NotNull(result.Payment);
-        Assert.True(result.Payment!.Estornado);
-        Assert.Equal("Erro no caixa", result.Payment.EstornoMotivo);
-        Assert.NotNull(result.Payment.EstornoDataHora);
+        Assert.True(result.Payment!.IsReversed);
+        Assert.Equal("Erro no caixa", result.Payment.ReversalReason);
+        Assert.NotNull(result.Payment.ReversedAt);
     }
 
     [Fact]
@@ -412,10 +412,10 @@ public class PaymentServiceTests
         await CreatePaymentAsync(order1.Id, FormaPagamento.Dinheiro, 50m);
         await CreatePaymentAsync(order2.Id, FormaPagamento.Cartao, 75m);
 
-        var payments = await _service.GetAllAsync(new PaymentFilterRequest { FormaPagamento = FormaPagamento.Dinheiro });
+        var payments = await _service.GetAllAsync(new PaymentFilterRequest { PaymentMethod = FormaPagamento.Dinheiro });
 
         Assert.Single(payments);
-        Assert.Equal(FormaPagamento.Dinheiro, payments[0].FormaPagamento);
+        Assert.Equal(FormaPagamento.Dinheiro, payments[0].PaymentMethod);
     }
 
     [Fact]
@@ -466,7 +466,7 @@ public class PaymentServiceTests
 
         Assert.NotNull(result);
         Assert.Equal(payment.Id, result!.Id);
-        Assert.Equal(50m, result.ValorPago);
+        Assert.Equal(50m, result.AmountPaid);
     }
 
     [Fact]
@@ -667,8 +667,8 @@ public class PaymentServiceTests
                         p.OrderId.ToString().Contains(term));
                 }
 
-                if (filter.FormaPagamento.HasValue)
-                    query = query.Where(p => p.FormaPagamento == filter.FormaPagamento.Value);
+                if (filter.PaymentMethod.HasValue)
+                    query = query.Where(p => p.FormaPagamento == filter.PaymentMethod.Value);
 
                 if (filter.StartDate.HasValue)
                     query = query.Where(p => p.DataHora >= filter.StartDate.Value);
