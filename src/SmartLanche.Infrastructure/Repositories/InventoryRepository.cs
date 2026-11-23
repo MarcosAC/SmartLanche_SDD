@@ -17,6 +17,7 @@ public class InventoryRepository : IInventoryRepository
     public async Task<InventoryItem?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
         return await _context.InventoryItems
+            .AsNoTracking()
             .Include(i => i.Produto)
                 .ThenInclude(p => p.Category)
             .FirstOrDefaultAsync(i => i.Id == id, cancellationToken);
@@ -68,7 +69,6 @@ public class InventoryRepository : IInventoryRepository
     {
         _context.Entry(item).State = EntityState.Modified;
         await _context.SaveChangesAsync(cancellationToken);
-        _context.Entry(item).State = EntityState.Detached;
     }
 
     public async Task<decimal> GetValorTotalEstoqueAsync(CancellationToken cancellationToken = default)

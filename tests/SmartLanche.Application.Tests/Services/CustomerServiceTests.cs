@@ -374,7 +374,7 @@ public class CustomerServiceTests : IDisposable
 
         Assert.Single(devedores);
         Assert.Equal(customer.Id, devedores[0].CustomerId);
-        Assert.Equal(100m, devedores[0].DebtBalance);
+        Assert.Equal(100m, devedores[0].SaldoDevedor);
     }
 
     public void Dispose()
@@ -505,7 +505,7 @@ public class CustomerServiceTests : IDisposable
                     g.Sum(p => p.ValorOriginal - p.ValorPago),
                     g.Count(),
                     g.Max(p => p.DataHora)))
-                .OrderByDescending(d => d.DebtBalance)
+                .OrderByDescending(d => d.SaldoDevedor)
                 .ToList();
             return Task.FromResult<IReadOnlyList<DevedorDto>>(devedores);
         }

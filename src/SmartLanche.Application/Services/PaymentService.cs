@@ -37,9 +37,9 @@ public class PaymentService : IPaymentService
             var payment = new Payment
             {
                 OrderId = request.OrderId,
-                FormaPagamento = request.PaymentMethod,
-                ValorPago = request.AmountPaid,
-                Parcelas = request.Installments,
+                FormaPagamento = request.FormaPagamento,
+                ValorPago = request.ValorPago,
+                Parcelas = request.Parcelas,
                 Notes = request.Notes
             };
 
@@ -117,7 +117,6 @@ public class PaymentService : IPaymentService
         return new PaymentDto(
             payment.Id,
             payment.OrderId,
-            payment.Order?.Customer?.Name,
             payment.FormaPagamento,
             payment.ValorPago,
             payment.Troco,

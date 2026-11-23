@@ -128,7 +128,7 @@ public class PendingPaymentRepository : IPendingPaymentRepository
                 g.Sum(pp => pp.ValorOriginal - pp.ValorPago),
                 g.Count(),
                 g.Max(pp => pp.DataHora)))
-            .OrderByDescending(d => d.DebtBalance)
+            .OrderByDescending(d => d.SaldoDevedor)
             .ToList();
 
         return devedores;

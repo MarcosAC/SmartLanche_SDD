@@ -5,7 +5,6 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:vm="clr-namespace:SmartLanche.Presentation.ViewModels.Inventory"
              xmlns:converters="clr-namespace:SmartLanche.Presentation.Converters"
-             xmlns:controls="clr-namespace:SmartLanche.Presentation.Controls"
              xmlns:domainEnums="clr-namespace:SmartLanche.Domain.Enums;assembly=SmartLanche.Domain"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              mc:Ignorable="d"
@@ -14,7 +13,14 @@
 
     <UserControl.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <converters:MovementTypeToDescriptionConverter x:Key="MovementTypeToDescriptionConverter"/>
         <converters:MovementOriginToDescriptionConverter x:Key="MovementOriginToDescriptionConverter"/>
+
+        <ObjectDataProvider x:Key="MovementTypeValues" MethodName="GetValues" ObjectType="{x:Type sys:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="domainEnums:MovementType"/>
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
 
         <Style x:Key="DataGridRowStyle" TargetType="DataGridRow" BasedOn="{StaticResource DataGridRowStyle}"/>
     </UserControl.Resources>
@@ -60,12 +66,15 @@
 
                         <StackPanel Grid.Column="2" Margin="0,0,16,0">
                             <TextBlock Text="Tipo" FontSize="12" Foreground="#64748B" Margin="0,0,0,4"/>
-                            <controls:StatusFilterComboBox Width="150"
-                                                           EnumType="{x:Type domainEnums:InventoryMovementType}"
-                                                           SelectedValue="{Binding FilterType, Mode=TwoWay}"
-                                                           IncludeAllOption="True"
-                                                           AllOptionText="Todos"
-                                                           UseEnumDescription="True"/>
+                            <ComboBox ItemsSource="{Binding Source={StaticResource MovementTypeValues}}"
+                                      SelectedItem="{Binding FilterType, Mode=TwoWay}"
+                                      FontSize="13" Padding="8,4" BorderBrush="#D1D5DB" BorderThickness="1" Width="150">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Converter={StaticResource MovementTypeToDescriptionConverter}}"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
                         </StackPanel>
 
                         <Button Grid.Column="4" Content="🔍 Filtrar" Command="{Binding LoadCommand}"

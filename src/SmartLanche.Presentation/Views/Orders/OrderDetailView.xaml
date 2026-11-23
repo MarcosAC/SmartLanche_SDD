@@ -141,11 +141,11 @@
                                             Visibility="{Binding Notes, Converter={StaticResource StringIsNullOrEmptyToVisibilityConverter}, ConverterParameter=reverse}">
                                         <StackPanel>
                                             <StackPanel Orientation="Horizontal">
-                                                <TextBlock Text="{Binding PaymentMethod, Converter={StaticResource EnumToDescriptionConverter}}" FontWeight="SemiBold" Foreground="#92400E"/>
+                                                <TextBlock Text="{Binding FormaPagamento}" FontWeight="SemiBold" Foreground="#92400E"/>
                                                 <TextBlock Text=" - R$ " Foreground="#6B7280"/>
-                                                <TextBlock Text="{Binding AmountPaid, StringFormat='N2'}" FontWeight="SemiBold" Foreground="#92400E"/>
+                                                <TextBlock Text="{Binding ValorPago, StringFormat='N2'}" FontWeight="SemiBold" Foreground="#92400E"/>
                                             </StackPanel>
-                                            <TextBlock Text="{Binding DateTime, StringFormat='dd/MM/yyyy HH:mm'}"
+                                            <TextBlock Text="{Binding DataHora, StringFormat='dd/MM/yyyy HH:mm'}"
                                                        FontSize="11" Foreground="#6B7280" Margin="0,2,0,4"/>
                                             <TextBlock Text="{Binding Notes}" Style="{StaticResource DetailValueStyle}" TextWrapping="Wrap" Foreground="#78350F"/>
                                         </StackPanel>

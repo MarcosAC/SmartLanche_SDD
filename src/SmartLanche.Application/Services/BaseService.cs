@@ -30,7 +30,6 @@ public abstract class BaseService
             Payments = order.Payments.Select(p => new PaymentDto(
                 p.Id,
                 p.OrderId,
-                p.Order?.Customer?.Name,
                 p.FormaPagamento,
                 p.ValorPago,
                 p.Troco,

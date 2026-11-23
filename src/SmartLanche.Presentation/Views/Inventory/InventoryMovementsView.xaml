@@ -5,7 +5,6 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:vm="clr-namespace:SmartLanche.Presentation.ViewModels.Inventory"
              xmlns:converters="clr-namespace:SmartLanche.Presentation.Converters"
-             xmlns:controls="clr-namespace:SmartLanche.Presentation.Controls"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              xmlns:domainEnums="clr-namespace:SmartLanche.Domain.Enums;assembly=SmartLanche.Domain"
              mc:Ignorable="d"
@@ -13,9 +12,32 @@
              d:DesignHeight="600" d:DesignWidth="1100">
 
     <UserControl.Resources>
+        <converters:MovementTypeToDescriptionConverter x:Key="MovementTypeToDescriptionConverter"/>
+        <converters:MovementOriginToDescriptionConverter x:Key="MovementOriginToDescriptionConverter"/>
         <converters:MovementTypeToColorConverter x:Key="MovementTypeToColorConverter"/>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <converters:StringIsNullOrEmptyToVisibilityConverter x:Key="StringIsNullOrEmptyToVisibilityConverter"/>
+
+        <ObjectDataProvider x:Key="MovementTypeValues" MethodName="GetValues" ObjectType="{x:Type sys:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="domainEnums:MovementType"/>
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+
+        <ObjectDataProvider x:Key="MovementOriginValues" MethodName="GetValues" ObjectType="{x:Type sys:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="domainEnums:MovementOrigin"/>
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+
+        <Style x:Key="FilterComboBoxStyle" TargetType="ComboBox">
+            <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="BorderBrush" Value="#D1D5DB"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="MinWidth" Value="120"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
 
         <Style x:Key="ActionButtonStyle" TargetType="Button">
             <Setter Property="Padding" Value="10,5"/>
@@ -93,34 +115,43 @@
                 <!-- Tipo -->
                 <StackPanel Orientation="Horizontal" Margin="0,0,16,0" VerticalAlignment="Center">
                     <TextBlock Text="Tipo:" VerticalAlignment="Center" Margin="0,0,8,0" FontSize="13" Foreground="#374151"/>
-                    <controls:StatusFilterComboBox Width="140"
-                                                   EnumType="{x:Type domainEnums:InventoryMovementType}"
-                                                   SelectedValue="{Binding Filter.Tipo, Mode=TwoWay}"
-                                                   IncludeAllOption="True"
-                                                   AllOptionText="Todos"
-                                                   UseEnumDescription="True"/>
+                    <ComboBox Style="{StaticResource FilterComboBoxStyle}"
+                              ItemsSource="{Binding Source={StaticResource MovementTypeValues}}"
+                              SelectedItem="{Binding Filter.Type, Mode=TwoWay}"
+                              Width="140">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Converter={StaticResource MovementTypeToDescriptionConverter}}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
                 </StackPanel>
 
                 <!-- Origem -->
                 <StackPanel Orientation="Horizontal" Margin="0,0,16,0" VerticalAlignment="Center">
                     <TextBlock Text="Origem:" VerticalAlignment="Center" Margin="0,0,8,0" FontSize="13" Foreground="#374151"/>
-                    <controls:StatusFilterComboBox Width="140"
-                                                   EnumType="{x:Type domainEnums:InventoryMovementReason}"
-                                                   SelectedValue="{Binding Filter.Motivo, Mode=TwoWay}"
-                                                   IncludeAllOption="True"
-                                                   AllOptionText="Todas"
-                                                   UseEnumDescription="True"/>
+                    <ComboBox Style="{StaticResource FilterComboBoxStyle}"
+                              ItemsSource="{Binding Source={StaticResource MovementOriginValues}}"
+                              SelectedItem="{Binding Filter.Origin, Mode=TwoWay}"
+                              Width="140">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Converter={StaticResource MovementOriginToDescriptionConverter}}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
                 </StackPanel>
 
                 <!-- Produto -->
                 <StackPanel Orientation="Horizontal" Margin="0,0,16,0" VerticalAlignment="Center">
                     <TextBlock Text="Produto:" VerticalAlignment="Center" Margin="0,0,8,0" FontSize="13" Foreground="#374151"/>
-                    <ComboBox ItemsSource="{Binding Products}"
+                    <ComboBox Style="{StaticResource FilterComboBoxStyle}"
+                              ItemsSource="{Binding Products}"
                               SelectedValue="{Binding Filter.ProductId, Mode=TwoWay}"
                               SelectedValuePath="Id"
                               DisplayMemberPath="Name"
                               Width="200" IsEditable="True" IsTextSearchEnabled="True"
-                              Style="{StaticResource PickerComboBoxStyle}"/>
+                              Text="{Binding Filter.ProductId, Converter={StaticResource StringIsNullOrEmptyToVisibilityConverter}, FallbackValue='Todos', TargetNullValue='Todos'}"/>
                 </StackPanel>
 
                 <!-- Buttons -->

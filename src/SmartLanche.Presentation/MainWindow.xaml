@@ -388,34 +388,6 @@
         <DataTemplate DataType="{x:Type inventoryVm:InventoryMovementsViewModel}">
             <viewsInventory:InventoryMovementsView/>
         </DataTemplate>
-
-        <!-- Entrada de Estoque -->
-        <DataTemplate DataType="{x:Type inventoryVm:AddStockViewModel}">
-            <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <viewsInventory:AddStockView/>
-            </ScrollViewer>
-        </DataTemplate>
-
-        <!-- Saída de Estoque -->
-        <DataTemplate DataType="{x:Type inventoryVm:RemoveStockViewModel}">
-            <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <viewsInventory:RemoveStockView/>
-            </ScrollViewer>
-        </DataTemplate>
-
-        <!-- Editar Quantidade Mínima -->
-        <DataTemplate DataType="{x:Type inventoryVm:EditMinStockViewModel}">
-            <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <viewsInventory:EditMinStockView/>
-            </ScrollViewer>
-        </DataTemplate>
-
-        <!-- Histórico de Movimentações -->
-        <DataTemplate DataType="{x:Type inventoryVm:InventoryMovementViewModel}">
-            <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <viewsInventory:InventoryMovementView/>
-            </ScrollViewer>
-        </DataTemplate>
     </Window.Resources>
 
     <Grid>

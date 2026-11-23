@@ -78,12 +78,12 @@ public class TestDevedores
                 Console.WriteLine($"Found {devedores.Count} devedores");
                 foreach (var d in devedores)
                 {
-                    Console.WriteLine($"  {d.CustomerId} - {d.CustomerName} - {d.DebtBalance:C}");
+                    Console.WriteLine($"  {d.CustomerId} - {d.CustomerName} - {d.SaldoDevedor:C}");
                 }
 
                 Assert.Single(devedores);
                 Assert.Equal("João Silva", devedores[0].CustomerName);
-                Assert.Equal(51.00m, devedores[0].DebtBalance);
+                Assert.Equal(51.00m, devedores[0].SaldoDevedor);
             }
         }
         finally

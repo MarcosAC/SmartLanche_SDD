@@ -1,10 +1,12 @@
+using System.Collections.ObjectModel;
+using System.Windows.Input;
 using SmartLanche.Application.DTOs;
 using SmartLanche.Application.Interfaces;
 using SmartLanche.Domain.Entities;
 using SmartLanche.Domain.Enums;
 using SmartLanche.Presentation.Commands;
 using SmartLanche.Presentation.Services;
-using System.Windows.Input;
+using SmartLanche.Presentation.ViewModels;
 
 namespace SmartLanche.Presentation.ViewModels.Inventory;
 
@@ -15,8 +17,6 @@ public sealed class InventoryListViewModel : ListViewModelBase<InventoryItemDto,
 
     private StockStatus? _filterStatus;
     private string _statusText = string.Empty;
-    private decimal _totalInventoryValue;
-    private int _totalItemsCount;
 
     public event EventHandler<InventoryItemDto>? RequestAddStock;
     public event EventHandler<InventoryItemDto>? RequestRemoveStock;
@@ -46,20 +46,6 @@ public sealed class InventoryListViewModel : ListViewModelBase<InventoryItemDto,
         get => _statusText;
         private set => SetProperty(ref _statusText, value);
     }
-
-    public decimal TotalInventoryValue
-    {
-        get => _totalInventoryValue;
-        private set => SetProperty(ref _totalInventoryValue, value);
-    }
-
-    public int TotalItemsCount
-    {
-        get => _totalItemsCount;
-        private set => SetProperty(ref _totalItemsCount, value);
-    }
-
-    public string TotalInventoryValueFormatted => TotalInventoryValue.ToString("C2", new System.Globalization.CultureInfo("pt-BR"));
 
     public InventoryListViewModel(
         IInventoryService inventoryService,
@@ -129,39 +115,10 @@ public sealed class InventoryListViewModel : ListViewModelBase<InventoryItemDto,
         return SortDescending ? sorted.Reverse().ToList() : sorted.ToList();
     }
 
-    protected override async Task LoadItemsAsync()
-    {
-        var items = await GetItemsAsync();
-
-        // Apply search filter (client-side) - always apply to include status filter
-        if (!string.IsNullOrWhiteSpace(SearchText))
-        {
-            var searchTerm = SearchText.ToLowerInvariant();
-            items = ApplySearchFilter(items, searchTerm);
-        }
-        else if (FilterStatus.HasValue)
-        {
-            // Apply status filter even when search text is empty
-            items = ApplySearchFilter(items, string.Empty);
-        }
-
-        // Apply sorting
-        items = ApplySort(items);
-
-        Items.Clear();
-        foreach (var item in items)
-        {
-            Items.Add(item);
-        }
-
-        StatusText = $"{Items.Count} itens no estoque";
-        TotalItemsCount = Items.Count;
-        TotalInventoryValue = Items.Sum(i => i.ValorTotalEstoque);
-    }
-
     public override async Task LoadAsync()
     {
         await base.LoadAsync();
+        StatusText = $"{Items.Count} itens no estoque";
     }
 
     private static InventoryItemDto MapToDto(InventoryItem item)
@@ -173,7 +130,6 @@ public sealed class InventoryListViewModel : ListViewModelBase<InventoryItemDto,
             item.Nome,
             item.QuantidadeAtual,
             item.QuantidadeMinima,
-            item.QuantidadeTotalRecebida,
             item.ValorUnitario,
             item.UnidadeMedida,
             item.Notes,

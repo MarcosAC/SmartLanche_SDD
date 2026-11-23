@@ -134,10 +134,10 @@ public class PendingPaymentServiceTests
 
         Assert.True(result.Success);
         Assert.NotNull(result.PendingPayment);
-        Assert.Equal(40m, result.PendingPayment!.AmountPaid);
-        Assert.Equal(60m, result.PendingPayment.PendingBalance);
-        Assert.Equal(StatusPagamentoPendente.NaoPago, result.PendingPayment.PaymentStatus);
-        Assert.Null(result.PendingPayment.PaymentDate);
+        Assert.Equal(40m, result.PendingPayment!.ValorPago);
+        Assert.Equal(60m, result.PendingPayment.SaldoPendente);
+        Assert.Equal(StatusPagamentoPendente.NaoPago, result.PendingPayment.StatusPagamento);
+        Assert.Null(result.PendingPayment.DataPagamento);
     }
 
     [Fact]
@@ -156,9 +156,9 @@ public class PendingPaymentServiceTests
             pending.Id, 25m, FormaPagamento.Cartao, "Parte 2"));
 
         Assert.True(result2.Success);
-        Assert.Equal(55m, result2.PendingPayment!.AmountPaid);
-        Assert.Equal(45m, result2.PendingPayment.PendingBalance);
-        Assert.Equal(StatusPagamentoPendente.NaoPago, result2.PendingPayment.PaymentStatus);
+        Assert.Equal(55m, result2.PendingPayment!.ValorPago);
+        Assert.Equal(45m, result2.PendingPayment.SaldoPendente);
+        Assert.Equal(StatusPagamentoPendente.NaoPago, result2.PendingPayment.StatusPagamento);
     }
 
     #endregion
@@ -183,10 +183,10 @@ public class PendingPaymentServiceTests
 
         Assert.True(result.Success);
         Assert.NotNull(result.PendingPayment);
-        Assert.Equal(100m, result.PendingPayment!.AmountPaid);
-        Assert.Equal(0m, result.PendingPayment.PendingBalance);
-        Assert.Equal(StatusPagamentoPendente.Pago, result.PendingPayment.PaymentStatus);
-        Assert.NotNull(result.PendingPayment.PaymentDate);
+        Assert.Equal(100m, result.PendingPayment!.ValorPago);
+        Assert.Equal(0m, result.PendingPayment.SaldoPendente);
+        Assert.Equal(StatusPagamentoPendente.Pago, result.PendingPayment.StatusPagamento);
+        Assert.NotNull(result.PendingPayment.DataPagamento);
     }
 
     [Fact]
@@ -208,8 +208,8 @@ public class PendingPaymentServiceTests
         Assert.True(result.Success);
         Assert.NotNull(result.PendingPayment);
         Assert.Single(result.PendingPayment.History);
-        Assert.Equal(100m, result.PendingPayment.History[0].AmountPaid);
-        Assert.Equal(FormaPagamento.Cartao, result.PendingPayment.History[0].PaymentMethod);
+        Assert.Equal(100m, result.PendingPayment.History[0].ValorPago);
+        Assert.Equal(FormaPagamento.Cartao, result.PendingPayment.History[0].FormaPagamento);
         Assert.Equal("Parcelado", result.PendingPayment.History[0].Notes);
     }
 
@@ -227,8 +227,8 @@ public class PendingPaymentServiceTests
 
         Assert.True(result.Success);
         Assert.Equal(2, result.PendingPayment!.History.Count);
-        Assert.Equal(40m, result.PendingPayment.History[1].AmountPaid); // Mais recente primeiro
-        Assert.Equal(60m, result.PendingPayment.History[0].AmountPaid);
+        Assert.Equal(40m, result.PendingPayment.History[1].ValorPago); // Mais recente primeiro
+        Assert.Equal(60m, result.PendingPayment.History[0].ValorPago);
     }
 
     #endregion
@@ -247,10 +247,10 @@ public class PendingPaymentServiceTests
         Assert.Equal(customer.Id, result.CustomerId);
         Assert.Equal(customer.Name, result.CustomerName);
         Assert.Equal(order.Id, result.OrderId);
-        Assert.Equal(150m, result.OriginalAmount);
-        Assert.Equal(0m, result.AmountPaid);
-        Assert.Equal(150m, result.PendingBalance);
-        Assert.Equal(StatusPagamentoPendente.NaoPago, result.PaymentStatus);
+        Assert.Equal(150m, result.ValorOriginal);
+        Assert.Equal(0m, result.ValorPago);
+        Assert.Equal(150m, result.SaldoPendente);
+        Assert.Equal(StatusPagamentoPendente.NaoPago, result.StatusPagamento);
         Assert.Equal("Fiado VIP", result.Notes);
         Assert.Empty(result.History);
     }
@@ -306,7 +306,7 @@ public class PendingPaymentServiceTests
 
         Assert.NotNull(result);
         Assert.Equal(pending.Id, result!.Id);
-        Assert.Equal(100m, result.OriginalAmount);
+        Assert.Equal(100m, result.ValorOriginal);
     }
 
     [Fact]
@@ -440,10 +440,10 @@ public class PendingPaymentServiceTests
 
         Assert.Equal(3, history.Count);
         // Mais recente primeiro
-        Assert.Equal(30m, history[0].AmountPaid);
-        Assert.Equal(FormaPagamento.Pix, history[0].PaymentMethod);
-        Assert.Equal(40m, history[1].AmountPaid);
-        Assert.Equal(30m, history[2].AmountPaid);
+        Assert.Equal(30m, history[0].ValorPago);
+        Assert.Equal(FormaPagamento.Pix, history[0].FormaPagamento);
+        Assert.Equal(40m, history[1].ValorPago);
+        Assert.Equal(30m, history[2].ValorPago);
     }
 
     [Fact]
@@ -538,10 +538,10 @@ public class PendingPaymentServiceTests
 
         Assert.Equal(2, devedores.Count); // Pedro não aparece (saldo 0)
         Assert.Equal(customer1.Id, devedores[0].CustomerId); // João tem maior saldo
-        Assert.Equal(500m, devedores[0].DebtBalance);
-        Assert.Equal(1, devedores[0].PendingCount);
+        Assert.Equal(500m, devedores[0].SaldoDevedor);
+        Assert.Equal(1, devedores[0].QuantidadePendencias);
         Assert.Equal(customer2.Id, devedores[1].CustomerId);
-        Assert.Equal(200m, devedores[1].DebtBalance);
+        Assert.Equal(200m, devedores[1].SaldoDevedor);
     }
 
     [Fact]
@@ -578,8 +578,8 @@ public class PendingPaymentServiceTests
         var devedores = await _service.GetDevedoresAsync();
 
         Assert.Single(devedores);
-        Assert.Equal(350m, devedores[0].DebtBalance);
-        Assert.Equal(3, devedores[0].PendingCount);
+        Assert.Equal(350m, devedores[0].SaldoDevedor);
+        Assert.Equal(3, devedores[0].QuantidadePendencias);
     }
 
     #endregion
@@ -685,7 +685,7 @@ public class PendingPaymentServiceTests
                     g.Sum(p => p.SaldoPendente),
                     g.Count(),
                     g.Max(p => p.DataHora)))
-                .OrderByDescending(d => d.DebtBalance)
+                .OrderByDescending(d => d.SaldoDevedor)
                 .ToList();
 
             return Task.FromResult<IReadOnlyList<DevedorDto>>(devedores);
