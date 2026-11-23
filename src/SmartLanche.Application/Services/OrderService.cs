@@ -244,7 +244,7 @@ public class OrderService : BaseService, IOrderService
         }
 
         // Allow closing both EmPreparacao and Pronto orders when payment is provided
-        var hasPaymentInfo = request.PaymentMethod.HasValue;
+        var hasPaymentInfo = request.FormaPagamento.HasValue;
         var validStatusForClose = hasPaymentInfo
             ? (order.Status == OrderStatus.EmPreparacao || order.Status == OrderStatus.Pronto)
             : order.Status == OrderStatus.Pronto;
@@ -266,9 +266,9 @@ public class OrderService : BaseService, IOrderService
         {
             var paymentRequest = new ProcessPaymentRequest(
                 request.OrderId,
-                request.PaymentMethod.Value,
-                request.AmountPaid ?? 0,
-                request.Installments ?? 1,
+                request.FormaPagamento.Value,
+                request.ValorPago ?? 0,
+                request.Parcelas ?? 1,
                 request.Notes);
 
             var paymentResult = await _paymentService.ProcessPaymentAsync(paymentRequest, cancellationToken);
@@ -279,7 +279,7 @@ public class OrderService : BaseService, IOrderService
             }
 
             // If payment is Fiado, validate credit limit before closing
-            if (request.PaymentMethod == FormaPagamento.Fiado && request.CustomerId.HasValue)
+            if (request.FormaPagamento == FormaPagamento.Fiado && request.CustomerId.HasValue)
             {
                 var customer = await _customerRepository.GetByIdAsync(request.CustomerId.Value, cancellationToken);
                 if (customer is not null)
@@ -309,7 +309,7 @@ public class OrderService : BaseService, IOrderService
         await _inventoryService.BaixaAutomaticaPedidoAsync(order.Id, order.OrderItems.ToList(), cancellationToken);
 
         // If payment is Fiado, create a pending payment
-        if (hasPaymentInfo && request.PaymentMethod == FormaPagamento.Fiado && request.CustomerId.HasValue)
+        if (hasPaymentInfo && request.FormaPagamento == FormaPagamento.Fiado && request.CustomerId.HasValue)
         {
             await _pendingPaymentService.CreateForOrderAsync(
                 request.OrderId,

@@ -91,9 +91,9 @@ public sealed class RegisterPaymentDialogViewModel : INotifyPropertyChanged
             return;
         }
 
-        if (ValorPagamento.Value > _pendingPayment.PendingBalance + 0.01m)
+        if (ValorPagamento.Value > _pendingPayment.SaldoPendente + 0.01m)
         {
-            ValidationError = $"Valor excede o saldo pendente (R$ {_pendingPayment.PendingBalance:N2}).";
+            ValidationError = $"Valor excede o saldo pendente (R$ {_pendingPayment.SaldoPendente:N2}).";
             return;
         }
 

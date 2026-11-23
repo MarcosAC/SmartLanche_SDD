@@ -32,7 +32,7 @@ public class PendingPaymentService : IPendingPaymentService
 
         try
         {
-            pendingPayment.RegistrarPagamento(request.Amount, request.PaymentMethod, request.Notes);
+            pendingPayment.RegistrarPagamento(request.Valor, request.FormaPagamento, request.Notes);
 
             await _pendingPaymentRepository.UpdateAsync(pendingPayment, cancellationToken);
 
@@ -196,7 +196,7 @@ public class PendingPaymentService : IPendingPaymentService
                 g.Sum(pp => pp.SaldoPendente),
                 g.Count(),
                 g.Max(pp => pp.DataHora)))
-            .OrderByDescending(d => d.DebtBalance)
+            .OrderByDescending(d => d.SaldoDevedor)
             .ToList();
 
         return devedores;

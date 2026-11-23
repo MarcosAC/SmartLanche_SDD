@@ -21,9 +21,9 @@ public sealed class OrderCloseViewModel : INotifyPropertyChanged
     private bool _isLoading;
     private string? _errorMessage;
 
-    private FormaPagamento? _selectedPaymentMethod;
-    private decimal? _amountPaid = 0m;
-    private int? _installments;
+    private FormaPagamento? _selectedFormaPagamento;
+    private decimal? _valorPago = 0m;
+    private int? _parcelas;
     private string? _paymentNotes;
     private ObservableCollection<CustomerDto> _customers = [];
     private CustomerDto? _selectedCustomer;
@@ -69,39 +69,39 @@ public sealed class OrderCloseViewModel : INotifyPropertyChanged
     }
 
     // Payment properties
-    public FormaPagamento? SelectedPaymentMethod
+    public FormaPagamento? SelectedFormaPagamento
     {
-        get => _selectedPaymentMethod;
+        get => _selectedFormaPagamento;
         set
         {
-            if (SetProperty(ref _selectedPaymentMethod, value))
+            if (SetProperty(ref _selectedFormaPagamento, value))
             {
                 UpdatePaymentVisibility();
-                UpdateChangeAndInstallmentAmount();
+                UpdateTrocoAndParcela();
             }
         }
     }
 
-    public decimal? AmountPaid
+    public decimal? ValorPago
     {
-        get => _amountPaid;
+        get => _valorPago;
         set
         {
-            if (SetProperty(ref _amountPaid, value))
+            if (SetProperty(ref _valorPago, value))
             {
-                UpdateChangeAndInstallmentAmount();
+                UpdateTrocoAndParcela();
             }
         }
     }
 
-    public int? Installments
+    public int? Parcelas
     {
-        get => _installments;
+        get => _parcelas;
         set
         {
-            if (SetProperty(ref _installments, value))
+            if (SetProperty(ref _parcelas, value))
             {
-                UpdateChangeAndInstallmentAmount();
+                UpdateTrocoAndParcela();
             }
         }
     }
@@ -182,29 +182,29 @@ public sealed class OrderCloseViewModel : INotifyPropertyChanged
 
     public bool ShowCustomerSearchResults => !string.IsNullOrWhiteSpace(_customerSearchText) && FilteredCustomers.Any() && SelectedCustomer is null;
 
-    public FormaPagamento[] PaymentMethods => Enum.GetValues<FormaPagamento>();
+    public FormaPagamento[] FormasPagamento => Enum.GetValues<FormaPagamento>();
 
-    public bool ShowInstallments => SelectedPaymentMethod == FormaPagamento.Cartao;
+    public bool ShowParcelas => SelectedFormaPagamento == FormaPagamento.Cartao;
 
-    public bool ShowChange => SelectedPaymentMethod == FormaPagamento.Dinheiro;
+    public bool ShowTroco => SelectedFormaPagamento == FormaPagamento.Dinheiro;
 
-    public bool ShowCustomerSelection => SelectedPaymentMethod == FormaPagamento.Fiado;
+    public bool ShowCustomerSelection => SelectedFormaPagamento == FormaPagamento.Fiado;
 
-    public decimal Change
+    public decimal Troco
     {
         get
         {
-            if (Order is null || !AmountPaid.HasValue) return 0;
-            return AmountPaid.Value - Order.TotalAmount;
+            if (Order is null || !ValorPago.HasValue) return 0;
+            return ValorPago.Value - Order.TotalAmount;
         }
     }
 
-    public decimal InstallmentAmount
+    public decimal ValorParcela
     {
         get
         {
-            if (Order is null || !Installments.HasValue || Installments.Value <= 0) return 0;
-            return Order.TotalAmount / Installments.Value;
+            if (Order is null || !Parcelas.HasValue || Parcelas.Value <= 0) return 0;
+            return Order.TotalAmount / Parcelas.Value;
         }
     }
 
@@ -274,28 +274,28 @@ public sealed class OrderCloseViewModel : INotifyPropertyChanged
 
     private void UpdatePaymentVisibility()
     {
-        OnPropertyChanged(nameof(ShowInstallments));
-        OnPropertyChanged(nameof(ShowChange));
+        OnPropertyChanged(nameof(ShowParcelas));
+        OnPropertyChanged(nameof(ShowTroco));
         OnPropertyChanged(nameof(ShowCustomerSelection));
         OnPropertyChanged(nameof(CanCloseOrder));
     }
 
-    private void UpdateChangeAndInstallmentAmount()
+    private void UpdateTrocoAndParcela()
     {
-        OnPropertyChanged(nameof(Change));
-        OnPropertyChanged(nameof(InstallmentAmount));
+        OnPropertyChanged(nameof(Troco));
+        OnPropertyChanged(nameof(ValorParcela));
         OnPropertyChanged(nameof(CanCloseOrder));
     }
 
     private bool HasValidPaymentInfo()
     {
-        if (!SelectedPaymentMethod.HasValue) return false;
+        if (!SelectedFormaPagamento.HasValue) return false;
 
-        return SelectedPaymentMethod.Value switch
+        return SelectedFormaPagamento.Value switch
         {
-            FormaPagamento.Dinheiro => AmountPaid.HasValue && AmountPaid.Value >= (Order?.TotalAmount ?? 0),
-            FormaPagamento.Cartao => Installments.HasValue && Installments.Value >= 1 && Installments.Value <= 12,
-            FormaPagamento.Pix => AmountPaid.HasValue && AmountPaid.Value >= (Order?.TotalAmount ?? 0),
+            FormaPagamento.Dinheiro => ValorPago.HasValue && ValorPago.Value >= (Order?.TotalAmount ?? 0),
+            FormaPagamento.Cartao => Parcelas.HasValue && Parcelas.Value >= 1 && Parcelas.Value <= 12,
+            FormaPagamento.Pix => ValorPago.HasValue && ValorPago.Value >= (Order?.TotalAmount ?? 0),
             FormaPagamento.Fiado => SelectedCustomerId.HasValue,
             _ => false
         };
@@ -313,9 +313,9 @@ public sealed class OrderCloseViewModel : INotifyPropertyChanged
             var request = new CloseOrderRequest
             {
                 OrderId = Order.Id,
-                PaymentMethod = SelectedPaymentMethod,
-                AmountPaid = AmountPaid,
-                Installments = Installments,
+                FormaPagamento = SelectedFormaPagamento,
+                ValorPago = ValorPago,
+                Parcelas = Parcelas,
                 Notes = PaymentNotes,
                 CustomerId = SelectedCustomerId
             };

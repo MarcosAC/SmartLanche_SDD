@@ -82,13 +82,13 @@ public sealed class PendingPaymentListViewModel : ListViewModelBase<PendingPayme
             p.Id.ToString().Contains(searchTerm) ||
             p.CustomerName?.ToLowerInvariant().Contains(searchTerm) == true ||
             p.OrderId.ToString().Contains(searchTerm) ||
-            p.OriginalAmount.ToString("N2").Contains(searchTerm) ||
-            p.PendingBalance.ToString("N2").Contains(searchTerm)
+            p.ValorOriginal.ToString("N2").Contains(searchTerm) ||
+            p.SaldoPendente.ToString("N2").Contains(searchTerm)
         );
 
         if (SelectedStatus.HasValue)
         {
-            filtered = filtered.Where(p => p.PaymentStatus == SelectedStatus.Value);
+            filtered = filtered.Where(p => p.StatusPagamento == SelectedStatus.Value);
         }
 
         if (SelectedCustomerId.HasValue && SelectedCustomerId.Value > 0)
@@ -103,7 +103,7 @@ public sealed class PendingPaymentListViewModel : ListViewModelBase<PendingPayme
     {
         if (string.IsNullOrWhiteSpace(SortColumn))
         {
-            return items.OrderByDescending(p => p.DateTime).ToList();
+            return items.OrderByDescending(p => p.DataHora).ToList();
         }
 
         var sorted = SortColumn.ToLowerInvariant() switch
@@ -111,12 +111,12 @@ public sealed class PendingPaymentListViewModel : ListViewModelBase<PendingPayme
             "id" => items.OrderBy(p => p.Id),
             "customername" or "clientenome" => items.OrderBy(p => p.CustomerName),
             "orderid" or "pedidoid" => items.OrderBy(p => p.OrderId),
-            "valortotal" or "valororiginal" or "originalamount" => items.OrderBy(p => p.OriginalAmount),
-            "valorpago" or "amountpaid" => items.OrderBy(p => p.AmountPaid),
-            "saldopendente" or "saldo" or "pendingbalance" => items.OrderBy(p => p.PendingBalance),
-            "datahora" or "data" or "datetime" => items.OrderBy(p => p.DateTime),
-            "status" or "statuspagamento" or "paymentstatus" => items.OrderBy(p => p.PaymentStatus),
-            _ => items.OrderByDescending(p => p.DateTime)
+            "valortotal" or "valororiginal" => items.OrderBy(p => p.ValorOriginal),
+            "valorpago" => items.OrderBy(p => p.ValorPago),
+            "saldopendente" or "saldo" => items.OrderBy(p => p.SaldoPendente),
+            "datahora" or "data" => items.OrderBy(p => p.DataHora),
+            "status" or "statuspagamento" => items.OrderBy(p => p.StatusPagamento),
+            _ => items.OrderByDescending(p => p.DataHora)
         };
 
         return SortDescending ? sorted.Reverse().ToList() : sorted.ToList();
@@ -167,7 +167,7 @@ public sealed class PendingPaymentListViewModel : ListViewModelBase<PendingPayme
     {
         if (parameter is not PendingPaymentDto pendingPayment) return;
 
-        if (pendingPayment.PaymentStatus == StatusPagamentoPendente.Pago)
+        if (pendingPayment.StatusPagamento == StatusPagamentoPendente.Pago)
         {
             _toastService.ShowWarning("Esta pendência já está quitada.");
             return;

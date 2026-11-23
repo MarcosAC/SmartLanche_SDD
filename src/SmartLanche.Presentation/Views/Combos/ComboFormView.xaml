@@ -232,8 +232,7 @@
                                                       SelectedValue="{Binding ProductId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                       IsEditable="False"
                                                       Margin="4,2"
-                                                      VerticalAlignment="Center"
-                                                      Style="{StaticResource PickerComboBoxStyle}"/>
+                                                      VerticalAlignment="Center"/>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellEditingTemplate>
                                 </DataGridTemplateColumn>

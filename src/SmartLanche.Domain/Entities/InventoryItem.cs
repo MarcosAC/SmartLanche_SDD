@@ -16,8 +16,6 @@ public class InventoryItem
 
     public decimal QuantidadeMinima { get; set; }
 
-    public decimal QuantidadeTotalRecebida { get; set; }
-
     public decimal ValorUnitario { get; set; }
 
     public string UnidadeMedida { get; set; } = "UN";
@@ -106,7 +104,6 @@ public class InventoryItem
         }
 
         QuantidadeAtual += quantidade;
-        QuantidadeTotalRecebida += quantidade;
         ValorUnitario = valorUnitario;
 
         var movement = new InventoryMovement
