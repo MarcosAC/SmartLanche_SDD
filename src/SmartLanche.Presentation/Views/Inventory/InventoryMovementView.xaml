@@ -24,76 +24,138 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
             <!-- Header -->
             <StackPanel Grid.Row="0" Margin="0,0,0,16">
-                <TextBlock Text="📋 Histórico de Movimentações" FontSize="20" FontWeight="Bold" Foreground="#1F2937"/>
-                <TextBlock Text="{Binding ProductName}" FontSize="14" Foreground="#64748B" Margin="0,4,0,0"/>
+                <TextBlock Text="📋 Histórico de Movimentações"
+                           FontSize="20" 
+                           FontWeight="Bold"
+                           Foreground="#1F2937"/>
+                <TextBlock Text="{Binding ProductName}" 
+                           FontSize="14"
+                           Foreground="#64748B"
+                           Margin="0,4,0,0"/>
             </StackPanel>
 
             <!-- Filters -->
-            <Border Grid.Row="1" Background="#F8FAFC" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,0,0,16">
+            <Border Grid.Row="1" 
+                    Background="#F8FAFC"
+                    BorderBrush="#E5E7EB"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="16" 
+                    Margin="0,0,0,16">
                 <StackPanel>
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
-                        <StackPanel Grid.Column="0" Margin="0,0,16,0">
-                            <TextBlock Text="De" FontSize="12" Foreground="#64748B" Margin="0,0,0,4"/>
+                        <StackPanel Grid.Column="0"
+                                    Margin="0,0,16,0"
+                                    VerticalAlignment="Center">
+                            <TextBlock Text="De"
+                                       FontSize="12"
+                                       Foreground="#64748B"
+                                       Margin="0,0,0,4"/>
                             <DatePicker SelectedDate="{Binding FilterFrom, Mode=TwoWay}"
-                                        FontSize="13" Padding="8,4" BorderBrush="#D1D5DB" BorderThickness="1" Width="150"/>
+                                        FontSize="13" 
+                                        Padding="8,4"
+                                        BorderBrush="#D1D5DB"
+                                        BorderThickness="1"
+                                        Width="150"/>
                         </StackPanel>
 
-                        <StackPanel Grid.Column="1" Margin="0,0,16,0">
-                            <TextBlock Text="Até" FontSize="12" Foreground="#64748B" Margin="0,0,0,4"/>
+                        <StackPanel Grid.Column="1"
+                                    Margin="0,0,16,0"
+                                    VerticalAlignment="Center">
+                            <TextBlock Text="Até"
+                                       FontSize="12"
+                                       Foreground="#64748B"
+                                       Margin="0,0,0,4"/>
                             <DatePicker SelectedDate="{Binding FilterTo, Mode=TwoWay}"
-                                        FontSize="13" Padding="8,4" BorderBrush="#D1D5DB" BorderThickness="1" Width="150"/>
+                                        FontSize="13" 
+                                        Padding="8,4" 
+                                        BorderBrush="#D1D5DB"
+                                        BorderThickness="1"
+                                        Width="150"/>
                         </StackPanel>
 
-                        <StackPanel Grid.Column="2" Margin="0,0,16,0">
-                            <TextBlock Text="Tipo" FontSize="12" Foreground="#64748B" Margin="0,0,0,4"/>
-                            <controls:StatusFilterComboBox Width="150"
-                                                           EnumType="{x:Type domainEnums:InventoryMovementType}"
+                        <StackPanel Grid.Column="2"
+                                    Margin="0,0,16,0"
+                                    VerticalAlignment="Center">
+                            <TextBlock Text="Tipo"
+                                       FontSize="12"
+                                       Foreground="#64748B"
+                                       Margin="0,0,0,4"/>
+                            <controls:StatusFilterComboBox EnumType="{x:Type domainEnums:InventoryMovementType}"
                                                            SelectedValue="{Binding FilterType, Mode=TwoWay}"
                                                            IncludeAllOption="True"
                                                            AllOptionText="Todos"
                                                            UseEnumDescription="True"/>
                         </StackPanel>
 
-                        <Button Grid.Column="4" Content="🔍 Filtrar" Command="{Binding LoadCommand}"
-                                Padding="16,10" FontSize="13" FontWeight="Medium" Foreground="White"
-                                Background="#2563EB" BorderThickness="0"  Cursor="Hand"
-                                VerticalAlignment="Bottom" Margin="0,24,0,0"
+                        <Button Grid.Column="4"
+                                Content="🔍 Filtrar"
+                                Command="{Binding LoadCommand}"
+                                Padding="16,10" 
+                                FontSize="13"
+                                FontWeight="Medium"
+                                Foreground="White"
+                                Background="#2563EB"
+                                BorderThickness="0"
+                                Cursor="Hand"
+                                VerticalAlignment="Bottom"
+                                Margin="0,0,0,0"
                                 IsEnabled="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=inverse}"/>
                     </Grid>
 
-                    <Button Content="Limpar Filtros" Command="{Binding RefreshCommand}"
-                            Padding="10,6" FontSize="12" Foreground="#2563EB"
-                            Background="Transparent" BorderThickness="0" Cursor="Hand"
-                            HorizontalAlignment="Left" Margin="0,12,0,0"
+                    <Button Content="Limpar Filtros"
+                            Command="{Binding RefreshCommand}"
+                            Padding="10,6"
+                            FontSize="12"
+                            Foreground="#2563EB"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            HorizontalAlignment="Left" 
+                            Margin="0,12,0,0"
                             IsEnabled="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=inverse}"/>
                 </StackPanel>
             </Border>
 
             <!-- Loading Overlay -->
-            <Border Grid.Row="2" Background="#80FFFFFF" Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}"
-                    VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Panel.ZIndex="10">
+            <Border Grid.Row="2"
+                    Background="#80FFFFFF"
+                    Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}"
+                    VerticalAlignment="Stretch" 
+                    HorizontalAlignment="Stretch" 
+                    Panel.ZIndex="10">
                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                    <TextBlock Text="Carregando..." FontSize="16" Foreground="#374151"/>
-                    <ProgressBar Width="200" Height="6" IsIndeterminate="True" Margin="0,12,0,0" Foreground="#2563EB"/>
+                    <TextBlock Text="Carregando..." 
+                               FontSize="16" 
+                               Foreground="#374151"/>
+                    <ProgressBar Width="200" 
+                                 Height="6" 
+                                 IsIndeterminate="True" 
+                                 Margin="0,12,0,0" 
+                                 Foreground="#2563EB"/>
                 </StackPanel>
             </Border>
 
             <!-- Data Grid -->
-            <Border Grid.Row="2" Background="White" BorderBrush="#E5E7EB" BorderThickness="1" Padding="0"
+            <Border Grid.Row="2" 
+                    Background="White"
+                    BorderBrush="#E5E7EB"
+                    BorderThickness="1"
+                    Padding="0"
                     Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=inverse}">
 
                 <DataGrid ItemsSource="{Binding Movements}"
@@ -125,7 +187,9 @@
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding Type, Converter={StaticResource MovementTypeToDescriptionConverter}}"
-                                               FontSize="12" FontWeight="Medium" VerticalAlignment="Center"
+                                               FontSize="12"
+                                               FontWeight="Medium"
+                                               VerticalAlignment="Center"
                                                Foreground="{Binding Type, Converter={StaticResource MovementTypeToDescriptionConverter}}">
                                         <TextBlock.Style>
                                             <Style TargetType="TextBlock">
@@ -145,7 +209,9 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTextColumn Header="Origem" Binding="{Binding Origin, Converter={StaticResource MovementOriginToDescriptionConverter}}" Width="130">
+                        <DataGridTextColumn Header="Origem" 
+                                            Binding="{Binding Origin, Converter={StaticResource MovementOriginToDescriptionConverter}}"
+                                            Width="130">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="VerticalAlignment" Value="Center"/>
@@ -155,7 +221,10 @@
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="Qtd" Binding="{Binding Quantity}" Width="80" FontWeight="SemiBold">
+                        <DataGridTextColumn Header="Qtd"
+                                            Binding="{Binding Quantity}" 
+                                            Width="80"
+                                            FontWeight="SemiBold">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="VerticalAlignment" Value="Center"/>
@@ -165,7 +234,9 @@
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="Qtd. Anterior" Binding="{Binding PreviousQuantity}" Width="100">
+                        <DataGridTextColumn Header="Qtd. Anterior"
+                                            Binding="{Binding PreviousQuantity}"
+                                            Width="100">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="VerticalAlignment" Value="Center"/>
@@ -176,7 +247,9 @@
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="Qtd. Atual" Binding="{Binding NewQuantity}" Width="100" FontWeight="SemiBold">
+                        <DataGridTextColumn Header="Qtd. Atual"
+                                            Binding="{Binding NewQuantity}" Width="100"
+                                            FontWeight="SemiBold">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="VerticalAlignment" Value="Center"/>
@@ -186,7 +259,9 @@
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="Motivo" Binding="{Binding Reason}" Width="*">
+                        <DataGridTextColumn Header="Motivo" 
+                                            Binding="{Binding Reason}"
+                                            Width="*">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="VerticalAlignment" Value="Center"/>
@@ -196,7 +271,9 @@
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="Referência" Binding="{Binding ReferenceId}" Width="100">
+                        <DataGridTextColumn Header="Referência" 
+                                            Binding="{Binding ReferenceId}"
+                                            Width="100">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="VerticalAlignment" Value="Center"/>
@@ -212,19 +289,44 @@
             </Border>
 
             <!-- Empty State -->
-            <Border Grid.Row="2" Background="White" BorderBrush="#E5E7EB" BorderThickness="1"                     Visibility="{Binding Movements.Count, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=reverse}">
-                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="32">
-                    <TextBlock Text="📋" FontSize="48" HorizontalAlignment="Center"/>
-                    <TextBlock Text="Nenhuma movimentação encontrada" FontSize="18" FontWeight="SemiBold" Foreground="#374151" HorizontalAlignment="Center" Margin="0,16,0,8"/>
-                    <TextBlock Text="Ajuste os filtros ou realize entradas/saídas para ver o histórico" FontSize="14" Foreground="#64748B" HorizontalAlignment="Center" TextAlignment="Center"/>
+            <Border Grid.Row="2" 
+                    Background="White" 
+                    BorderBrush="#E5E7EB" 
+                    BorderThickness="1" 
+                    Visibility="{Binding Movements.Count, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=reverse}">
+                <StackPanel VerticalAlignment="Center" 
+                            HorizontalAlignment="Center" 
+                            Margin="32">
+                    <TextBlock Text="📋" 
+                               FontSize="48" 
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="Nenhuma movimentação encontrada" 
+                               FontSize="18" 
+                               FontWeight="SemiBold" 
+                               Foreground="#374151" 
+                               HorizontalAlignment="Center"
+                               Margin="0,16,0,8"/>
+                    <TextBlock Text="Ajuste os filtros ou realize entradas/saídas para ver o histórico" 
+                               FontSize="14" 
+                               Foreground="#64748B" 
+                               HorizontalAlignment="Center" 
+                               TextAlignment="Center"/>
                 </StackPanel>
             </Border>
 
             <!-- Close Button -->
-            <Button Grid.Row="3" Content="Fechar" Command="{Binding CloseCommand}"
-                    Padding="24,12" FontSize="14" FontWeight="Medium" Foreground="#374151"
-                    Background="#F3F4F6" BorderThickness="0" Cursor="Hand"
-                    HorizontalAlignment="Right" Margin="0,16,0,0">
+            <Button Grid.Row="3"
+                    Content="Fechar" 
+                    Command="{Binding CloseCommand}"
+                    Padding="24,12" 
+                    FontSize="14" 
+                    FontWeight="Medium" 
+                    Foreground="#374151"
+                    Background="#F3F4F6"
+                    BorderThickness="0"
+                    Cursor="Hand"
+                    HorizontalAlignment="Right" 
+                    Margin="0,16,0,0">
                 <Button.Style>
                     <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
                         <Style.Triggers>
