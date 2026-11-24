@@ -107,20 +107,6 @@
                                                            AllOptionText="Todos"
                                                            UseEnumDescription="True"/>
                         </StackPanel>
-
-                        <Button Grid.Column="4"
-                                Content="🔍 Filtrar"
-                                Command="{Binding LoadCommand}"
-                                Padding="16,10" 
-                                FontSize="13"
-                                FontWeight="Medium"
-                                Foreground="White"
-                                Background="#2563EB"
-                                BorderThickness="0"
-                                Cursor="Hand"
-                                VerticalAlignment="Bottom"
-                                Margin="0,0,0,0"
-                                IsEnabled="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=inverse}"/>
                     </Grid>
 
                     <Button Content="Limpar Filtros"

@@ -94,6 +94,7 @@ public sealed class InventoryMovementViewModel : INotifyPropertyChanged
         InventoryItemId = inventoryItemId;
         ProductName = productName;
         OnPropertyChanged(nameof(ProductName));
+        _ = LoadAsync();
     }
 
     public async Task LoadAsync()
