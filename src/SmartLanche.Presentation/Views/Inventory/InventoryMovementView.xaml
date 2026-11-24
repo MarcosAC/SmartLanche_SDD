@@ -10,7 +10,7 @@
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=vm:InventoryMovementViewModel, IsDesignTimeCreatable=False}"
-             d:DesignHeight="500" d:DesignWidth="700">
+             d:DesignHeight="500" d:DesignWidth="1000">
 
     <UserControl.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
@@ -20,7 +20,7 @@
         <Style x:Key="DataGridRowStyle" TargetType="DataGridRow" BasedOn="{StaticResource DataGridRowStyle}"/>
     </UserControl.Resources>
 
-    <Border Background="White" CornerRadius="12" Padding="24" Width="700">
+    <Border Background="White" CornerRadius="12" Padding="24" MinWidth="950" MaxWidth="1200">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
