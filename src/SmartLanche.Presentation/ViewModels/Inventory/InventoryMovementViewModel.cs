@@ -17,8 +17,8 @@ public sealed class InventoryMovementViewModel : INotifyPropertyChanged
 
     private ObservableCollection<InventoryMovementDto> _movements = [];
     private int _inventoryItemId;
-    private DateTime? _filterFrom;
-    private DateTime? _filterTo;
+    private DateTime? _dateFrom;
+    private DateTime? _dateTo;
     private InventoryMovementType? _filterType;
     private bool _isLoading;
 
@@ -39,22 +39,22 @@ public sealed class InventoryMovementViewModel : INotifyPropertyChanged
 
     public string ProductName { get; private set; } = string.Empty;
 
-    public DateTime? FilterFrom
+    public DateTime? DateFrom
     {
-        get => _filterFrom;
+        get => _dateFrom;
         set
         {
-            if (SetProperty(ref _filterFrom, value))
+            if (SetProperty(ref _dateFrom, value))
                 _ = LoadAsync();
         }
     }
 
-    public DateTime? FilterTo
+    public DateTime? DateTo
     {
-        get => _filterTo;
+        get => _dateTo;
         set
         {
-            if (SetProperty(ref _filterTo, value))
+            if (SetProperty(ref _dateTo, value))
                 _ = LoadAsync();
         }
     }
@@ -106,7 +106,7 @@ public sealed class InventoryMovementViewModel : INotifyPropertyChanged
 
         try
         {
-            var movements = await _movementService.GetByItemAsync(InventoryItemId, FilterFrom, FilterTo);
+            var movements = await _movementService.GetByItemAsync(InventoryItemId, DateFrom, DateTo);
             Movements = new ObservableCollection<InventoryMovementDto>(
                 FilterType.HasValue
                     ? movements.Where(m => m.Tipo == FilterType.Value)
