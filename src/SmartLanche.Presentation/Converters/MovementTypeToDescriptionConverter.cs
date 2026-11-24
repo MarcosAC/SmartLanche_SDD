@@ -1,8 +1,7 @@
-using System;
+using SmartLanche.Domain.Enums;
+using System.ComponentModel;
 using System.Globalization;
 using System.Windows.Data;
-using System.ComponentModel;
-using SmartLanche.Domain.Enums;
 
 namespace SmartLanche.Presentation.Converters;
 
