@@ -20,12 +20,12 @@
         <Style x:Key="DataGridRowStyle" TargetType="DataGridRow" BasedOn="{StaticResource DataGridRowStyle}"/>
     </UserControl.Resources>
 
-    <Border Background="White" CornerRadius="12" Padding="24" MinWidth="950" MaxWidth="1200">
+<Border Background="White" CornerRadius="12" Padding="24" MinWidth="950" MaxWidth="1200" MaxHeight="700">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
@@ -171,7 +171,9 @@
                           CanUserResizeRows="False"
                           SelectionMode="Single"
                           AlternatingRowBackground="#FAFAFA"
-                          RowStyle="{StaticResource DataGridRowStyle}">
+                          RowStyle="{StaticResource DataGridRowStyle}"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Auto">
 
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Data/Hora" Binding="{Binding CreatedAt, StringFormat='dd/MM/yyyy HH:mm'}" Width="150">
