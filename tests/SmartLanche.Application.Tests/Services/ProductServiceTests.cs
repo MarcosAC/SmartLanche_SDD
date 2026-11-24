@@ -337,7 +337,6 @@ public class ProductServiceTests : IDisposable
                     Nome: "Hambúrguer 150g",
                     QuantidadeAtual: 50,
                     QuantidadeMinima: 10,
-                    QuantidadeTotalRecebida: 50,
                     ValorUnitario: 8.50m,
                     UnidadeMedida: "UN",
                     Notes: "Estoque inicial"
@@ -388,7 +387,6 @@ public class ProductServiceTests : IDisposable
                         Nome: "Hambúrguer 150g",
                         QuantidadeAtual: 50,
                         QuantidadeMinima: 10,
-                        QuantidadeTotalRecebida: 50,
                         ValorUnitario: -5.00m,
                         UnidadeMedida: "UN",
                         Notes: null
@@ -413,7 +411,6 @@ public class ProductServiceTests : IDisposable
                         Nome: "Hambúrguer 150g",
                         QuantidadeAtual: 50,
                         QuantidadeMinima: -5,
-                        QuantidadeTotalRecebida: 50,
                         ValorUnitario: 8.50m,
                         UnidadeMedida: "UN",
                         Notes: null
@@ -569,7 +566,6 @@ public class ProductServiceTests : IDisposable
                 request.Nome,
                 request.QuantidadeAtual,
                 request.QuantidadeMinima,
-                request.QuantidadeTotalRecebida,
                 request.ValorUnitario,
                 request.UnidadeMedida,
                 request.Notes,

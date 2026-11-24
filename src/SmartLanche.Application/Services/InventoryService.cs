@@ -36,7 +36,6 @@ public class InventoryService : IInventoryService
             Nome = request.Nome,
             QuantidadeAtual = request.QuantidadeAtual,
             QuantidadeMinima = request.QuantidadeMinima,
-            QuantidadeTotalRecebida = request.QuantidadeTotalRecebida,
             ValorUnitario = request.ValorUnitario,
             UnidadeMedida = request.UnidadeMedida,
             Notes = request.Notes
@@ -237,7 +236,6 @@ public class InventoryService : IInventoryService
             item.Nome,
             item.QuantidadeAtual,
             item.QuantidadeMinima,
-            item.QuantidadeTotalRecebida,
             item.ValorUnitario,
             item.UnidadeMedida,
             item.Notes,

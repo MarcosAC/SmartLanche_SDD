@@ -59,16 +59,6 @@
             <Setter Property="HorizontalAlignment" Value="Right"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
-
-        <Style x:Key="DataGridColumnHeaderStyle" TargetType="DataGridColumnHeader">
-            <Setter Property="Background" Value="#F9FAFB"/>
-            <Setter Property="Foreground" Value="#374151"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="Padding" Value="12,8"/>
-            <Setter Property="BorderBrush" Value="#E5E7EB"/>
-            <Setter Property="BorderThickness" Value="0,0,0,1"/>
-        </Style>
     </UserControl.Resources>
 
     <Grid Margin="24">
@@ -191,7 +181,6 @@
                           BorderThickness="0"
                           Background="White"
                           AlternatingRowBackground="#F9FAFB"
-                          ColumnHeaderStyle="{StaticResource DataGridColumnHeaderStyle}"
                           IsEnabled="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=reverse}">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="ID"

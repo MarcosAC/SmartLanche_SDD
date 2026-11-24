@@ -15,8 +15,6 @@ public sealed class InventoryListViewModel : ListViewModelBase<InventoryItemDto,
 
     private StockStatus? _filterStatus;
     private string _statusText = string.Empty;
-    private decimal _totalInventoryValue;
-    private int _totalItemsCount;
 
     public event EventHandler<InventoryItemDto>? RequestAddStock;
     public event EventHandler<InventoryItemDto>? RequestRemoveStock;
@@ -46,20 +44,6 @@ public sealed class InventoryListViewModel : ListViewModelBase<InventoryItemDto,
         get => _statusText;
         private set => SetProperty(ref _statusText, value);
     }
-
-    public decimal TotalInventoryValue
-    {
-        get => _totalInventoryValue;
-        private set => SetProperty(ref _totalInventoryValue, value);
-    }
-
-    public int TotalItemsCount
-    {
-        get => _totalItemsCount;
-        private set => SetProperty(ref _totalItemsCount, value);
-    }
-
-    public string TotalInventoryValueFormatted => TotalInventoryValue.ToString("C2", new System.Globalization.CultureInfo("pt-BR"));
 
     public InventoryListViewModel(
         IInventoryService inventoryService,
@@ -133,8 +117,6 @@ public sealed class InventoryListViewModel : ListViewModelBase<InventoryItemDto,
     {
         await base.LoadAsync();
         StatusText = $"{Items.Count} itens no estoque";
-        TotalItemsCount = Items.Count;
-        TotalInventoryValue = Items.Sum(i => i.ValorTotalEstoque);
     }
 
     private static InventoryItemDto MapToDto(InventoryItem item)
@@ -146,7 +128,6 @@ public sealed class InventoryListViewModel : ListViewModelBase<InventoryItemDto,
             item.Nome,
             item.QuantidadeAtual,
             item.QuantidadeMinima,
-            item.QuantidadeTotalRecebida,
             item.ValorUnitario,
             item.UnidadeMedida,
             item.Notes,
