@@ -47,17 +47,16 @@
             </StackPanel>
 
             <!-- Filters -->
-            <Border Grid.Row="1" 
+            <Border Grid.Row="1"
                     Background="#F8FAFC"
                     BorderBrush="#E5E7EB"
                     BorderThickness="1"
                     CornerRadius="8"
-                    Padding="16" 
+                    Padding="16"
                     Margin="0,0,0,16">
                 <StackPanel>
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="Auto"/>
@@ -67,30 +66,26 @@
                         <StackPanel Grid.Column="0"
                                     Margin="0,0,16,0"
                                     VerticalAlignment="Center">
-                            <TextBlock Text="De"
+                            <TextBlock Text="Data Início"
                                        FontSize="12"
                                        Foreground="#64748B"
                                        Margin="0,0,0,4"/>
-                            <DatePicker SelectedDate="{Binding FilterFrom, Mode=TwoWay}"
-                                        FontSize="13" 
-                                        Padding="8,4"
-                                        BorderBrush="#D1D5DB"
-                                        BorderThickness="1"
+                            <DatePicker SelectedDate="{Binding DateFrom, UpdateSourceTrigger=PropertyChanged}"
+                                        Height="34"
+                                        VerticalContentAlignment="Center"
                                         Width="150"/>
                         </StackPanel>
 
                         <StackPanel Grid.Column="1"
                                     Margin="0,0,16,0"
                                     VerticalAlignment="Center">
-                            <TextBlock Text="Até"
+                            <TextBlock Text="Data Fim"
                                        FontSize="12"
                                        Foreground="#64748B"
                                        Margin="0,0,0,4"/>
-                            <DatePicker SelectedDate="{Binding FilterTo, Mode=TwoWay}"
-                                        FontSize="13" 
-                                        Padding="8,4" 
-                                        BorderBrush="#D1D5DB"
-                                        BorderThickness="1"
+                            <DatePicker SelectedDate="{Binding DateTo, UpdateSourceTrigger=PropertyChanged}"
+                                        Height="34"
+                                        VerticalContentAlignment="Center"
                                         Width="150"/>
                         </StackPanel>
 
@@ -102,7 +97,7 @@
                                        Foreground="#64748B"
                                        Margin="0,0,0,4"/>
                             <controls:StatusFilterComboBox EnumType="{x:Type domainEnums:InventoryMovementType}"
-                                                           SelectedValue="{Binding FilterType, Mode=TwoWay}"
+                                                           SelectedValue="{Binding FilterType, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                            IncludeAllOption="True"
                                                            AllOptionText="Todos"
                                                            UseEnumDescription="True"/>
