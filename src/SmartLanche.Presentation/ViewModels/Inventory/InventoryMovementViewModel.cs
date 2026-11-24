@@ -42,19 +42,31 @@ public sealed class InventoryMovementViewModel : INotifyPropertyChanged
     public DateTime? FilterFrom
     {
         get => _filterFrom;
-        set => SetProperty(ref _filterFrom, value);
+        set
+        {
+            if (SetProperty(ref _filterFrom, value))
+                _ = LoadAsync();
+        }
     }
 
     public DateTime? FilterTo
     {
         get => _filterTo;
-        set => SetProperty(ref _filterTo, value);
+        set
+        {
+            if (SetProperty(ref _filterTo, value))
+                _ = LoadAsync();
+        }
     }
 
     public InventoryMovementType? FilterType
     {
         get => _filterType;
-        set => SetProperty(ref _filterType, value);
+        set
+        {
+            if (SetProperty(ref _filterType, value))
+                _ = LoadAsync();
+        }
     }
 
     public bool IsLoading
