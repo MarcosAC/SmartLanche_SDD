@@ -15,6 +15,7 @@
     <UserControl.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <converters:MovementOriginToDescriptionConverter x:Key="MovementOriginToDescriptionConverter"/>
+        <converters:MovementTypeToDescriptionConverter x:Key="MovementTypeToDescriptionConverter"/>
 
         <Style x:Key="DataGridRowStyle" TargetType="DataGridRow" BasedOn="{StaticResource DataGridRowStyle}"/>
     </UserControl.Resources>
