@@ -18,6 +18,20 @@
         <converters:MovementTypeToDescriptionConverter x:Key="MovementTypeToDescriptionConverter"/>
 
         <Style x:Key="DataGridRowStyle" TargetType="DataGridRow" BasedOn="{StaticResource DataGridRowStyle}"/>
+
+        <!-- DatePicker style matching ComboBox visual style (FilterComboBoxStyle) -->
+        <Style x:Key="FilterDatePickerStyle" TargetType="DatePicker" BasedOn="{StaticResource {x:Type DatePicker}}">
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="BorderBrush" Value="#D1D5DB"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="MinHeight" Value="34"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+            <Setter Property="Width" Value="150"/>
+        </Style>
     </UserControl.Resources>
 
     <Border Background="White"
@@ -71,9 +85,7 @@
                                        Foreground="#64748B"
                                        Margin="0,0,0,4"/>
                             <DatePicker SelectedDate="{Binding DateFrom, UpdateSourceTrigger=PropertyChanged}"
-                                        Height="34"
-                                        VerticalContentAlignment="Center"
-                                        Width="150"/>
+                                        Style="{StaticResource FilterDatePickerStyle}"/>
                         </StackPanel>
 
                         <StackPanel Grid.Column="1"
@@ -84,9 +96,7 @@
                                        Foreground="#64748B"
                                        Margin="0,0,0,4"/>
                             <DatePicker SelectedDate="{Binding DateTo, UpdateSourceTrigger=PropertyChanged}"
-                                        Height="34"
-                                        VerticalContentAlignment="Center"
-                                        Width="150"/>
+                                        Style="{StaticResource FilterDatePickerStyle}"/>
                         </StackPanel>
 
                         <StackPanel Grid.Column="2"
