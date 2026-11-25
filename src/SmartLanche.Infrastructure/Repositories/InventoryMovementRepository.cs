@@ -27,7 +27,9 @@ public class InventoryMovementRepository : IInventoryMovementRepository
 
         if (dataFim.HasValue)
         {
-            query = query.Where(m => m.DataHora <= dataFim.Value);
+            // Add 1 day to include the entire end day (up to 23:59:59)
+            var endOfDay = dataFim.Value.Date.AddDays(1);
+            query = query.Where(m => m.DataHora < endOfDay);
         }
 
         return await query
