@@ -29,8 +29,7 @@
             <Setter Property="MinHeight" Value="34"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-            <Setter Property="SnapsToDevicePixels" Value="True"/>
-            <Setter Property="Width" Value="150"/>
+            <Setter Property="SnapsToDevicePixels" Value="True"/>            
         </Style>
     </UserControl.Resources>
 
@@ -114,7 +113,7 @@
                         </StackPanel>
                     </Grid>
 
-                    <Button Content="Limpar Filtros"
+                    <!--<Button Content="Limpar Filtros"
                             Command="{Binding RefreshCommand}"
                             Padding="10,6"
                             FontSize="12"
@@ -124,7 +123,7 @@
                             Cursor="Hand"
                             HorizontalAlignment="Left" 
                             Margin="0,12,0,0"
-                            IsEnabled="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=inverse}"/>
+                            IsEnabled="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=inverse}"/>-->
                 </StackPanel>
             </Border>
 
