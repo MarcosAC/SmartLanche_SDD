@@ -17,32 +17,58 @@
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <converters:StringIsNullOrEmptyToVisibilityConverter x:Key="StringIsNullOrEmptyToVisibilityConverter"/>
 
-        <Style x:Key="ActionButtonStyle" TargetType="Button">
-            <Setter Property="Padding" Value="10,5"/>
+        <Style x:Key="ActionButtonStyle"
+               TargetType="Button">
+            <Setter Property="Padding" Value="12,7"/>
             <Setter Property="Margin" Value="4,0"/>
-            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="MinWidth" Value="90"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+
+        <Style x:Key="SearchTextBoxStyle"
+               TargetType="TextBox"
+               BasedOn="{StaticResource {x:Type TextBox}}">
+            <Setter Property="Padding" Value="8,0"/>
+            <Setter Property="BorderBrush" Value="#D1D5DB"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Foreground" Value="#111827"/>
+            <Setter Property="FontSize" Value="13"/>
             <Setter Property="Template">
                 <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="Border" Background="{TemplateBinding Background}" CornerRadius="4" Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="Border"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="4"
+                            Padding="{TemplateBinding Padding}"
+                            SnapsToDevicePixels="True">
+                            <ScrollViewer x:Name="PART_ContentHost"
+                                      Focusable="False"
+                                      HorizontalScrollBarVisibility="Hidden"
+                                      VerticalScrollBarVisibility="Hidden"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Border" Property="Opacity" Value="0.85"/>
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#9CA3AF"/>
                             </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="Border" Property="Opacity" Value="0.7"/>
-                            </Trigger>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="Border" Property="Opacity" Value="0.4"/>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#2563EB"/>
+                                <Setter TargetName="Border" Property="BorderThickness" Value="2"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
+        </Style>
+
+        <Style x:Key="PrimaryButtonStyle"
+               TargetType="Button"
+               BasedOn="{StaticResource ActionButtonStyle}">
+            <Setter Property="Background" Value="#2563EB"/>
+            <Setter Property="Foreground" Value="White"/>
         </Style>
     </UserControl.Resources>
 
@@ -75,9 +101,11 @@
                         HorizontalAlignment="Right" 
                         VerticalAlignment="Center">
                 <Button Command="{Binding RefreshCommand}"
-                        Style="{StaticResource ActionButtonStyle}"
-                        Background="#64748B" Foreground="White"
-                        Padding="12,6" Content="⟳ Atualizar"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        Padding="12,7"
+                        MinWidth="110"
+                        FontSize="12"
+                        Content="⟳ Atualizar"
                         IsEnabled="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=inverse}"/>
             </StackPanel>
         </Grid>
@@ -96,35 +124,30 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>                  
                 </Grid.ColumnDefinitions>
 
-                <!-- Data Início -->
+                <!-- Produto -->
                 <StackPanel Grid.Column="0"
                             Margin="0,0,16,0"
                             VerticalAlignment="Center">
-                    <TextBlock Text="Data Início"
+                    <TextBlock Text="Produto"
                                FontSize="12"
                                Foreground="#64748B"
-                               Margin="0,0,0,4"/>
-                    <DatePicker SelectedDate="{Binding Filter.FromDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                Width="150"
-                                Height="34"
-                                VerticalContentAlignment="Center"
-                                FontSize="13"
-                                Padding="4,2"
-                                BorderBrush="#D1D5DB"
-                                BorderThickness="1"/>
+                               Margin="0,0,0,4"
+                               Width="200"/>
+
+                    <TextBox Height="34"
+                             VerticalContentAlignment="Center"
+                             Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource SearchTextBoxStyle}"/>                   
                 </StackPanel>
 
-                <!-- Data Fim -->
+                <!-- Data Início -->
                 <StackPanel Grid.Column="1"
                             Margin="0,0,16,0"
                             VerticalAlignment="Center">
-                    <TextBlock Text="Data Fim"
+                    <TextBlock Text="Data Início"
                                FontSize="12"
                                Foreground="#64748B"
                                Margin="0,0,0,4"/>
@@ -138,94 +161,41 @@
                                 BorderThickness="1"/>
                 </StackPanel>
 
-                <!-- Tipo -->
+                <!-- Data Fim -->
                 <StackPanel Grid.Column="2"
+                            Margin="0,0,16,0"
+                            VerticalAlignment="Center">
+                    <TextBlock Text="Data Fim"
+                               FontSize="12"
+                               Foreground="#64748B"
+                               Margin="0,0,0,4"/>
+                    <DatePicker SelectedDate="{Binding Filter.FromDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                Width="150"
+                                Height="34"
+                                VerticalContentAlignment="Center"
+                                FontSize="13"
+                                Padding="4,2"
+                                BorderBrush="#D1D5DB"
+                                BorderThickness="1"/>
+                </StackPanel>                
+
+                <!-- Tipo -->
+                <StackPanel Grid.Column="4"
                             Margin="0,0,16,0"
                             VerticalAlignment="Center">
                     <TextBlock Text="Tipo"
                                FontSize="12"
                                Foreground="#64748B"
                                Margin="0,0,0,4"/>
-                    <controls:StatusFilterComboBox Width="140"
-                                                   EnumType="{x:Type domainEnums:InventoryMovementType}"
+                    <controls:StatusFilterComboBox EnumType="{x:Type domainEnums:InventoryMovementType}"
                                                    SelectedValue="{Binding Filter.Tipo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                    IncludeAllOption="True"
                                                    AllOptionText="Todos"
                                                    UseEnumDescription="True"/>
-                </StackPanel>
-
-                <!-- Origem -->
-                <StackPanel Grid.Column="3"
-                            Margin="0,0,16,0"
-                            VerticalAlignment="Center">
-                    <TextBlock Text="Origem"
-                               FontSize="12"
-                               Foreground="#64748B"
-                               Margin="0,0,0,4"/>
-                    <controls:StatusFilterComboBox Width="140"
-                                                   EnumType="{x:Type domainEnums:InventoryMovementReason}"
-                                                   SelectedValue="{Binding Filter.Motivo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                   IncludeAllOption="True"
-                                                   AllOptionText="Todas"
-                                                   UseEnumDescription="True"/>
-                </StackPanel>
-
-                <!-- Produto -->
-                <StackPanel Grid.Column="4"
-                            Margin="0,0,16,0"
-                            VerticalAlignment="Center">
-                    <TextBlock Text="Produto"
-                               FontSize="12"
-                               Foreground="#64748B"
-                               Margin="0,0,0,4"/>
-                    <ComboBox ItemsSource="{Binding Products}"
-                              SelectedValue="{Binding Filter.ItemId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                              SelectedValuePath="Id"
-                              DisplayMemberPath="Name"
-                              Width="200"
-                              IsEditable="True"
-                              IsTextSearchEnabled="True"
-                              Style="{StaticResource PickerComboBoxStyle}"/>
-                </StackPanel>
-
-                <!-- Buttons -->
-                <!--<Button Grid.Column="6"
-                        Command="{Binding LoadCommand}"
-                        Style="{StaticResource ActionButtonStyle}"
-                        Background="#2563EB" Foreground="White"
-                        Padding="14,5" Content="🔍 Filtrar"
-                        IsEnabled="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=inverse}"/>
-
-                <Button Grid.Column="7"
-                        Command="{Binding ClearFiltersCommand}"
-                        Style="{StaticResource ActionButtonStyle}"
-                        Background="#64748B" Foreground="White"
-                        Padding="14,5" Content="🧹 Limpar"
-                        IsEnabled="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=inverse}"
-                        Margin="8,0,0,0"/>-->
+                </StackPanel>                
             </Grid>
         </Border>
-
-        <!-- Loading Overlay (spans Row 1 and 2) -->
-        <!--<Border Grid.Row="1"
-                Grid.RowSpan="2"
-                Background="#80FFFFFF"
-                Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}"
-                VerticalAlignment="Stretch"
-                HorizontalAlignment="Stretch" 
-                Panel.ZIndex="10">
-            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                <TextBlock Text="Carregando..."
-                           FontSize="16"
-                           Foreground="#374151"/>
-                <ProgressBar Width="200" 
-                             Height="6"
-                             IsIndeterminate="True"
-                             Margin="0,12,0,0"
-                             Foreground="#2563EB"/>
-            </StackPanel>
-        </Border>-->
-
+        
         <!-- Data Grid (Row 2 only) -->
         <Border Grid.Row="2"
                 Background="White"
@@ -470,34 +440,6 @@
                                VerticalAlignment="Center"/>
                 </StackPanel>
             </StackPanel>
-        </Border>
-
-        <!-- Empty State - Row 2 only -->
-        <Border Grid.Row="2"
-                Background="White"
-                BorderBrush="#E5E7EB"
-                BorderThickness="1"
-                CornerRadius="8"
-                Visibility="{Binding Movements.Count, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=reverse}"
-                Margin="0,12,0,0">
-            <StackPanel VerticalAlignment="Center"
-                        HorizontalAlignment="Center"
-                        Margin="32">
-                <TextBlock Text="📊"
-                           FontSize="48"
-                           HorizontalAlignment="Center"/>
-                <TextBlock Text="Nenhuma movimentação encontrada"
-                           FontSize="18"
-                           FontWeight="SemiBold"
-                           Foreground="#374151"
-                           HorizontalAlignment="Center"
-                           Margin="0,16,0,8"/>
-                <TextBlock Text="Ajuste os filtros para visualizar movimentações" 
-                           FontSize="14"
-                           Foreground="#64748B"
-                           HorizontalAlignment="Center" 
-                           TextAlignment="Center"/>
-            </StackPanel>
-        </Border>
+        </Border>        
     </Grid>
 </UserControl>
