@@ -1,12 +1,11 @@
+using SmartLanche.Application.DTOs;
+using SmartLanche.Application.Interfaces;
+using SmartLanche.Presentation.Commands;
+using SmartLanche.Presentation.Services;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
-using SmartLanche.Application.DTOs;
-using SmartLanche.Application.Interfaces;
-using SmartLanche.Domain.Enums;
-using SmartLanche.Presentation.Commands;
-using SmartLanche.Presentation.Services;
 
 namespace SmartLanche.Presentation.ViewModels.Inventory;
 
@@ -103,7 +102,6 @@ public sealed class InventoryMovementsViewModel : INotifyPropertyChanged
 
             Movements = new ObservableCollection<InventoryMovementDto>(movements);
 
-            // Summary not available in new API - skip for now
             StatusText = $"{Movements.Count} movimentação(ões) encontrada(s)";
         }
         catch (Exception ex)
