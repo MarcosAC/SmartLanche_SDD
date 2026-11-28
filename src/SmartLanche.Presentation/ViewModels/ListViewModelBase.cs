@@ -1,9 +1,7 @@
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using System.Windows.Input;
 using SmartLanche.Application.Interfaces;
 using SmartLanche.Presentation.Commands;
+using System.Collections.ObjectModel;
+using System.Windows.Input;
 
 namespace SmartLanche.Presentation.ViewModels;
 

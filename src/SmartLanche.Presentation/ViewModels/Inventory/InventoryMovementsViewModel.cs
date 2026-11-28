@@ -1,20 +1,18 @@
 using SmartLanche.Application.DTOs;
 using SmartLanche.Application.Interfaces;
+using SmartLanche.Domain.Enums;
 using SmartLanche.Presentation.Commands;
 using SmartLanche.Presentation.Services;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using System.Windows.Input;
 
 namespace SmartLanche.Presentation.ViewModels.Inventory;
 
-public sealed class InventoryMovementsViewModel : INotifyPropertyChanged
+public sealed class InventoryMovementsViewModel : ListViewModelBase<InventoryMovementDto, IInventoryMovementService>
 {
     private readonly IInventoryMovementService _movementService;
     private readonly IToastNotificationService _toastService;
 
-    private ObservableCollection<InventoryMovementDto> _movements = [];
+    private StockStatus? _filterStatus;
     private InventoryMovementFilter _filter = new(
         ItemId: null,
         FromDate: DateTime.Today.AddDays(-30),
@@ -26,32 +24,29 @@ public sealed class InventoryMovementsViewModel : INotifyPropertyChanged
         SearchTerm: null,
         Page: 1,
         PageSize: 50);
-    private bool _isLoading;
     private InventoryMovementSummaryDto? _summary;
     private string _statusText = string.Empty;
 
-    public event PropertyChangedEventHandler? PropertyChanged;
-
-    public ICommand LoadCommand { get; }
+    public new ICommand LoadCommand { get; }
     public ICommand RefreshCommand { get; }
     public ICommand ClearFiltersCommand { get; }
 
-    public ObservableCollection<InventoryMovementDto> Movements
+    public StockStatus? FilterStatus
     {
-        get => _movements;
-        private set => SetProperty(ref _movements, value);
+        get => _filterStatus;
+        set
+        {
+            if (SetProperty(ref _filterStatus, value))
+            {
+                _ = LoadAsync();
+            }
+        }
     }
 
     public InventoryMovementFilter Filter
     {
         get => _filter;
         set => SetProperty(ref _filter, value);
-    }
-
-    public bool IsLoading
-    {
-        get => _isLoading;
-        private set => SetProperty(ref _isLoading, value);
     }
 
     public InventoryMovementSummaryDto? Summary
@@ -68,7 +63,7 @@ public sealed class InventoryMovementsViewModel : INotifyPropertyChanged
 
     public InventoryMovementsViewModel(
         IInventoryMovementService movementService,
-        IToastNotificationService toastService)
+        IToastNotificationService toastService) : base(movementService)
     {
         _movementService = movementService ?? throw new ArgumentNullException(nameof(movementService));
         _toastService = toastService ?? throw new ArgumentNullException(nameof(toastService));
@@ -78,40 +73,54 @@ public sealed class InventoryMovementsViewModel : INotifyPropertyChanged
         ClearFiltersCommand = new RelayCommand(OnClearFilters);
     }
 
-    public async Task LoadAsync()
+    protected override async Task<IReadOnlyList<InventoryMovementDto>> GetItemsAsync()
+    {
+        var movements = await _movementService.GetFilteredAsync(
+            Filter.ItemId,
+            Filter.FromDate,
+            Filter.ToDate,
+            Filter.Tipo,
+            Filter.Motivo,
+            Filter.OrderId,
+            Filter.ComboId,
+            Filter.SearchTerm,
+            Filter.Page,
+            Filter.PageSize);
+
+        return movements;
+    }
+
+    protected override IReadOnlyList<InventoryMovementDto> ApplySearchFilter(IReadOnlyList<InventoryMovementDto> items, string searchTerm)
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm))
+            return items.ToList();
+
+        var term = searchTerm.ToLowerInvariant();
+        return items.Where(m =>
+            (m.ItemNome?.ToLowerInvariant().Contains(term) ?? false) ||
+            (m.Notes?.ToLowerInvariant().Contains(term) ?? false) ||
+            (m.ReferenceId?.ToLowerInvariant().Contains(term) ?? false) ||
+            (m.Type.ToString().ToLowerInvariant().Contains(term)) ||
+            (m.Origin.ToLowerInvariant().Contains(term))
+        ).ToList();
+    }
+
+    public override async Task LoadAsync()
     {
         if (IsLoading)
             return;
 
-        IsLoading = true;
         StatusText = "Carregando movimentações...";
 
         try
         {
-            var movements = await _movementService.GetFilteredAsync(
-                Filter.ItemId,
-                Filter.FromDate,
-                Filter.ToDate,
-                Filter.Tipo,
-                Filter.Motivo,
-                Filter.OrderId,
-                Filter.ComboId,
-                Filter.SearchTerm,
-                Filter.Page,
-                Filter.PageSize);
-
-            Movements = new ObservableCollection<InventoryMovementDto>(movements);
-
-            StatusText = $"{Movements.Count} movimentação(ões) encontrada(s)";
+            await base.LoadAsync();
+            StatusText = $"{Items.Count} movimentação(ões) encontrada(s)";
         }
         catch (Exception ex)
         {
             _toastService.ShowError($"Erro ao carregar movimentações: {ex.Message}");
             StatusText = "Erro ao carregar";
-        }
-        finally
-        {
-            IsLoading = false;
         }
     }
 
@@ -128,16 +137,9 @@ public sealed class InventoryMovementsViewModel : INotifyPropertyChanged
             SearchTerm: null,
             Page: 1,
             PageSize: 50);
+
+        SearchText = string.Empty;
+        FilterStatus = null;
         LoadCommand.Execute(null);
-    }
-
-    private bool SetProperty<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
-    {
-        if (Equals(field, value))
-            return false;
-
-        field = value;
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        return true;
     }
 }

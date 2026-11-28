@@ -104,7 +104,6 @@ public sealed class InventoryListViewModel : ListViewModelBase<InventoryItemDto,
     {
         if (string.IsNullOrWhiteSpace(SortColumn))
         {
-            // Default: low stock first, then by product name
             return items
                 .OrderByDescending(i => i.Status)
                 .ThenBy(i => i.ProdutoNome)
